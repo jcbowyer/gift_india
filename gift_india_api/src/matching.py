@@ -1,4 +1,4 @@
-"""Recommendation engine for CareNavigator India.
+"""Recommendation engine for gift_india India.
 
 Given a surgical-team request (specialty, capacity, willingness to travel rural),
 rank Indian districts by how much a deployment there would help — combining

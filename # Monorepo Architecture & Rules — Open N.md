@@ -1,4 +1,4 @@
-# Monorepo Architecture & Rules — Open Navigator
+# Monorepo Architecture & Rules — GIFT India
 
 ## Tech Stack
 - **Backend:** FastAPI (Python 3.11+)

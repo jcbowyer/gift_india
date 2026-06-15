@@ -1,4 +1,4 @@
-"""CareNavigator India — Streamlit demo.
+"""gift_india India — Streamlit demo.
 
 A navigator copilot that recommends where to place visiting surgical teams across
 India to close the surgical-care gap, plus a medical-desert map and a peek at the
@@ -17,7 +17,7 @@ from src.data import SPECIALTIES, load_bundle
 from src.matching import TeamRequest, rank_districts
 
 st.set_page_config(
-    page_title="CareNavigator India",
+    page_title="gift_india India",
     page_icon="🩺",
     layout="wide",
 )
@@ -111,7 +111,7 @@ def show_recommendations(result):
 
 
 # ---------------------------------------------------------------- Sidebar
-st.sidebar.title("🩺 CareNavigator India")
+st.sidebar.title("🩺 gift_india India")
 st.sidebar.caption("Virtue Foundation · surgical-team navigator")
 st.sidebar.metric("Facilities in dataset", f"{len(bundle.facilities):,}")
 st.sidebar.metric(

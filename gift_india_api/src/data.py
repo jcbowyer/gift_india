@@ -1,4 +1,4 @@
-"""Dataset generation / loading for CareNavigator India.
+"""Dataset generation / loading for gift_india India.
 
 For the hackathon demo we synthesize a realistic ~10K-record geotagged facility
 dataset across real Indian districts. The generation is deterministic (fixed seed)
@@ -174,6 +174,9 @@ def _generate_facilities(districts: pd.DataFrame) -> pd.DataFrame:
                     "annual_surgeries": annual_surgeries,
                     "offers_surgery": offers_surgery,
                     "specialties": "|".join(offered),
+                    # Synthetic facilities have no real website; left empty so the
+                    # scraper skips them. Populate from the governed dataset to scrape.
+                    "website_url": "",
                     "match_confidence": confidence,
                 }
             )
@@ -198,7 +201,141 @@ def build_dataset(force: bool = False) -> DataBundle:
     return DataBundle(facilities=facilities, districts=districts)
 
 
+def _coerce_facilities(df: pd.DataFrame) -> pd.DataFrame:
+    for col in ("lat", "lon", "match_confidence"):
+        if col in df:
+            df[col] = pd.to_numeric(df[col], errors="coerce").astype(float)
+    if "annual_surgeries" in df:
+        df["annual_surgeries"] = (
+            pd.to_numeric(df["annual_surgeries"], errors="coerce")
+            .fillna(0)
+            .astype(int)
+        )
+    if "offers_surgery" in df:
+        df["offers_surgery"] = df["offers_surgery"].astype(bool)
+    if "specialties" in df:
+        df["specialties"] = df["specialties"].fillna("").astype(str)
+    if "website_url" in df:
+        df["website_url"] = df["website_url"].fillna("").astype(str)
+    return df
+
+
+def _coerce_districts(df: pd.DataFrame) -> pd.DataFrame:
+    for col in (
+        "lat", "lon", "urbanity", "fp_unmet_pct",
+        "institutional_birth_pct", "csection_pct", "anaemia_pct",
+    ):
+        if col in df:
+            df[col] = pd.to_numeric(df[col], errors="coerce").astype(float)
+    if "population" in df:
+        df["population"] = (
+            pd.to_numeric(df["population"], errors="coerce").fillna(0).astype(int)
+        )
+    return df
+
+
+def _lakebase_connection():
+    """Open a psycopg connection to Lakebase using platform-injected env vars."""
+    import psycopg
+    from databricks.sdk import WorkspaceClient
+
+    token = (
+        WorkspaceClient()
+        .postgres.generate_database_credential(
+            endpoint=os.environ["LAKEBASE_ENDPOINT"]
+        )
+        .token
+    )
+    return psycopg.connect(
+        host=os.environ["PGHOST"],
+        port=int(os.environ.get("PGPORT", "5432")),
+        dbname=os.environ.get("PGDATABASE", "databricks_postgres"),
+        user=os.environ["PGUSER"],
+        password=token,
+        sslmode=os.environ.get("PGSSLMODE", "require"),
+    )
+
+
+def _read_sql(conn, sql: str) -> pd.DataFrame:
+    with conn.cursor() as cur:
+        cur.execute(sql)
+        cols = [d[0] for d in cur.description]
+        rows = cur.fetchall()
+    return pd.DataFrame(rows, columns=cols)
+
+
+_FACILITIES_SQL = """
+    SELECT facility_id, name, type, district, state, lat, lon,
+           specialties, offers_surgery, annual_surgeries, website_url,
+           match_confidence
+    FROM public.facilities
+"""
+_DISTRICTS_SQL = """
+    SELECT district, state, lat, lon, population, urbanity,
+           fp_unmet_pct, institutional_birth_pct, csection_pct, anaemia_pct
+    FROM public.districts
+"""
+
+
+def _read_bundle(conn) -> DataBundle:
+    facilities = _read_sql(conn, _FACILITIES_SQL)
+    districts = _read_sql(conn, _DISTRICTS_SQL)
+    return DataBundle(
+        facilities=_coerce_facilities(facilities),
+        districts=_coerce_districts(districts),
+    )
+
+
+def load_from_lakebase() -> DataBundle:
+    """Read the live, continuously-synced Virtue Foundation data from Lakebase."""
+    conn = _lakebase_connection()
+    try:
+        return _read_bundle(conn)
+    finally:
+        conn.close()
+
+
+def load_from_postgres(dsn: str, connect_timeout: int = 5) -> DataBundle:
+    """Read the dataset from a plain Postgres DSN (e.g. local dev database).
+
+    A short ``connect_timeout`` keeps a misconfigured/unreachable database from
+    hanging the app — ``load_bundle`` falls back to the synthetic dataset.
+    """
+    import psycopg
+
+    conn = psycopg.connect(dsn, connect_timeout=connect_timeout)
+    try:
+        return _read_bundle(conn)
+    finally:
+        conn.close()
+
+
 def load_bundle() -> DataBundle:
+    """Load the data bundle from the best available source.
+
+    Order of preference:
+
+    1. **Lakebase** — when running as a Databricks App with a Lakebase resource
+       (``LAKEBASE_ENDPOINT`` + ``PGHOST`` injected), read the live synced data.
+    2. **Local / generic Postgres** — when ``GIFT_INDIA_DB_URL`` (or ``PG*``) is set
+       (e.g. the docker-compose dev database).
+    3. **Synthetic CSV** — deterministic fallback so the demo always runs with
+       zero external dependencies.
+    """
+    if os.environ.get("LAKEBASE_ENDPOINT") and os.environ.get("PGHOST"):
+        return load_from_lakebase()
+
+    from . import db
+
+    dsn = db.database_url()
+    if dsn:
+        try:
+            return load_from_postgres(dsn)
+        except Exception as exc:  # noqa: BLE001 — resilient dev fallback
+            print(
+                f"[data] Could not load from the configured database ({exc}); "
+                "falling back to the synthetic dataset."
+            )
     return build_dataset(force=False)
 
 
