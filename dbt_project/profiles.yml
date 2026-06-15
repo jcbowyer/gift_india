@@ -13,7 +13,7 @@ gift_india:
   outputs:
     dev:
       type: databricks
-      host: dbc-0be3157e-0574.cloud.databricks.com
+      host: dbc-0951416d-6d0e.cloud.databricks.com
       http_path: /sql/1.0/warehouses/b6160f34691ba665
       auth_type: oauth
       catalog: "{{ env_var('GIFT_INDIA_CATALOG', 'workspace') }}"

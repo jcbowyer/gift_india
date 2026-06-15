@@ -41,6 +41,8 @@ export interface FacilityRanking {
   state: string;
   stateCode: string;
   beds: number | null;
+  lat: number | null;
+  lon: number | null;
   websiteUrl: string;
   matchConfidence: number | null;
   claimed: boolean;
@@ -55,11 +57,111 @@ export interface FacilityRanking {
   overrideNote: string | null;
 }
 
+export interface FacilitySearchResult {
+  facilityId: string;
+  name: string;
+  type: string;
+  district: string;
+  state: string;
+  stateCode: string;
+  beds: number | null;
+}
+
 export interface FacilitiesResponse {
   capability: string;
   state: string | null;
   district: string | null;
   results: FacilityRanking[];
+}
+
+// ── drilldown map: region rating roll-ups ────────────────────────────────────
+export interface RegionRating {
+  facilities: number;
+  claiming: number;
+  avgScore: number | null;
+  strong: number;
+  partial: number;
+  weak: number;
+}
+
+export interface StateRating extends RegionRating {
+  state: string;
+  stateCode: string;
+}
+
+export interface DistrictRating extends RegionRating {
+  state: string;
+  district: string;
+  stateCode: string;
+  lat: number | null;
+  lon: number | null;
+  population: number | null;
+}
+
+export interface MapGeography {
+  capability: string;
+  states: StateRating[];
+  districts: DistrictRating[];
+}
+
+// ── metric catalog (navigator left panel) ────────────────────────────────────
+export type MetricSource = 'builtin' | 'store';
+
+export interface CatalogMetric {
+  key: string;
+  name?: string;
+  label: string;
+  category: string;
+  unit: string;
+  source: MetricSource;
+}
+
+export interface CatalogGroup {
+  category: string;
+  builtin: boolean;
+  metrics: CatalogMetric[];
+}
+
+export interface MetricCatalog {
+  groups: CatalogGroup[];
+  storeAvailable: boolean;
+}
+
+export interface MetricValueRow {
+  state: string;
+  district: string;
+  value: number;
+}
+
+export interface MetricValues {
+  key: string;
+  districts: MetricValueRow[];
+}
+
+// ── area scorecard ───────────────────────────────────────────────────────────
+export type ScorecardLevel = 'nation' | 'state' | 'district';
+export type Benchmark = 'nation' | 'region' | 'state';
+
+export interface ScorecardMetricValues {
+  value: number | null;
+  nation: number | null;
+  region: number | null;
+  state: number | null;
+}
+
+export interface Scorecard {
+  area: {
+    level: ScorecardLevel;
+    name: string;
+    state: string | null;
+    district: string | null;
+    region: string | null;
+    population: number;
+    facilities: number;
+    districtCount: number;
+  };
+  benchmarks: Record<Benchmark, boolean>;
+  metrics: Record<string, ScorecardMetricValues>;
 }
 
 export interface EvidenceItem {
@@ -139,6 +241,16 @@ export const api = {
   stats: () => getJSON<Stats>('/api/stats'),
   capabilities: () => getJSON<Capability[]>('/api/capabilities'),
   regions: () => getJSON<RegionState[]>('/api/regions'),
+  mapGeography: (capability: string) =>
+    getJSON<MapGeography>(`/api/map/geography?capability=${encodeURIComponent(capability)}`),
+  metricCatalog: () => getJSON<MetricCatalog>('/api/metrics/catalog'),
+  metricValues: (key: string) => getJSON<MetricValues>(`/api/metrics/values?key=${encodeURIComponent(key)}`),
+  scorecard: (params: { level: ScorecardLevel; state?: string; district?: string }) => {
+    const qs = new URLSearchParams({ level: params.level });
+    if (params.state) qs.set('state', params.state);
+    if (params.district) qs.set('district', params.district);
+    return getJSON<Scorecard>(`/api/scorecard?${qs.toString()}`);
+  },
   facilities: (params: {
     capability: string;
     state?: string;
@@ -156,6 +268,8 @@ export const api = {
     if (params.limit) qs.set('limit', String(params.limit));
     return getJSON<FacilitiesResponse>(`/api/facilities?${qs.toString()}`);
   },
+  facilitySearch: (q?: string) =>
+    getJSON<FacilitySearchResult[]>(`/api/facilities/search${q ? `?q=${encodeURIComponent(q)}` : ''}`),
   facility: (id: string) => getJSON<FacilityDetail>(`/api/facilities/${encodeURIComponent(id)}`),
   overrides: () => getJSON<OverrideRecord[]>('/api/overrides'),
   saveOverride: (body: { facilityId: string; capability: string; overrideSignal: TrustSignal; note?: string }) =>
@@ -195,7 +309,13 @@ export const SIGNAL_META: Record<TrustSignal, { label: string; short: string; to
 };
 
 export function formatNumber(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
+  if (n >= 1_000_000) {
+    const v = n / 1_000_000;
+    return `${v % 1 === 0 ? v.toFixed(0) : v.toFixed(1)}m`;
+  }
+  if (n >= 1_000) {
+    const v = n / 1_000;
+    return `${v % 1 === 0 ? v.toFixed(0) : v.toFixed(1)}k`;
+  }
   return `${n}`;
 }

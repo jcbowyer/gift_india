@@ -30,6 +30,7 @@ import {
   type FacilityDetail,
   type TrustSignal,
   type Stats,
+  formatNumber,
 } from '../lib/api';
 import { SignalBadge, TrustScoreDial, EvidenceTally, CapabilityEvidence } from '../components/trust';
 
@@ -213,7 +214,7 @@ export function TrustDeskPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div className="space-y-1">
-        <h2 className="text-2xl font-bold text-foreground">Facility Trust Desk</h2>
+        <h2 className="text-2xl font-bold text-foreground">Governance, Integrity, & Facility Trust Desk</h2>
         <p className="text-muted-foreground">
           Pick a capability and region. Facilities are ranked by how well their claim is backed by evidence —
           expand any facility to read the citations and override the assessment.
@@ -222,10 +223,10 @@ export function TrustDeskPage() {
 
       {stats && (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <StatPill label="Facilities profiled" value={stats.facilities.toLocaleString()} />
-          <StatPill label="Capability claims assessed" value={stats.assessed_claims.toLocaleString()} />
-          <StatPill label="Strong-evidence signals" value={stats.strong.toLocaleString()} />
-          <StatPill label="Citations on record" value={stats.citations.toLocaleString()} />
+          <StatPill label="Facilities profiled" value={formatNumber(stats.facilities)} />
+          <StatPill label="Capability claims assessed" value={formatNumber(stats.assessed_claims)} />
+          <StatPill label="Strong-evidence signals" value={formatNumber(stats.strong)} />
+          <StatPill label="Citations on record" value={formatNumber(stats.citations)} />
         </div>
       )}
 

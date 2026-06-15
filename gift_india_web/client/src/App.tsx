@@ -11,6 +11,8 @@ import {
 } from '@databricks/appkit-ui/react';
 import { Menu, ShieldCheck } from 'lucide-react';
 import { TrustDeskPage } from './pages/TrustDeskPage';
+import { MapPage } from './pages/MapPage';
+import { ScorecardPage } from './pages/ScorecardPage';
 import { FacilityPage } from './pages/FacilityPage';
 import { ReviewsPage } from './pages/ReviewsPage';
 import { api } from './lib/api';
@@ -37,6 +39,12 @@ function NavLinks({ className, linkClass, onClick }: { className?: string; linkC
       <NavLink to="/" end className={linkClass} onClick={onClick}>
         Trust Desk
       </NavLink>
+      <NavLink to="/navigator" className={linkClass} onClick={onClick}>
+        Navigator
+      </NavLink>
+      <NavLink to="/scorecard" className={linkClass} onClick={onClick}>
+        Scorecard
+      </NavLink>
       <NavLink to="/reviews" className={linkClass} onClick={onClick}>
         My Reviews
       </NavLink>
@@ -60,9 +68,10 @@ function Layout() {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <ShieldCheck className="h-5 w-5" />
           </span>
-          <div className="leading-tight">
-            <span className="block text-base font-semibold text-foreground">Facility Trust Desk</span>
-            <span className="block text-[11px] text-muted-foreground">GIFT India · Can this facility actually do what it claims?</span>
+          <div className="leading-tight max-w-[11rem] sm:max-w-none">
+            <span className="block text-xs sm:text-sm font-semibold text-foreground leading-snug">
+              Governance, Integrity, & Facility Trust Desk
+            </span>
           </div>
         </div>
         <NavLinks className="hidden md:flex gap-1 ml-4" linkClass={navLinkClass} />
@@ -76,7 +85,7 @@ function Layout() {
               </Button>
               <SheetContent side="left">
                 <SheetHeader>
-                  <SheetTitle>Facility Trust Desk</SheetTitle>
+                  <SheetTitle>Governance, Integrity, & Facility Trust Desk</SheetTitle>
                 </SheetHeader>
                 <NavLinks className="flex flex-col gap-1 mt-4" linkClass={mobileNavLinkClass} onClick={() => setMobileNavOpen(false)} />
               </SheetContent>
@@ -101,6 +110,8 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: '/', element: <TrustDeskPage /> },
+      { path: '/navigator', element: <MapPage /> },
+      { path: '/scorecard', element: <ScorecardPage /> },
       { path: '/facility/:id', element: <FacilityPage /> },
       { path: '/reviews', element: <ReviewsPage /> },
     ],

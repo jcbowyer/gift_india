@@ -1,4 +1,4 @@
-# dbt connection profile for gift_india India.
+# dbt connection profile for Governance, Integrity, & Facility Trust Desk.
 #
 # Run dbt from this directory with this profile:
 #   cd gift_india_dbt && DBT_PROFILES_DIR=. dbt build

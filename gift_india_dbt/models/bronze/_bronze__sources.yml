@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: bronze
     description: >-
-      Raw landing tables for gift_india India. The Python loader
+      Raw landing tables for Governance, Integrity, & Facility Trust Desk. The Python loader
       (`gift_india_api/src/load_db.py`) writes the governed / synthetic facility
       and district records here verbatim; dbt promotes them through silver and
       gold. Defaults to the `bronze` schema where the loader writes (override

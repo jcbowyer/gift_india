@@ -1,1 +1,1 @@
-"""gift_india India — Virtue Foundation hackathon demo package."""
+"""Governance, Integrity, & Facility Trust Desk — Virtue Foundation hackathon demo package."""

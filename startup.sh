@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
-# Start gift_india India locally — the AppKit web app (React + Express) on live
+# Start Governance, Integrity, & Facility Trust Desk locally — the AppKit web app (React + Express) on live
 # Lakebase Postgres. Usage:  ./startup.sh
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WEB_DIR="$ROOT_DIR/gift_india_web"
-PROFILE="${DATABRICKS_CONFIG_PROFILE:-gift-india}"
-HOST="https://dbc-0be3157e-0574.cloud.databricks.com"
+PROFILE="${DATABRICKS_CONFIG_PROFILE:-gift-india-mb}"
+HOST="https://dbc-0951416d-6d0e.cloud.databricks.com"
 
-echo "▶ gift_india India — local startup"
+# AppKit's dev server resolves the workspace via this profile — export it so the
+# `npm run dev` child process inherits it (otherwise DATABRICKS_HOST is unset).
+export DATABRICKS_CONFIG_PROFILE="$PROFILE"
+export DATABRICKS_HOST="$HOST"
+
+echo "▶ Governance, Integrity, & Facility Trust Desk — local startup"
 
 # 1. The web app reads live Lakebase via this Databricks CLI profile.
 if ! command -v databricks >/dev/null 2>&1; then

@@ -1,4 +1,4 @@
-"""Dataset generation / loading for gift_india India.
+"""Dataset generation / loading for Governance, Integrity, & Facility Trust Desk.
 
 For the hackathon demo we synthesize a realistic ~10K-record geotagged facility
 dataset across real Indian districts. The generation is deterministic (fixed seed)

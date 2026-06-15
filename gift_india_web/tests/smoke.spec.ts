@@ -4,7 +4,8 @@ import { join } from 'node:path';
 
 // ── Page expectations ───────────────────────────────────────────────────────
 const PAGES = [
-  { navLabel: 'Trust Desk', path: '/', heading: 'Facility Trust Desk' },
+  { navLabel: 'Trust Desk', path: '/', heading: 'Governance, Integrity, & Facility Trust Desk' },
+  { navLabel: 'Navigator', path: '/navigator', heading: 'Facility Navigator' },
   { navLabel: 'My Reviews', path: '/reviews', heading: 'My reviews' },
 ] as const;
 
@@ -19,7 +20,7 @@ let failedRequests: string[] = [];
 test('smoke test - app loads and shows navigation', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByRole('heading', { name: 'Facility Trust Desk' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Governance, Integrity, & Facility Trust Desk' })).toBeVisible();
   for (const p of PAGES) {
     await expect(page.getByRole('link', { name: p.navLabel })).toBeVisible();
   }

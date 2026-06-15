@@ -14,7 +14,7 @@ loader logs in as the shared ``admins`` group role so the ``gift_india`` catalog
 its schema, and tables are all owned by ``admins``::
 
     python -m src.load_db --target lakebase \\
-        --endpoint projects/carenavigator/branches/production/endpoints/primary \\
+        --endpoint projects/gift_india/branches/production/endpoints/primary \\
         --profile <profile>
 """
 from __future__ import annotations
