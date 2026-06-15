@@ -55,3 +55,32 @@ CREATE INDEX IF NOT EXISTS facilities_district_idx
     ON bronze.facilities (district, state);
 CREATE INDEX IF NOT EXISTS facilities_offers_surgery_idx
     ON bronze.facilities (offers_surgery);
+
+-- Raw crawl payloads from each facility's official website (src/scraper.py),
+-- landed by src/load_crawl.py. This is the append-target bronze table that keeps
+-- source-native fidelity: the verbatim `raw_html` plus boilerplate-stripped
+-- `raw_text` are the replayable input to the silver extraction step.
+--
+-- `facility_id` is a PROVISIONAL link (the scrape can come from an ad-hoc URL
+-- list), so there is intentionally NO foreign key to bronze.facilities. Failed
+-- attempts are landed too (http_status/raw_* NULL) to preserve crawl provenance.
+CREATE TABLE IF NOT EXISTS bronze.facility_web_crawl (
+    crawl_id     text        PRIMARY KEY,  -- sha256(website_url + crawled_at)
+    facility_id  text,
+    name         text,
+    website_url  text        NOT NULL,
+    final_url    text,
+    crawled_at   timestamptz NOT NULL,
+    status       text        NOT NULL,     -- ok | http_error | fetch_error
+    http_status  integer,
+    content_type text,
+    title        text,
+    raw_html     text,
+    raw_text     text,
+    error        text
+);
+
+CREATE INDEX IF NOT EXISTS facility_web_crawl_facility_idx
+    ON bronze.facility_web_crawl (facility_id);
+CREATE INDEX IF NOT EXISTS facility_web_crawl_crawled_at_idx
+    ON bronze.facility_web_crawl (crawled_at);

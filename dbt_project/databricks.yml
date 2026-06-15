@@ -6,7 +6,7 @@ include:
 
 variables:
   catalog:
-    description: Managed catalog that holds the medallion schemas (gift_india_bronze/_silver/_gold).
+    description: Managed catalog that holds the medallion schemas (bronze_gift_india/silver_gift_india/gold_gift_india).
     default: workspace
   schema:
     description: Base schema for the generated dbt profile (per-layer schemas override it).

@@ -20,26 +20,28 @@ clean-targets:
 
 # Medallion architecture — one schema per layer under the configured catalog.
 # generate_schema_name (macros/) returns these verbatim (no target-schema prefix),
-# so models land in <catalog>.gift_india_bronze / _silver / _gold.
+# so models land in <catalog>.bronze_gift_india / silver_gift_india / gold_gift_india.
+# Only the gold layer is synced out to Lakebase (Delta is the source of truth);
+# bronze and silver live in the lakehouse only.
 models:
   gift_india:
     +persist_docs:
       relation: true
       columns: true
     bronze:
-      +schema: gift_india_bronze
+      +schema: bronze_gift_india
       +materialized: table
     silver:
-      +schema: gift_india_silver
+      +schema: silver_gift_india
       +materialized: table
     gold:
-      +schema: gift_india_gold
+      +schema: gold_gift_india
       +materialized: table
 
 # Reference data (friendly metric labels + categories) lands alongside silver.
 seeds:
   gift_india:
-    +schema: gift_india_silver
+    +schema: silver_gift_india
     metric_definitions:
       +column_types:
         metric_name: string
