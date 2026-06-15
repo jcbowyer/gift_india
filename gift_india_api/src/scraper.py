@@ -10,13 +10,17 @@ Synthetic demo facilities have an empty ``website_url`` and are skipped — ther
 are no real sites to fetch. Populate ``website_url`` (from the governed Virtue
 Foundation dataset or via ``--input``) to actually scrape.
 
-Output layout::
+Output layout — a human-readable hierarchy keyed by geography then facility::
 
     data/scraped/
-    ├── manifest.json              # one record per facility attempted
-    └── <facility_id>/
-        ├── page.html             # raw HTML snapshot
-        └── extracted.json        # structured fields parsed from the page
+    ├── manifest.json                          # one record per facility attempted
+    └── <state>/<district>/<facility-name>-<facility_id>/
+        ├── page.html                          # raw HTML snapshot
+        └── extracted.json                     # structured fields parsed from the page
+
+e.g. ``data/scraped/tamil-nadu/madurai/aravind-eye-hospital-VF-000123/``. Folder
+names are slugified (lowercase, hyphenated) and the leaf keeps the facility id as
+a suffix so it stays unique even when two facilities share a name.
 
 Examples
 --------
@@ -75,6 +79,8 @@ class ScrapeTarget:
     facility_id: str
     name: str
     url: str
+    state: str = ""
+    district: str = ""
 
 
 @dataclass
@@ -85,6 +91,8 @@ class ScrapeRecord:
     name: str
     url: str
     status: str  # "ok" | "http_error" | "fetch_error" | "skipped"
+    state: str = ""
+    district: str = ""
     fetched_at: str | None = None
     http_status: int | None = None
     final_url: str | None = None
@@ -157,6 +165,8 @@ def targets_from_facilities() -> list[ScrapeTarget]:
                     facility_id=str(getattr(row, "facility_id", "")) or url,
                     name=str(getattr(row, "name", "")),
                     url=url,
+                    state=str(getattr(row, "state", "") or ""),
+                    district=str(getattr(row, "district", "") or ""),
                 )
             )
     return targets
@@ -172,6 +182,8 @@ def targets_from_input(path: Path) -> list[ScrapeTarget]:
             url_field = fields.get("website_url") or fields.get("url")
             id_field = fields.get("facility_id")
             name_field = fields.get("name")
+            state_field = fields.get("state")
+            district_field = fields.get("district")
             if not url_field:
                 raise ValueError(
                     f"{path} needs a `website_url` or `url` column "
@@ -186,6 +198,8 @@ def targets_from_input(path: Path) -> list[ScrapeTarget]:
                         facility_id=(row.get(id_field) if id_field else "") or f"row-{i}",
                         name=(row.get(name_field) if name_field else "") or "",
                         url=url,
+                        state=(row.get(state_field) if state_field else "") or "",
+                        district=(row.get(district_field) if district_field else "") or "",
                     )
                 )
     else:  # plain text, one URL per line
@@ -316,9 +330,20 @@ def scrape_one(
     force: bool,
 ) -> ScrapeRecord:
     record = ScrapeRecord(
-        facility_id=target.facility_id, name=target.name, url=target.url, status="ok"
+        facility_id=target.facility_id,
+        name=target.name,
+        url=target.url,
+        status="ok",
+        state=target.state,
+        district=target.district,
     )
-    facility_dir = out_dir / _safe_slug(target.facility_id)
+    facility_dir = facility_subdir(
+        out_dir,
+        facility_id=target.facility_id,
+        name=target.name,
+        state=target.state,
+        district=target.district,
+    )
     html_path = facility_dir / "page.html"
     extracted_path = facility_dir / "extracted.json"
 
@@ -387,6 +412,36 @@ def scrape_one(
 def _safe_slug(value: str) -> str:
     slug = re.sub(r"[^A-Za-z0-9._\-]+", "_", value).strip("_")
     return slug or "facility"
+
+
+def _human_slug(value: str | None, *, max_len: int = 60) -> str:
+    """Lowercase, hyphenated, filesystem-safe slug (e.g. 'Tamil Nadu' → 'tamil-nadu')."""
+    slug = re.sub(r"[^a-z0-9]+", "-", (value or "").strip().lower()).strip("-")
+    if len(slug) > max_len:
+        slug = slug[:max_len].rstrip("-")
+    return slug
+
+
+def facility_subdir(
+    out_dir: Path,
+    *,
+    facility_id: str,
+    name: str = "",
+    state: str = "",
+    district: str = "",
+) -> Path:
+    """Hierarchical, human-readable snapshot dir: ``<state>/<district>/<name>-<id>``.
+
+    Geography and name are slugified for readability; the facility id is appended
+    as a suffix so the leaf folder stays unique even when names collide. Missing
+    geography falls back to ``unknown-state`` / ``unknown-district``.
+    """
+    state_slug = _human_slug(state) or "unknown-state"
+    district_slug = _human_slug(district) or "unknown-district"
+    name_slug = _human_slug(name)
+    id_suffix = _safe_slug(str(facility_id)) or "facility"
+    leaf = f"{name_slug}-{id_suffix}" if name_slug else id_suffix
+    return out_dir / state_slug / district_slug / leaf
 
 
 # --------------------------------------------------------------- scrape all

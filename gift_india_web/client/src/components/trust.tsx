@@ -1,0 +1,257 @@
+import { useState } from 'react';
+import {
+  Badge,
+  Button,
+  Textarea,
+  ToggleGroup,
+  ToggleGroupItem,
+  Label,
+} from '@databricks/appkit-ui/react';
+import { CheckCircle2, XCircle, ExternalLink, PencilLine, Check } from 'lucide-react';
+import {
+  SIGNAL_META,
+  type TrustSignal,
+  type CapabilityDetail,
+  type EvidenceItem,
+} from '../lib/api';
+
+export function SignalBadge({ signal, className = '' }: { signal: TrustSignal; className?: string }) {
+  const meta = SIGNAL_META[signal];
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${meta.tone} ${className}`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
+      {meta.label}
+    </span>
+  );
+}
+
+export function TrustScoreDial({ score, signal }: { score: number; signal: TrustSignal }) {
+  const pct = Math.round(score * 100);
+  const meta = SIGNAL_META[signal];
+  const ring =
+    signal === 'strong'
+      ? 'text-emerald-500'
+      : signal === 'partial'
+        ? 'text-amber-500'
+        : signal === 'weak_suspicious'
+          ? 'text-red-500'
+          : 'text-muted-foreground/40';
+  return (
+    <div className="flex flex-col items-center justify-center min-w-[72px]">
+      <div className="relative h-12 w-12">
+        <svg viewBox="0 0 36 36" className="h-12 w-12 -rotate-90">
+          <circle cx="18" cy="18" r="15.5" fill="none" className="stroke-muted" strokeWidth="3" />
+          <circle
+            cx="18"
+            cy="18"
+            r="15.5"
+            fill="none"
+            className={`${ring} stroke-current`}
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray={`${(pct / 100) * 97.4} 97.4`}
+          />
+        </svg>
+        <span className="absolute inset-0 flex items-center justify-center text-sm font-bold tabular-nums">
+          {pct}
+        </span>
+      </div>
+      <span className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">{meta.short}</span>
+    </div>
+  );
+}
+
+function EvidenceRow({ e }: { e: EvidenceItem }) {
+  const supports = e.stance === 'supports';
+  return (
+    <li className="flex gap-2.5 rounded-md border bg-card p-3">
+      <span className={`mt-0.5 ${supports ? 'text-emerald-600' : 'text-red-600'}`}>
+        {supports ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+      </span>
+      <div className="min-w-0 flex-1 space-y-1">
+        <p className="text-sm text-foreground">{e.snippet}</p>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground/70">{e.sourceLabel}</span>
+          <span>reliability {Math.round(e.weight * 100)}%</span>
+          {e.observedAt && <span>{e.observedAt}</span>}
+          {e.sourceUrl && (
+            <a
+              href={e.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-primary hover:underline"
+            >
+              source <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+        </div>
+      </div>
+    </li>
+  );
+}
+
+const SIGNAL_OPTIONS: TrustSignal[] = ['strong', 'partial', 'weak_suspicious', 'no_claim'];
+
+/**
+ * Citations + human override control for a single (facility, capability).
+ * Used both inline in the ranked list and on the facility detail page.
+ */
+export function CapabilityEvidence({
+  cap,
+  facilityId,
+  onSaved,
+}: {
+  cap: CapabilityDetail;
+  facilityId: string;
+  onSaved?: (signal: TrustSignal, note: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [signal, setSignal] = useState<TrustSignal>(cap.overrideSignal ?? cap.trustSignal);
+  const [note, setNote] = useState(cap.overrideNote ?? '');
+  const [saving, setSaving] = useState(false);
+  const [savedSignal, setSavedSignal] = useState<TrustSignal | null>(cap.overrideSignal);
+  const [error, setError] = useState<string | null>(null);
+
+  const save = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const { api } = await import('../lib/api');
+      await api.saveOverride({ facilityId, capability: cap.key, overrideSignal: signal, note: note.trim() || undefined });
+      setSavedSignal(signal);
+      setEditing(false);
+      onSaved?.(signal, note.trim());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save review');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const support = cap.evidence.filter((e) => e.stance === 'supports');
+  const contra = cap.evidence.filter((e) => e.stance === 'contradicts');
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">{cap.summary}</p>
+
+      {savedSignal && (
+        <div className="flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+          <PencilLine className="h-4 w-4 text-primary" />
+          <span>
+            Planner override: <SignalBadge signal={savedSignal} className="ml-1 align-middle" />
+          </span>
+        </div>
+      )}
+
+      {cap.evidence.length === 0 ? (
+        <p className="text-sm text-muted-foreground italic">No citations on record for this capability.</p>
+      ) : (
+        <div className="space-y-3">
+          {support.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Supporting evidence ({support.length})
+              </div>
+              <ul className="space-y-2">
+                {support.map((e) => (
+                  <EvidenceRow key={e.evidenceId} e={e} />
+                ))}
+              </ul>
+            </div>
+          )}
+          {contra.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-red-600">
+                Contradicting evidence ({contra.length})
+              </div>
+              <ul className="space-y-2">
+                {contra.map((e) => (
+                  <EvidenceRow key={e.evidenceId} e={e} />
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="pt-1">
+        {!editing ? (
+          <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+            <PencilLine className="h-4 w-4" /> {savedSignal ? 'Edit review' : 'Override assessment'}
+          </Button>
+        ) : (
+          <div className="space-y-3 rounded-md border bg-muted/30 p-3">
+            <div className="space-y-1.5">
+              <Label>Set trust signal</Label>
+              <ToggleGroup
+                type="single"
+                value={signal}
+                onValueChange={(v) => v && setSignal(v as TrustSignal)}
+                variant="outline"
+                className="flex-wrap justify-start"
+              >
+                {SIGNAL_OPTIONS.map((s) => (
+                  <ToggleGroupItem key={s} value={s} className="text-xs">
+                    {SIGNAL_META[s].short}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`note-${cap.key}`}>Reviewer note</Label>
+              <Textarea
+                id={`note-${cap.key}`}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Why are you overriding? e.g. confirmed by phone, registry updated, inspection pending…"
+                rows={2}
+              />
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => void save()} disabled={saving}>
+                <Check className="h-4 w-4" /> {saving ? 'Saving…' : 'Save review'}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setEditing(false)} disabled={saving}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function EvidenceTally({
+  supporting,
+  contradicting,
+}: {
+  supporting: number;
+  contradicting: number;
+}) {
+  return (
+    <div className="flex items-center gap-3 text-xs">
+      <span className="inline-flex items-center gap-1 text-emerald-700">
+        <CheckCircle2 className="h-3.5 w-3.5" /> {supporting} supporting
+      </span>
+      {contradicting > 0 && (
+        <span className="inline-flex items-center gap-1 text-red-700">
+          <XCircle className="h-3.5 w-3.5" /> {contradicting} contradicting
+        </span>
+      )}
+    </div>
+  );
+}
+
+export function CapabilityChipBadge({ signal, count }: { signal: TrustSignal; count: number }) {
+  if (count === 0) return null;
+  return (
+    <Badge variant="outline" className="gap-1 text-[10px]">
+      <span className={`h-1.5 w-1.5 rounded-full ${SIGNAL_META[signal].dot}`} /> {count}
+    </Badge>
+  );
+}

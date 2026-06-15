@@ -8,9 +8,10 @@
 #   make db-down        stop local Postgres (keeps data)
 #   make db-reset       stop + wipe the data volume, then start fresh
 #   make web            run the gift_india_web app locally (npm run dev)
+#   make crawl          scrape facility websites + land them in bronze
 #   make publish        publish the dataset to Lakebase (set ENDPOINT, PROFILE)
 
-.PHONY: db-up db-down db-reset load data pipeline web scrape publish dbt dbt-test dbt-docs dbt-databricks
+.PHONY: db-up db-down db-reset load data pipeline web scrape load-crawl crawl publish dbt dbt-test dbt-docs dbt-databricks
 
 db-up:
 	docker compose up -d
@@ -41,6 +42,15 @@ web:
 # Usage: make scrape [INPUT=data/facility_urls.csv] [LIMIT=20]
 scrape:
 	cd gift_india_api && python -m src.scraper $(if $(INPUT),--input $(INPUT),) $(if $(LIMIT),--limit $(LIMIT),)
+
+# Land the scraped snapshots into bronze.facility_web_crawl (append, idempotent).
+# Usage: make load-crawl [SOURCE=data/scraped]
+load-crawl:
+	cd gift_india_api && python -m src.load_crawl $(if $(SOURCE),--source $(SOURCE),)
+
+# Scrape the official websites AND land them in bronze in one step.
+# Usage: make crawl [INPUT=data/facility_urls.csv] [LIMIT=20]
+crawl: scrape load-crawl
 
 # Usage: make publish ENDPOINT=projects/<id>/branches/production/endpoints/<ep> PROFILE=<profile>
 # Lands raw data in Lakebase `bronze`. Build silver/gold against Lakebase after

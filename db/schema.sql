@@ -2,7 +2,7 @@
 --
 -- This is the BRONZE layer of the medallion: raw, append-target facility and
 -- district records, kept out of `public` so `public` is left to the managed
--- Postgres / Lakebase (Neon) system objects only. dbt promotes these through
+-- Postgres / Lakebase system objects only. dbt promotes these through
 -- `silver.*` and serves them from `gold.*`; the app reads GOLD, never bronze.
 --
 -- This DDL is intentionally Postgres-portable so the SAME script runs against:

@@ -1,16 +1,45 @@
-# gift_india India
+# gift_india India — Facility Trust Desk
 
-> A Virtue Foundation hackathon project — a **navigator copilot** that recommends
-> where to place visiting surgical teams across India to close the surgical-care gap.
+> A Virtue Foundation hackathon project (**Track 1: Facility Trust Desk**) that
+> answers one question: **can this facility actually do what it claims?**
 
-An estimated **143 million people** lack timely access to safe surgery. Virtue
-Foundation maintains geotagged healthcare data describing *where care actually
-lives today*. The hard problem: **match the right surgical team to the right
-location based on specialty and need.**
+Virtue Foundation maintains web-scraped, geotagged healthcare data describing
+*where care actually lives today*. But a facility *listing* a capability — ICU,
+maternity, emergency, oncology, trauma, NICU — is not the same as that capability
+being **real**. The hard problem: **separate trustworthy capability claims from
+unverified or contradicted ones**, with the evidence attached.
 
-GIFT India turns that data into action. Describe a team in plain
-language — _"3-surgeon cataract team, 5 days, willing to travel rural"_ — and the
-copilot ranks the **medical deserts** where that team will help the most people.
+GIFT India's Facility Trust Desk does exactly that. A planner picks a
+**capability** and a **region**, and sees facilities ranked by how strongly their
+claim is backed by evidence. Every facility carries a **trust signal** —
+`strong`, `partial`, `weak / suspicious`, or `no claim` — *computed from the
+citations behind it* (JCI Gold Seal accreditation, state registries, PMJAY
+empanelment, the facility's own website, directories, news, patient reports,
+inspections). The planner can expand any facility to read those citations and **override the
+assessment with a reviewer note**.
+
+## Evidence focus — JCI as the global gold standard
+
+This repo focuses on **one authoritative accreditation signal** as the backbone of
+the trust taxonomy:
+
+### 1. The global "Gold Standard": JCI accreditation
+
+The [Joint Commission International (JCI)](https://www.jointcommissioninternational.org/)
+provides the most widely recognized international scoring system for hospital
+capabilities.
+
+- **Taxonomy use:** A facility holding the **Gold Seal of Approval** maps directly to
+  the **`strong` evidence** signal for specific audited services — trauma, emergency
+  care, ICU, and other capabilities covered by the accreditation scope.
+- **Structure:** JCI's **8th Edition** standards are divided into five main sections,
+  including **Patient-Centered Care** and **Healthcare Organization Management** —
+  giving a structured, auditable basis for capability claims rather than self-reported
+  website copy alone.
+
+Other citations (state registries, PMJAY empanelment, facility websites, directories,
+news, patient reports, inspections) still feed the trust engine; **JCI accreditation
+is the primary authoritative corroboration** we optimize the desk around.
 
 ## What G.I.F.T. stands for
 
@@ -36,14 +65,21 @@ databricks auth login --profile gift-india --host https://dbc-0be3157e-0574.clou
 app at http://localhost:8000 (live Lakebase data). For manual steps see
 [Quickstart](#quickstart); to deploy see [Publish to Lakebase](#publish-to-lakebase).
 
-## The four hackathon tracks
+## The four hackathon tracks — we built Track 1
 
-| Track | What it does | Status here |
-|-------|--------------|-------------|
-| **Virtual Copilot / Navigator** | Chatbot that recommends where to place a surgical team | ✅ Demo (this repo) |
-| **Medical Desert Planner** | Map + analytics of underserved, high-population areas | ✅ Included (map tab) |
-| **Data Readiness Desk** | Entity-resolution pipeline producing the ~10K-record dataset | ✅ Seeded by the synthetic generator |
-| **(open)** | — | — |
+This repo focuses on **Track 1: Facility Trust Desk**.
+
+| Track | Question | Status here |
+|-------|----------|-------------|
+| **1 · Facility Trust Desk** | Can this facility actually do what it claims? | ✅ **Built (this repo)** |
+| 2 · Medical Desert Planner | Where are the highest-risk gaps in care? | — not built |
+| 3 · Referral Copilot | Where should a patient or coordinator actually go? | — not built |
+| 4 · Data Readiness Desk | What needs fixing before this dataset is trusted? | — not built |
+
+**Track 1 minimum workflow — implemented end to end:** a planner selects a
+**capability** and **region** → sees **ranked facilities** (by evidence strength)
+→ **expands a facility to inspect its citations** → **overrides the assessment
+with a note** (saved to *My Reviews*).
 
 ## Why India
 
@@ -106,10 +142,17 @@ npm run dev          # or, from the repo root: make web
 `npm run dev` reads `gift_india_web/.env` (Databricks workspace + Lakebase endpoint)
 and serves the app at the URL it prints (defaults to http://localhost:8000, and
 falls back to the next free port). The Express server exposes `/api/*` routes
-(`/api/stats`, `/api/specialties`, `/api/districts`, `/api/recommend`, `/api/plans`)
-that query the **gold serving tables** (`gold.facilities` / `gold.geography`) in
-Lakebase. Serving reads gold only — the raw landing tables live in `bronze`, and
-`public` is left to the managed Postgres / Lakebase (Neon) system objects.
+(`/api/capabilities`, `/api/regions`, `/api/facilities`, `/api/facilities/:id`,
+`/api/overrides`, `/api/stats`) that read **gold serving tables only** on
+Lakebase Postgres:
+
+- `gold.facilities` / `gold.geography` — facility + district records
+- `gold.facility_capability_assessments` — per-facility trust signals (built by dbt)
+- `gold.capability_evidence` — citations quoting real facility-record fields
+
+Planner overrides are stored in `app.capability_overrides`. **Run `make dbt`**
+(after `make data` or publish) so the capability gold tables exist — the app
+does not seed or fabricate data.
 
 ## Data loaders & local Postgres
 
@@ -133,6 +176,32 @@ the dataset before loading.
 > Don't have Docker? Point `GIFT_INDIA_DB_URL` at any Postgres and run
 > `cd gift_india_api && python -m src.load_db --dsn "$GIFT_INDIA_DB_URL"`, then
 > `make dbt` to build the silver/gold layers.
+
+### Crawling facility websites into bronze
+
+The governed dataset is **web-scraped**: `src/scraper.py` visits each facility's
+official `website_url` and snapshots it under `data/scraped/` in a human-readable
+hierarchy keyed by geography then facility —
+`data/scraped/<state>/<district>/<facility-name>-<facility_id>/` (raw HTML +
+extracted JSON, plus a top-level `manifest.json`). `src/load_crawl.py` then lands
+those snapshots in the raw `bronze.facility_web_crawl` table — the replayable
+input to the silver extraction step.
+
+```bash
+make crawl                       # scrape every facility with a website_url + land in bronze
+make scrape LIMIT=20             # just scrape (snapshots to data/scraped/)
+make load-crawl                  # just land an existing data/scraped/ into bronze
+make scrape INPUT=data/urls.csv  # scrape an ad-hoc URL list (website_url/url column, or .txt)
+```
+
+`load_crawl` appends idempotently — `crawl_id` is a hash of `website_url` +
+`crawled_at`, so re-loading the same manifest inserts nothing, while a fresh
+scrape appends new crawl history. It loads to Lakebase too
+(`python -m src.load_crawl --target lakebase --endpoint … --profile …`).
+
+> The synthetic demo facilities have an empty `website_url`, so `make scrape`
+> finds nothing to fetch until you populate it from the governed Virtue
+> Foundation dataset (or pass `INPUT=`).
 
 ## Publish to Lakebase
 
@@ -175,16 +244,18 @@ service principal must be a member of the `admins` group to read the catalog.
 
 ## How it works
 
-1. **Data** (`gift_india_api/src/data.py`) — generates/loads ~10K geotagged facility
-   records and a district table (population, existing surgical capacity by specialty);
-   `load_db.py` loads them into local Postgres / Lakebase.
-2. **Engine** — the web server (`gift_india_web/server/routes/gift_india/routes.ts`)
-   scores each district's *unmet need* for a specialty directly in SQL over the gold
-   serving tables (`gold.geography` / `gold.facilities`), ranking candidates by
-   need × specialty gap × reach × accessibility.
-3. **Web app** (`gift_india_web`) — a Databricks AppKit app (React client + Express
-   server) with a navigator copilot, a ranked recommendation list, an interactive
-   medical-desert map, and saved placement plans, reading live data from Lakebase.
+1. **Data** — `gift_india_api` loads facility + district records into `bronze`;
+   `gift_india_dbt` promotes them to **`gold.facilities`** / **`gold.geography`**
+   and builds Track 1 tables **`gold.facility_capability_assessments`** +
+   **`gold.capability_evidence`** from structured facility fields (specialties,
+   type, beds, `match_confidence`, `website_url`). Citations quote those columns —
+   never fabricated prose.
+2. **Trust engine** — dbt SQL derives each facility's per-capability **trust
+   signal** and score from on-record evidence; low entity-match confidence flags
+   weak/suspicious claims.
+3. **Web app** (`gift_india_web`) — reads **`gold.*` only** (plus
+   `app.capability_overrides` for human reviews). The Trust Desk ranks facilities,
+   expands to show citations, and saves planner overrides.
 
 ## Two dbt projects (different warehouses, not duplicates)
 
@@ -214,18 +285,20 @@ make pipeline        # both of the above
 ```
 gift_india/
 ├── gift_india_web/         # Databricks AppKit app (React client + Express server)
-│   ├── client/             # React frontend (Navigator, Map, Plans pages)
+│   ├── client/             # React frontend (Trust Desk, Facility detail, My Reviews)
 │   ├── server/
 │   │   ├── server.ts       # Express entry (AppKit + Lakebase plugins)
-│   │   └── routes/gift_india/routes.ts  # /api/* routes + SQL scoring engine
+│   │   └── routes/gift_india/
+│   │       ├── routes.ts       # /api/* Trust Desk routes (reads gold.* only)
+│   │       └── capabilities.ts # capability catalog constants (matches dbt seed)
 │   ├── databricks.yml      # bundle: deploys the app + Lakebase resource
 │   ├── app.yaml            # Databricks App run command (npm run start)
 │   └── package.json        # dev / build / start scripts
 ├── gift_india_dbt/         # dbt (POSTGRES) serving medallion — what the app reads
 │   ├── models/silver/      # cleaned/typed facilities + geography (Lakebase bronze → silver)
-│   ├── models/gold/        # serving: gold.facilities + gold.geography linked by lat/lon
+│   ├── models/gold/        # facilities, geography, facility_capability_assessments, capability_evidence
 │   ├── macros/             # haversine_km, geography_id, schema naming
-│   └── seeds/              # state → state_code lookup
+│   └── seeds/              # state_codes + capabilities catalog
 ├── dbt_project/            # dbt (DATABRICKS) source medallion — DAB job on Databricks
 │   ├── databricks.yml      # Databricks Asset Bundle (scheduled dbt Job)
 │   └── models/             # VF Delta Share → bronze/silver/gold capability marts
@@ -233,7 +306,9 @@ gift_india/
 │   └── src/
 │       ├── data.py         # dataset generation + Postgres/Lakebase loaders
 │       ├── db.py           # connectivity (local Postgres + Lakebase creds)
-│       ├── load_db.py      # CLI: create schema + load (local | lakebase)
+│       ├── load_db.py      # CLI: create schema + load facilities/districts (local | lakebase)
+│       ├── scraper.py      # crawl facility website_url → data/scraped/ snapshots
+│       ├── load_crawl.py   # CLI: land data/scraped/ into bronze.facility_web_crawl
 │       ├── matching.py     # legacy scoring engine (now done in SQL by the web app)
 │       └── copilot.py      # natural-language request parsing
 ├── requirements.txt        # Python deps for the gift_india_api loaders

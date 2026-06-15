@@ -1,0 +1,7 @@
+capability,label,description
+icu,ICU,"Adult intensive care: ventilators, monitored beds, intensivist cover."
+maternity,Maternity,"Labour & delivery, including emergency C-section capability."
+emergency,Emergency,"24×7 casualty / emergency department with resuscitation."
+oncology,Oncology,"Cancer care: chemotherapy, and/or radiation or surgical oncology."
+trauma,Trauma,"Trauma & accident care: imaging, OT, blood bank, trauma surgery."
+nicu,NICU,"Neonatal intensive care for premature / critically ill newborns."

@@ -30,7 +30,7 @@
   "keywords": [],
   "author": "",
   "license": "Unlicensed",
-  "description": "gift_india India — recommend where to place visiting surgical teams, backed by Lakebase synced data",
+  "description": "GIFT India — Facility Trust Desk: evidence-backed capability trust signals for healthcare facilities, on Lakebase",
   "dependencies": {
     "@databricks/appkit": "0.38.1",
     "@databricks/appkit-ui": "0.38.1",

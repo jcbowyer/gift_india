@@ -130,3 +130,31 @@ models:
       - name: distance_from_centroid_km
         description: Great-circle km from the facility to its geography centroid.
         data_type: numeric
+
+  - name: facility_capability_assessments
+    description: >-
+      Track 1 serving table: one row per (facility, capability) with a trust
+      signal derived from structured gold.facilities fields only.
+    columns:
+      - name: facility_id
+        tests:
+          - not_null
+      - name: capability
+        tests:
+          - not_null
+
+  - name: capability_evidence
+    description: >-
+      Citations backing facility capability assessments. Snippets are built from
+      real facility-record column values — never fabricated prose.
+    columns:
+      - name: evidence_id
+        tests:
+          - unique
+          - not_null
+      - name: facility_id
+        tests:
+          - not_null
+      - name: capability
+        tests:
+          - not_null

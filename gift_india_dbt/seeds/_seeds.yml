@@ -17,3 +17,19 @@ seeds:
         tests:
           - not_null
           - unique
+
+  - name: capabilities
+    description: >-
+      Track 1 capability catalog (ICU, maternity, emergency, oncology, trauma,
+      NICU). Cross-joined with gold.facilities to build trust assessments.
+    columns:
+      - name: capability
+        tests:
+          - not_null
+          - unique
+      - name: label
+        tests:
+          - not_null
+      - name: description
+        tests:
+          - not_null
