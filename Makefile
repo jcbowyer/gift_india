@@ -77,8 +77,8 @@ dbt-docs:
 # authenticated (DATABRICKS_CONFIG_PROFILE, default `gift-india`; see startup.sh)
 # and the dbt-databricks toolchain (pip install -r dbt_project/requirements.txt).
 dbt-databricks:
-	cd dbt_project && DATABRICKS_CONFIG_PROFILE=$(or $(PROFILE),gift-india) dbt deps && \
-		DATABRICKS_CONFIG_PROFILE=$(or $(PROFILE),gift-india) dbt build
+	cd dbt_project && DATABRICKS_CONFIG_PROFILE=$(or $(PROFILE),gift-india-mb) dbt deps && \
+		DATABRICKS_CONFIG_PROFILE=$(or $(PROFILE),gift-india-mb) dbt build
 
 # Full transform across BOTH warehouses (the two medallions are independent
 # runtimes, so this just builds each):

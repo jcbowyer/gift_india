@@ -6,7 +6,7 @@
 # Defaults match the local docker-compose Postgres (see ../docker-compose.yml).
 # Override any value via the GIFT_INDIA_PG* environment variables — e.g. point
 # at Databricks Lakebase by exporting the host/user/password it injects.
-gift_india:
+gift_india_postgres:
   target: dev
   outputs:
     dev:

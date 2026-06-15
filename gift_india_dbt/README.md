@@ -1,4 +1,12 @@
-# gift_india_dbt — medallion transforms
+# gift_india_dbt (Postgres) — serving dbt medallion
+
+> **This is one of two dbt projects.** This one (`gift_india_dbt/`, dbt project
+> name `gift_india_postgres`, adapter **postgres**) is the **serving** medallion
+> the web app reads (`gold.facilities` / `gold.geography`). The sibling
+> [`../dbt_project/`](../dbt_project) (project name `gift_india_databricks`,
+> adapter **databricks**) is the **upstream** lakehouse medallion. They are a
+> pipeline — Databricks gold is synced to Lakebase, then this project serves it —
+> **not duplicates**. See the [repo README](../README.md) for the full architecture.
 
 dbt (Postgres adapter) implementation of the `bronze → silver → gold` medallion
 described in [`docs/architecture/medallion-and-metric-store.md`](../docs/architecture/medallion-and-metric-store.md).

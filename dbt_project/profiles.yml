@@ -1,4 +1,5 @@
-# Local dbt profile for the gift_india medallion project.
+# Local dbt profile for the gift_india Databricks (upstream) medallion project.
+# Matches `profile: gift_india_databricks` in dbt_project.yml.
 #
 # Authentication uses Databricks unified auth (the CLI config in
 # ~/.databrickscfg). Select the workspace profile with an env var, e.g.
@@ -8,7 +9,7 @@
 # When this project runs as a Databricks Jobs dbt task, the platform injects
 # its own generated profiles.yml from the task's warehouse_id/catalog/schema,
 # so this file is only used for local development.
-gift_india:
+gift_india_databricks:
   target: dev
   outputs:
     dev:
