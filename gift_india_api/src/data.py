@@ -249,7 +249,7 @@ def _lakebase_connection():
     return psycopg.connect(
         host=os.environ["PGHOST"],
         port=int(os.environ.get("PGPORT", "5432")),
-        dbname=os.environ.get("PGDATABASE", "databricks_postgres"),
+        dbname=os.environ.get("PGDATABASE", "gift_india"),
         user=os.environ["PGUSER"],
         password=token,
         sslmode=os.environ.get("PGSSLMODE", "require"),

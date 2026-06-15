@@ -103,8 +103,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--profile", help="Databricks CLI profile.")
     parser.add_argument("--user", help="Postgres role (defaults to Databricks user).")
     parser.add_argument(
-        "--database", default="databricks_postgres",
-        help="Lakebase database name (default: databricks_postgres).",
+        "--database", default="gift_india",
+        help="Lakebase database name (default: gift_india).",
     )
     parser.add_argument("--schema", default=db.DEFAULT_SCHEMA)
     parser.add_argument(

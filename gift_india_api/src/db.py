@@ -58,7 +58,7 @@ def database_url() -> str | None:
     if host:
         user = os.getenv("PGUSER", "")
         pwd = os.getenv("PGPASSWORD", "")
-        database = os.getenv("PGDATABASE", "databricks_postgres")
+        database = os.getenv("PGDATABASE", "gift_india")
         port = os.getenv("PGPORT", "5432")
         sslmode = os.getenv("PGSSLMODE", "require")
         auth = f"{user}:{pwd}@" if user else ""

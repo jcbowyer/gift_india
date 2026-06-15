@@ -103,16 +103,16 @@ short-lived OAuth credential via the Databricks CLI.
 
 ```bash
 make publish \
-  ENDPOINT=projects/gift_india/branches/production/endpoints/<endpoint_id> \
+  ENDPOINT=projects/gift-india/branches/production/endpoints/<endpoint_id> \
   PROFILE=<your-cli-profile>
 
 # equivalently:
 python -m src.load_db --target lakebase \
-  --endpoint projects/gift_india/branches/production/endpoints/<endpoint_id> \
+  --endpoint projects/gift-india/branches/production/endpoints/<endpoint_id> \
   --profile <your-cli-profile>
 ```
 
-Find the endpoint path with `databricks postgres list-endpoints projects/gift_india/branches/production`.
+Find the endpoint path with `databricks postgres list-endpoints projects/gift-india/branches/production`.
 The bundle (`databricks.yml` / `app.yaml`) deploys the Streamlit app with a
 Lakebase resource; deploy the app **before** loading so its service principal owns
 the schema (see the Lakebase docs on schema ownership).

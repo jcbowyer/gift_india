@@ -1,5 +1,5 @@
 bundle:
-  name: gift_india-india
+  name: gift_india_web
 
 variables:
   postgres_branch:
@@ -12,8 +12,8 @@ variables:
 resources:
   apps:
     app:
-      name: "gift_india-india"
-      description: "gift_india India — recommend where to place visiting surgical teams, backed by Lakebase synced data"
+      name: "gift-india-web"
+      description: "gift_india — recommend where to place visiting surgical teams, backed by Lakebase synced data"
       source_code_path: ./
       # Uncomment to enable on behalf of user API scopes. Available scopes: sql, dashboards.genie, files.files, serving.serving-endpoints
       # user_api_scopes:
@@ -34,6 +34,6 @@ targets:
       host: https://dbc-0be3157e-0574.cloud.databricks.com
 
     variables:
-      postgres_branch: projects/gift_india/branches/production
-      postgres_database: projects/gift_india/branches/production/databases/databricks-postgres
-      postgres_project: projects/gift_india
+      postgres_branch: projects/gift-india/branches/production
+      postgres_database: projects/gift-india/branches/production/databases/gift-india
+      postgres_project: projects/gift-india
