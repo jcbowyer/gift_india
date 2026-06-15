@@ -53,7 +53,7 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 DEFAULT_OUT_DIR = DATA_DIR / "scraped"
 
 USER_AGENT = (
-    "GiftIndiaBot/1.0 (+https://github.com/getcommunityone; "
+    "GiftIndiaBot/1.0 (+https://github.com/jcbowyer/gift_india; "
     "research scraper for healthcare facility data)"
 )
 DEFAULT_TIMEOUT = 20.0

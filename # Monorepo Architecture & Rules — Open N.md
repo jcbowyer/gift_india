@@ -58,8 +58,8 @@
 
 ## Database Access
 - **Host:** `localhost:5433` (ALREADY RUNNING — do not suggest new Docker PG instances).
-- **Databases:** `open_navigator` (primary) and `openstates` (source).
-- **API Access:** Use the `public` schema in `open_navigator`. Avoid direct `bronze` access.
+- **Database:** `gift_india` (primary).
+- **API Access:** Use the `public` schema in `gift_india`. Avoid direct `bronze` access.
 - **Keys:** Every table/model exposed in `public` MUST declare an explicit primary key and foreign keys for all relationships (enforced via dbt constraints / `schema.yml`).
 - **CAUTION:** Never delete or suggest deleting `data/cache/`.
 
@@ -108,7 +108,7 @@ When a result tile/card is shown **because of a topic, keyword, cause, question,
   - `docs(web_docs): add FastAPI deployment guide`
 
 ## Branch & PR Workflow (MANDATORY)
-- **NEVER push directly to `main`.** `main` is branch-protected on GitHub (`getcommunityone/open-navigator`): direct pushes are rejected. All changes land via pull request.
+- **NEVER push directly to `main`.** `main` is branch-protected on GitHub (`jcbowyer/gift_india`): direct pushes are rejected. All changes land via pull request.
 - **Every change goes through a PR.** Branch off the latest `main`, commit there, push the branch, and open a PR against `main`:
   ```bash
   git checkout main && git pull
@@ -159,7 +159,7 @@ Use OpenTelemetry for frontend observability:
 ```typescript
 import { trace } from '@opentelemetry/api';
 
-const tracer = trace.getTracer('open-navigator-frontend');
+const tracer = trace.getTracer('gift-india-frontend');
 const span = tracer.startSpan('fetch-jurisdictions');
 // ... operation ...
 span.end();
