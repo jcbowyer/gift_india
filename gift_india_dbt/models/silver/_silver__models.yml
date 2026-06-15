@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: silver_geography
+    description: >-
+      Cleaned, typed, conformed district records (one row per district within a
+      state) with `state_code` attached and coordinates validated. The geography
+      grain for the medallion.
+    columns:
+      - name: district
+        tests: [not_null]
+      - name: state
+        tests: [not_null]
+      - name: state_code
+        description: 2-letter state / UT code joined from the state_codes seed.
+      - name: lat
+        tests: [not_null]
+      - name: lon
+        tests: [not_null]
+      - name: population
+        description: District population (persons).
+
+  - name: silver_facilities
+    description: >-
+      Cleaned, typed, conformed facility records with `state_code` attached,
+      coordinates validated, and duplicate `facility_id`s resolved to the highest
+      `match_confidence`.
+    columns:
+      - name: facility_id
+        tests:
+          - not_null
+          - unique
+      - name: name
+        tests: [not_null]
+      - name: type
+        tests: [not_null]
+      - name: district
+        tests: [not_null]
+      - name: state
+        tests: [not_null]
+      - name: lat
+        tests: [not_null]
+      - name: lon
+        tests: [not_null]
+      - name: offers_surgery
+        tests: [not_null]
+      - name: match_confidence
+        description: Named-entity-resolution confidence score (0-1).

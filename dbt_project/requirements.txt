@@ -1,0 +1,8 @@
+# dbt runtime for the gift_india medallion project (standalone from the
+# gift_india_api loaders — see the monorepo rules: dbt_project is its own env).
+#
+#   python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+#
+# The Databricks Jobs dbt task installs dbt-databricks from its serverless
+# environment spec (see resources/transform.job.yml) instead of this file.
+dbt-databricks>=1.8.0,<2.0.0

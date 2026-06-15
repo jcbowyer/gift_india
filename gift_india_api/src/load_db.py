@@ -12,7 +12,7 @@ Local dev (uses ``GIFT_INDIA_DB_URL`` / ``.env`` / the docker-compose default)::
 Publish to Lakebase (resolves host + OAuth token via the Databricks CLI)::
 
     python -m src.load_db --target lakebase \\
-        --endpoint projects/gift_india/branches/production/endpoints/<endpoint_id> \\
+        --endpoint projects/gift-india/branches/production/endpoints/<endpoint_id> \\
         --profile <profile>
 """
 from __future__ import annotations

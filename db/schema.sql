@@ -1,16 +1,22 @@
--- gift_india India — serving schema (the tables the app reads).
+-- gift_india India — bronze landing schema (raw tables the loader writes).
+--
+-- This is the BRONZE layer of the medallion: raw, append-target facility and
+-- district records, kept out of `public` so `public` is left to the managed
+-- Postgres / Lakebase (Neon) system objects only. dbt promotes these through
+-- `silver.*` and serves them from `gold.*`; the app reads GOLD, never bronze.
 --
 -- This DDL is intentionally Postgres-portable so the SAME script runs against:
 --   * local Postgres (docker compose, see docker-compose.yml), and
 --   * Databricks Lakebase (managed serverless Postgres).
 --
--- Tables live in `public` so local dev mirrors what src/data.py reads from
--- Lakebase. Columns match the engine's expectations (see src/matching.py).
+-- Columns match the engine's expectations (see gift_india_dbt/models/silver).
 -- The NFHS-5 district indicator columns are nullable: the live governed dataset
 -- populates them; the synthetic dev dataset leaves them empty.
 
+CREATE SCHEMA IF NOT EXISTS bronze;
+
 -- District reference + NFHS-5 health indicators.
-CREATE TABLE IF NOT EXISTS public.districts (
+CREATE TABLE IF NOT EXISTS bronze.districts (
     district                text             NOT NULL,
     state                   text             NOT NULL,
     lat                     double precision NOT NULL,
@@ -26,7 +32,7 @@ CREATE TABLE IF NOT EXISTS public.districts (
 
 -- Geotagged healthcare facilities (entity-resolved, with a match-confidence
 -- score). `specialties` is a pipe-delimited list, as produced by the pipeline.
-CREATE TABLE IF NOT EXISTS public.facilities (
+CREATE TABLE IF NOT EXISTS bronze.facilities (
     facility_id      text             PRIMARY KEY,
     name             text             NOT NULL,
     type             text             NOT NULL,
@@ -42,10 +48,10 @@ CREATE TABLE IF NOT EXISTS public.facilities (
     match_confidence double precision NOT NULL,
     CONSTRAINT facilities_district_fk
         FOREIGN KEY (district, state)
-        REFERENCES public.districts (district, state)
+        REFERENCES bronze.districts (district, state)
 );
 
 CREATE INDEX IF NOT EXISTS facilities_district_idx
-    ON public.facilities (district, state);
+    ON bronze.facilities (district, state);
 CREATE INDEX IF NOT EXISTS facilities_offers_surgery_idx
-    ON public.facilities (offers_surgery);
+    ON bronze.facilities (offers_surgery);

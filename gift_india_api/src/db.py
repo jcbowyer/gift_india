@@ -20,7 +20,10 @@ from pathlib import Path
 import pandas as pd
 import psycopg
 
-DEFAULT_SCHEMA = os.getenv("GIFT_INDIA_DB_SCHEMA", "public")
+# Bronze is the raw landing schema the loader writes to (kept out of `public`,
+# which is left to the managed Postgres / Lakebase system objects). dbt promotes
+# bronze -> silver -> gold; serving reads gold.
+DEFAULT_SCHEMA = os.getenv("GIFT_INDIA_DB_SCHEMA", "bronze")
 LOCAL_DEFAULT_DSN = "postgresql://gift_india:gift_india@localhost:5432/gift_india"
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent

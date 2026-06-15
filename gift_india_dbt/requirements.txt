@@ -1,0 +1,6 @@
+# dbt toolchain for the gift_india medallion (separate from the loader deps in
+# ../requirements.txt). Install into a venv, then run from this directory:
+#   pip install -r requirements.txt
+#   DBT_PROFILES_DIR=. dbt build
+dbt-core>=1.7,<2.0
+dbt-postgres>=1.7,<2.0

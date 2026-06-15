@@ -1,0 +1,108 @@
+metric_name,metric_label,metric_category
+households_surveyed,"Households Surveyed",Population & Household Profile
+women_15_49_interviewed,"Women Age 15-49 Interviewed",Population & Household Profile
+men_15_54_interviewed,"Men Age 15-54 Interviewed",Population & Household Profile
+population_below_age_15_years_pct,"Population Below Age 15",Population & Household Profile
+sex_ratio_total_f_per_1000_m,"Sex Ratio (Females per 1000 Males)",Population & Household Profile
+sex_ratio_at_birth_5y_f_per_1000_m,"Sex Ratio at Birth, Last 5 Years (Females per 1000 Males)",Population & Household Profile
+child_u5_whose_birth_was_civil_reg_pct,"Children Under 5 Whose Birth Was Registered",Population & Household Profile
+deaths_in_the_last_3_years_civil_reg_pct,"Deaths in Last 3 Years That Were Registered",Population & Household Profile
+hh_electricity_pct,"Households with Electricity",Housing & Sanitation
+hh_improved_water_pct,"Households with an Improved Drinking-Water Source",Housing & Sanitation
+hh_use_improved_sanitation_pct,"Households Using Improved Sanitation",Housing & Sanitation
+households_using_clean_fuel_for_cooking_pct,"Households Using Clean Cooking Fuel",Housing & Sanitation
+households_using_iodized_salt_pct,"Households Using Iodized Salt",Housing & Sanitation
+hh_member_covered_health_insurance_pct,"Households with Any Member Covered by Health Insurance",Housing & Sanitation
+female_population_age_6_years_and_above_ever_schooled_pct,"Females Age 6+ Who Ever Attended School",Education & Literacy
+child_5y_who_attended_pre_primary_school_during_the_school_pct,"Children Age 5 Who Attended Pre-Primary School",Education & Literacy
+women_age_15_49_who_are_literate_pct,"Women Age 15-49 Who Are Literate",Education & Literacy
+women_age_15_49_with_10_or_more_years_of_schooling_pct,"Women Age 15-49 with 10+ Years of Schooling",Education & Literacy
+w20_24_married_before_age_18_years_pct,"Women Age 20-24 Married Before Age 18",Marriage & Fertility
+births_in_the_5_years_preceding_the_survey_that_are_birth_3_pct,"Births in Last 5 Years of Order 3 or Higher",Marriage & Fertility
+w15_19_who_were_already_mothers_or_pregnant_at_the_time_of_pct,"Women Age 15-19 Already Mothers or Pregnant",Marriage & Fertility
+w15_24_who_use_menstrual_hygiene_pct,"Women Age 15-24 Using Hygienic Menstrual Protection",Marriage & Fertility
+fp_cm_w15_49_any_method_pct,"Current Use of Any Family Planning Method (Women 15-49)",Family Planning
+fp_cm_w15_49_modern_method_pct,"Current Use of Any Modern Method (Women 15-49)",Family Planning
+fp_cm_w15_49_f_steril_pct,"Current Use of Female Sterilization (Women 15-49)",Family Planning
+fp_cm_w15_49_m_steril_pct,"Current Use of Male Sterilization (Women 15-49)",Family Planning
+fp_cm_w15_49_iud_pct,"Current Use of IUD/PPIUD (Women 15-49)",Family Planning
+fp_cm_w15_49_pill_pct,"Current Use of the Pill (Women 15-49)",Family Planning
+fp_cm_w15_49_condom_pct,"Current Use of Condoms (Women 15-49)",Family Planning
+fp_cm_w15_49_injectables_pct,"Current Use of Injectables (Women 15-49)",Family Planning
+fp_unmet_total_cm_w15_49_7_pct,"Total Unmet Need for Family Planning (Women 15-49)",Family Planning
+fp_unmet_spacing_cm_w15_49_7_pct,"Unmet Need for Spacing (Women 15-49)",Family Planning
+health_worker_ever_talked_to_female_non_users_about_family_pct,"Female Non-Users Ever Counselled on Family Planning by a Health Worker",Family Planning
+current_users_ever_told_about_side_effects_of_current_metho_pct,"Current Users Ever Told About Method Side Effects",Family Planning
+mothers_who_had_an_anc_visit_in_the_first_trimester_lb5y_pct,"Mothers with an Antenatal Visit in the First Trimester",Maternal Health
+mothers_who_had_at_least_4_anc_visits_lb5y_pct,"Mothers with at Least 4 Antenatal Visits",Maternal Health
+mothers_whose_last_birth_was_protected_against_neo_tetanus_pct,"Mothers Whose Last Birth Was Protected Against Neonatal Tetanus",Maternal Health
+mothers_who_consumed_ifa_for_100_days_or_more_when_they_wer_pct,"Mothers Who Took Iron-Folic Acid for 100+ Days While Pregnant",Maternal Health
+mothers_who_consumed_ifa_for_180_days_or_more_when_they_wer_pct,"Mothers Who Took Iron-Folic Acid for 180+ Days While Pregnant",Maternal Health
+registered_pregnancies_for_which_the_mother_received_a_mcp_pct,"Registered Pregnancies Where the Mother Received an MCP Card",Maternal Health
+mothers_who_received_pnc_from_a_doctor_nurse_lhv_anm_midwif_pct,"Mothers Who Received Postnatal Care from Skilled Personnel Within 2 Days",Maternal Health
+average_out_of_pocket_expenditure_per_delivery_in_a_public_fac,"Average Out-of-Pocket Expenditure per Delivery in a Public Facility",Maternal Health
+children_born_at_home_who_were_taken_to_a_health_facility_f_pct,"Home-Born Children Taken to a Health Facility for a Check-Up Within 24 Hours",Maternal Health
+children_who_received_pnc_from_a_doctor_nurse_lhv_anm_midwi_pct,"Children Who Received a Postnatal Check Within 2 Days of Birth",Maternal Health
+institutional_birth_5y_pct,"Institutional Births",Delivery Care
+institutional_birth_in_public_facility_5y_pct,"Institutional Births in a Public Facility",Delivery Care
+home_birth_that_were_conducted_by_skilled_hp_5y_10_pct,"Home Births Attended by Skilled Health Personnel",Delivery Care
+births_attended_by_skilled_hp_5y_10_pct,"Births Attended by Skilled Health Personnel",Delivery Care
+births_delivered_by_csection_5y_pct,"Births Delivered by C-Section",Delivery Care
+births_in_a_private_fac_that_were_delivered_by_csection_5y_pct,"C-Section Births in Private Facilities",Delivery Care
+births_in_a_public_fac_that_were_delivered_by_csection_5y_pct,"C-Section Births in Public Facilities",Delivery Care
+child_12_23m_fully_vaccinated_based_on_information_from_eit_pct,"Children 12-23 Months Fully Vaccinated (Card or Recall)",Child Immunization
+child_12_23m_fully_vaccinated_based_on_information_from_vax_pct,"Children 12-23 Months Fully Vaccinated (Vaccination Card)",Child Immunization
+child_12_23m_who_have_received_bcg_pct,"Children 12-23 Months Who Received BCG",Child Immunization
+child_12_23m_who_have_received_3_doses_of_polio_vaccine_pct,"Children 12-23 Months Who Received 3 Doses of Polio Vaccine",Child Immunization
+child_12_23m_who_have_received_3_doses_of_penta_or_dpt_vacc_pct,"Children 12-23 Months Who Received 3 Doses of Penta/DPT",Child Immunization
+child_12_23m_who_have_received_the_first_dose_of_mcv_mcv_pct,"Children 12-23 Months Who Received the First Dose of Measles Vaccine",Child Immunization
+child_24_35m_who_have_received_a_second_dose_of_mcv_mcv_pct,"Children 24-35 Months Who Received a Second Dose of Measles Vaccine",Child Immunization
+child_12_23m_who_have_received_3_doses_of_rotavirus_vaccine_pct,"Children 12-23 Months Who Received 3 Doses of Rotavirus Vaccine",Child Immunization
+child_12_23m_who_have_received_3_doses_of_penta_or_hepatiti_pct,"Children 12-23 Months Who Received 3 Doses of Penta/Hepatitis B",Child Immunization
+child_9_35m_who_received_a_vit_a_in_the_last_6_months_pct,"Children 9-35 Months Who Received Vitamin A in Last 6 Months",Child Immunization
+child_12_23m_who_received_most_of_their_vaccinations_in_a_p_pct,"Children 12-23 Months Vaccinated Mostly at a Public Facility",Child Immunization
+child_12_23m_who_received_most_of_their_vaccinations_in_a_2_pct,"Children 12-23 Months Vaccinated Mostly at a Private Facility",Child Immunization
+prev_diarrhoea_2wk_child_u5_pct,"Children Under 5 with Diarrhoea in the Last 2 Weeks",Child Illness & Treatment
+children_with_diarrhoea_2wk_who_received_oral_rehydration_s_pct,"Children with Diarrhoea Who Received ORS",Child Illness & Treatment
+children_with_diarrhoea_2wk_who_received_zinc_child_u5_pct,"Children with Diarrhoea Who Received Zinc",Child Illness & Treatment
+children_with_diarrhoea_2wk_taken_to_a_health_facility_or_h_pct,"Children with Diarrhoea Taken to a Health Facility or Provider",Child Illness & Treatment
+children_prev_symptoms_of_acute_respiratory_infection_ari_2_pct,"Children Under 5 with ARI Symptoms in the Last 2 Weeks",Child Illness & Treatment
+children_with_fever_or_symptoms_of_ari_2wk_taken_to_a_healt_pct,"Children with Fever or ARI Taken to a Health Facility or Provider",Child Illness & Treatment
+children_under_age_3_years_breastfed_within_one_hour_of_bir_pct,"Children Under 3 Breastfed Within One Hour of Birth",Child Feeding & Nutrition
+child_u6m_exclusively_breastfed_pct,"Children Under 6 Months Exclusively Breastfed",Child Feeding & Nutrition
+child_6_8m_receiving_solid_or_semi_solid_food_and_breastmil_pct,"Children 6-8 Months Receiving Solid/Semi-Solid Food and Breastmilk",Child Feeding & Nutrition
+breastfeeding_child_6_23m_receiving_an_adequate_diet16_17_pct,"Breastfeeding Children 6-23 Months Receiving an Adequate Diet",Child Feeding & Nutrition
+non_breastfeeding_child_6_23m_receiving_an_adequate_diet16_pct,"Non-Breastfeeding Children 6-23 Months Receiving an Adequate Diet",Child Feeding & Nutrition
+total_child_6_23m_receiving_an_adequate_diet16_17_pct,"All Children 6-23 Months Receiving an Adequate Diet",Child Feeding & Nutrition
+child_u5_who_are_stunted_height_for_age_18_pct,"Children Under 5 Who Are Stunted (Low Height-for-Age)",Child Growth & Nutrition
+child_u5_who_are_wasted_weight_for_height_18_pct,"Children Under 5 Who Are Wasted (Low Weight-for-Height)",Child Growth & Nutrition
+child_u5_who_are_severe_wasted_weight_for_height_19_pct,"Children Under 5 Who Are Severely Wasted",Child Growth & Nutrition
+child_u5_who_are_underweight_weight_for_age_18_pct,"Children Under 5 Who Are Underweight (Low Weight-for-Age)",Child Growth & Nutrition
+child_u5_who_are_overweight_weight_for_height_20_pct,"Children Under 5 Who Are Overweight (High Weight-for-Height)",Child Growth & Nutrition
+women_age_15_49_years_whose_bmi_bmi_is_underweight_bmi_lt_1_pct,"Women Age 15-49 Who Are Underweight (BMI < 18.5)",Women's Nutrition
+women_age_15_49_years_who_are_overweight_obese_bmi_gte_25_0_pct,"Women Age 15-49 Who Are Overweight or Obese (BMI >= 25.0)",Women's Nutrition
+women_age_15_49_years_who_have_high_risk_whr_gte_0_85_pct,"Women Age 15-49 with High-Risk Waist-to-Hip Ratio (>= 0.85)",Women's Nutrition
+child_6_59m_who_are_anaemic_lt_11_0_g_dl_22_pct,"Children 6-59 Months Who Are Anaemic (<11.0 g/dl)",Anaemia
+non_pregnant_w15_49_who_are_anaemic_lt_12_0_g_dl_22_pct,"Non-Pregnant Women 15-49 Who Are Anaemic (<12.0 g/dl)",Anaemia
+pregnant_w15_49_who_are_anaemic_lt_11_0_g_dl_22_pct,"Pregnant Women 15-49 Who Are Anaemic (<11.0 g/dl)",Anaemia
+all_w15_49_who_are_anaemic_pct,"All Women 15-49 Who Are Anaemic",Anaemia
+all_w15_19_who_are_anaemic_pct,"All Women 15-19 Who Are Anaemic",Anaemia
+women_age_15_years_and_above_with_high_141_160_mg_dl_blood_pct,"Women 15+ with High Blood Sugar (141-160 mg/dl)",Blood Sugar
+w15_plus_with_very_high_gt_160_mg_dl_blood_sugar_pct,"Women 15+ with Very High Blood Sugar (>160 mg/dl)",Blood Sugar
+w15_plus_with_high_or_very_high_gt_140_mg_dl_blood_sugar_or_pct,"Women 15+ with High or Very High Blood Sugar (>140 mg/dl or on Medication)",Blood Sugar
+m15_plus_with_high_141_160_mg_dl_blood_sugar_pct,"Men 15+ with High Blood Sugar (141-160 mg/dl)",Blood Sugar
+men_age_15_years_and_above_with_very_high_gt_160_mg_dl_bloo_pct,"Men 15+ with Very High Blood Sugar (>160 mg/dl)",Blood Sugar
+m15_plus_with_high_or_very_high_gt_140_mg_dl_blood_sugar_or_pct,"Men 15+ with High or Very High Blood Sugar (>140 mg/dl or on Medication)",Blood Sugar
+w15_plus_with_mildly_high_bp_sys_140_159_mmhg_and_or_dia_90_pct,"Women 15+ with Mildly High Blood Pressure",Hypertension
+w15_plus_with_moderately_or_severely_high_bp_sys_gte_160_mm_pct,"Women 15+ with Moderately or Severely High Blood Pressure",Hypertension
+w15_plus_with_high_bp_sys_gte_140_mmhg_and_or_dia_gte_90_mm_pct,"Women 15+ with High Blood Pressure (or on Medication)",Hypertension
+m15_plus_with_mildly_high_bp_sys_140_159_mmhg_and_or_dia_90_pct,"Men 15+ with Mildly High Blood Pressure",Hypertension
+m15_plus_with_moderately_or_severely_high_bp_sys_gte_160_mm_pct,"Men 15+ with Moderately or Severely High Blood Pressure",Hypertension
+m15_plus_with_high_bp_sys_gte_140_mmhg_and_or_dia_gte_90_mm_pct,"Men 15+ with High Blood Pressure (or on Medication)",Hypertension
+women_age_30_49_years_ever_undergone_a_cervical_screen_pct,"Women Age 30-49 Ever Screened for Cervical Cancer",Cancer Screening
+women_age_30_49_years_ever_undergone_a_breast_exam_pct,"Women Age 30-49 Ever Examined for Breast Cancer",Cancer Screening
+women_age_30_49_years_ever_undergone_an_oral_cancer_exam_pct,"Women Age 30-49 Ever Examined for Oral Cancer",Cancer Screening
+w15_plus_who_use_any_kind_of_tobacco_pct,"Women 15+ Who Use Any Kind of Tobacco",Tobacco & Alcohol
+m15_plus_who_use_any_kind_of_tobacco_pct,"Men 15+ Who Use Any Kind of Tobacco",Tobacco & Alcohol
+w15_plus_who_consume_alcohol_pct,"Women 15+ Who Consume Alcohol",Tobacco & Alcohol
+m15_plus_who_consume_alcohol_pct,"Men 15+ Who Consume Alcohol",Tobacco & Alcohol

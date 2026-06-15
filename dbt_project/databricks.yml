@@ -1,0 +1,30 @@
+bundle:
+  name: gift_india_dbt
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Managed catalog that holds the medallion schemas (gift_india_bronze/_silver/_gold).
+    default: workspace
+  schema:
+    description: Base schema for the generated dbt profile (per-layer schemas override it).
+    default: gift_india
+  warehouse_id:
+    description: SQL warehouse the dbt task runs against.
+    lookup:
+      warehouse: "Serverless Starter Warehouse"
+
+targets:
+  dev:
+    default: true
+    mode: development
+    workspace:
+      host: https://dbc-0be3157e-0574.cloud.databricks.com
+
+  prod:
+    mode: production
+    workspace:
+      host: https://dbc-0be3157e-0574.cloud.databricks.com
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}

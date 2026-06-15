@@ -1,0 +1,21 @@
+# dbt connection profile for gift_india India.
+#
+# Run dbt from this directory with this profile:
+#   cd gift_india_dbt && DBT_PROFILES_DIR=. dbt build
+#
+# Defaults match the local docker-compose Postgres (see ../docker-compose.yml).
+# Override any value via the GIFT_INDIA_PG* environment variables — e.g. point
+# at Databricks Lakebase by exporting the host/user/password it injects.
+gift_india:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('GIFT_INDIA_PGHOST', 'localhost') }}"
+      port: "{{ env_var('GIFT_INDIA_PGPORT', '5432') | as_number }}"
+      user: "{{ env_var('GIFT_INDIA_PGUSER', 'gift_india') }}"
+      password: "{{ env_var('GIFT_INDIA_PGPASSWORD', 'gift_india') }}"
+      dbname: "{{ env_var('GIFT_INDIA_PGDATABASE', 'gift_india') }}"
+      schema: "{{ env_var('GIFT_INDIA_DBT_SCHEMA', 'bronze') }}"
+      sslmode: "{{ env_var('GIFT_INDIA_PGSSLMODE', 'prefer') }}"
+      threads: 4

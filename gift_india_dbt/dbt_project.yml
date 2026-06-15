@@ -1,0 +1,46 @@
+name: gift_india
+version: "1.0.0"
+config-version: 2
+
+# Maps to the profile in profiles.yml (this dir; run with DBT_PROFILES_DIR=.).
+profile: gift_india
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+require-dbt-version: [">=1.7.0", "<2.0.0"]
+
+vars:
+  # Schema where the Python loader (gift_india_api/src/load_db.py) lands the raw
+  # source tables. Defaults to `bronze` (kept out of `public`); override with
+  # `--vars '{bronze_schema: public}'` if the raw data lands elsewhere.
+  bronze_schema: bronze
+
+# Medallion: bronze (sources) -> silver (cleaned/conformed) -> gold (serving).
+# generate_schema_name (see macros/) makes these literal schema names, not
+# the dbt default `<target>_<schema>` prefix.
+models:
+  gift_india:
+    silver:
+      +materialized: view
+      +schema: silver
+    gold:
+      +materialized: table
+      +schema: gold
+
+seeds:
+  gift_india:
+    +schema: silver
+    state_codes:
+      +column_types:
+        state: text
+        state_code: text

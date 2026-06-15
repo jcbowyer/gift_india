@@ -1,0 +1,19 @@
+version: 2
+
+seeds:
+  - name: state_codes
+    description: >-
+      Lookup of Indian state / union-territory full name to its 2-letter code
+      (`state_code`). Used by the silver layer to attach `state_code` alongside
+      the full `state` name, per the platform naming rule.
+    columns:
+      - name: state
+        description: Full state / UT name (matches the source `state` text).
+        tests:
+          - not_null
+          - unique
+      - name: state_code
+        description: 2-letter state / UT code.
+        tests:
+          - not_null
+          - unique

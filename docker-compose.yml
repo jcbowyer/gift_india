@@ -1,8 +1,8 @@
 # Local Postgres for gift_india India development.
 #
-#   docker compose up -d        # start (creates the gift_india schema on first run)
-#   python -m src.load_db       # load the dataset
-#   streamlit run app.py        # run the app against local Postgres
+#   docker compose up -d        # start (creates the bronze schema on first run)
+#   python -m src.load_db       # land the raw dataset in bronze
+#   make dbt                    # build silver + gold from bronze
 #   docker compose down         # stop (add -v to also wipe the data volume)
 #
 # Connection string (also in .env.example):

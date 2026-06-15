@@ -1,0 +1,21 @@
+# Local dbt profile for the gift_india medallion project.
+#
+# Authentication uses Databricks unified auth (the CLI config in
+# ~/.databrickscfg). Select the workspace profile with an env var, e.g.
+#
+#   DATABRICKS_CONFIG_PROFILE=gift-india dbt build
+#
+# When this project runs as a Databricks Jobs dbt task, the platform injects
+# its own generated profiles.yml from the task's warehouse_id/catalog/schema,
+# so this file is only used for local development.
+gift_india:
+  target: dev
+  outputs:
+    dev:
+      type: databricks
+      host: dbc-0be3157e-0574.cloud.databricks.com
+      http_path: /sql/1.0/warehouses/b6160f34691ba665
+      auth_type: oauth
+      catalog: "{{ env_var('GIFT_INDIA_CATALOG', 'workspace') }}"
+      schema: gift_india
+      threads: 4

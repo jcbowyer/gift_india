@@ -1,0 +1,47 @@
+name: gift_india
+version: "1.0.0"
+config-version: 2
+
+# Connection profile. Locally this resolves from profiles.yml in this directory
+# (Databricks unified auth via the `gift-india` CLI profile). When run as a
+# Databricks Jobs dbt task, the platform generates a matching `gift_india`
+# profile from the task's warehouse_id / catalog / schema.
+profile: gift_india
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Medallion architecture — one schema per layer under the configured catalog.
+# generate_schema_name (macros/) returns these verbatim (no target-schema prefix),
+# so models land in <catalog>.gift_india_bronze / _silver / _gold.
+models:
+  gift_india:
+    +persist_docs:
+      relation: true
+      columns: true
+    bronze:
+      +schema: gift_india_bronze
+      +materialized: table
+    silver:
+      +schema: gift_india_silver
+      +materialized: table
+    gold:
+      +schema: gift_india_gold
+      +materialized: table
+
+# Reference data (friendly metric labels + categories) lands alongside silver.
+seeds:
+  gift_india:
+    +schema: gift_india_silver
+    metric_definitions:
+      +column_types:
+        metric_name: string
+        metric_label: string
+        metric_category: string

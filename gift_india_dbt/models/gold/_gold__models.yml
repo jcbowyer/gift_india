@@ -1,0 +1,132 @@
+version: 2
+
+models:
+  - name: geography
+    description: >-
+      Gold serving dimension of places (one row per district within a state),
+      keyed by `geography_id`, carrying centroid lat/lon, NFHS-5 indicators, and
+      rolled-up facility counts. gold.facilities links to this table.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: geography_id
+        description: "Surrogate key: `<state_code>-<district-slug>` (e.g. `mh-mumbai`)."
+        data_type: text
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: district
+        data_type: text
+        constraints: [{type: not_null}]
+      - name: state
+        data_type: text
+        constraints: [{type: not_null}]
+      - name: state_code
+        description: 2-letter state / UT code.
+        data_type: text
+      - name: lat
+        description: District centroid latitude (WGS84).
+        data_type: double precision
+        constraints: [{type: not_null}]
+      - name: lon
+        description: District centroid longitude (WGS84).
+        data_type: double precision
+        constraints: [{type: not_null}]
+      - name: population
+        description: District population (persons).
+        data_type: integer
+      - name: urbanity
+        description: Urbanity index (0-1).
+        data_type: double precision
+      - name: fp_unmet_pct
+        data_type: double precision
+      - name: institutional_birth_pct
+        data_type: double precision
+      - name: csection_pct
+        data_type: double precision
+      - name: anaemia_pct
+        data_type: double precision
+      - name: facility_count
+        description: Facilities located in this geography.
+        data_type: integer
+      - name: surgical_facility_count
+        description: Facilities in this geography that offer surgery.
+        data_type: integer
+      - name: annual_surgeries_total
+        description: Sum of annual surgeries across facilities in this geography.
+        data_type: integer
+
+  - name: facilities
+    description: >-
+      Gold serving table of geotagged healthcare facilities. Linked to
+      gold.geography by `geography_id` and to its district centroid by lat/lon
+      via `distance_from_centroid_km` (great-circle km).
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: facility_id
+        description: Stable facility primary key (e.g. `VF-000123`).
+        data_type: text
+        constraints:
+          - type: not_null
+          - type: primary_key
+        tests:
+          - unique
+          - not_null
+      - name: name
+        data_type: text
+        constraints: [{type: not_null}]
+      - name: type
+        data_type: text
+        constraints: [{type: not_null}]
+      - name: geography_id
+        description: FK to gold.geography.geography_id.
+        data_type: text
+        constraints:
+          - type: foreign_key
+            expression: "gold.geography (geography_id)"
+        tests:
+          - relationships:
+              arguments:
+                to: ref('geography')
+                field: geography_id
+      - name: district
+        data_type: text
+        constraints: [{type: not_null}]
+      - name: state
+        data_type: text
+        constraints: [{type: not_null}]
+      - name: state_code
+        data_type: text
+      - name: lat
+        description: Facility latitude (WGS84).
+        data_type: double precision
+        constraints: [{type: not_null}]
+      - name: lon
+        description: Facility longitude (WGS84).
+        data_type: double precision
+        constraints: [{type: not_null}]
+      - name: beds
+        data_type: integer
+      - name: annual_surgeries
+        data_type: integer
+      - name: offers_surgery
+        data_type: boolean
+        constraints: [{type: not_null}]
+      - name: specialties
+        description: Pipe-delimited list of surgical specialties offered.
+        data_type: text
+      - name: website_url
+        description: Canonical facility website URL (null when unknown).
+        data_type: text
+      - name: match_confidence
+        description: Named-entity-resolution confidence score (0-1).
+        data_type: double precision
+      - name: distance_from_centroid_km
+        description: Great-circle km from the facility to its geography centroid.
+        data_type: numeric

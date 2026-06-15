@@ -30,7 +30,8 @@ const SETUP_SQL = `
   );
 `;
 
-// Need + gap scoring over the synced district / facility tables.
+// Need + gap scoring over the gold serving tables (gold.geography + gold.facilities).
+// Serving reads gold only — never the raw bronze landing tables.
 // need_score (0..1): low c-section rate and institutional birth rate signal weak surgical
 // access; high unmet family-planning need and anaemia signal weak health systems.
 const RECOMMEND_SQL = `
@@ -39,7 +40,7 @@ const RECOMMEND_SQL = `
            COUNT(*) FILTER (WHERE offers_surgery AND specialties ILIKE $1) AS spec_facilities,
            COALESCE(SUM(annual_surgeries) FILTER (WHERE offers_surgery AND specialties ILIKE $1), 0) AS spec_capacity,
            COUNT(*) FILTER (WHERE offers_surgery) AS any_surgical_facilities
-    FROM public.facilities
+    FROM gold.facilities
     GROUP BY 1, 2
   ),
   scored AS (
@@ -60,7 +61,7 @@ const RECOMMEND_SQL = `
         WHEN $2 = 'urban' THEN GREATEST(0.05, COALESCE(d.urbanity, 0.5))
         ELSE 1
       END AS access_factor
-    FROM public.districts d
+    FROM gold.geography d
     LEFT JOIN spec s ON s.dk = LOWER(d.district) AND s.sk = LOWER(d.state)
   )
   SELECT *,
@@ -72,22 +73,16 @@ const RECOMMEND_SQL = `
 
 const STATS_SQL = `
   SELECT
-    (SELECT COUNT(*) FROM public.districts) AS districts,
-    (SELECT COUNT(*) FROM public.facilities WHERE offers_surgery) AS surgical_facilities,
-    (SELECT COALESCE(SUM(annual_surgeries), 0) FROM public.facilities WHERE offers_surgery) AS annual_surgeries,
-    (SELECT COALESCE(SUM(population), 0) FROM public.districts) AS population_covered,
-    (SELECT COUNT(*) FROM public.districts d
-       WHERE NOT EXISTS (
-         SELECT 1 FROM public.facilities f
-         WHERE LOWER(f.district) = LOWER(d.district)
-           AND LOWER(f.state) = LOWER(d.state)
-           AND f.offers_surgery
-       )) AS desert_districts
+    (SELECT COUNT(*) FROM gold.geography) AS districts,
+    (SELECT COUNT(*) FROM gold.facilities WHERE offers_surgery) AS surgical_facilities,
+    (SELECT COALESCE(SUM(annual_surgeries), 0) FROM gold.facilities WHERE offers_surgery) AS annual_surgeries,
+    (SELECT COALESCE(SUM(population), 0) FROM gold.geography) AS population_covered,
+    (SELECT COUNT(*) FROM gold.geography WHERE surgical_facility_count = 0) AS desert_districts
 `;
 
 const SPECIALTIES_SQL = `
   SELECT TRIM(s) AS specialty, COUNT(*) AS facilities
-  FROM public.facilities, LATERAL unnest(string_to_array(specialties, '|')) AS s
+  FROM gold.facilities, LATERAL unnest(string_to_array(specialties, '|')) AS s
   WHERE offers_surgery AND TRIM(s) <> ''
   GROUP BY 1
   ORDER BY 2 DESC
@@ -96,11 +91,8 @@ const SPECIALTIES_SQL = `
 const DISTRICTS_SQL = `
   SELECT d.district, d.state, d.lat, d.lon, d.population,
          d.csection_pct, d.institutional_birth_pct, d.fp_unmet_pct, d.anaemia_pct, d.urbanity,
-         (SELECT COUNT(*) FROM public.facilities f
-            WHERE LOWER(f.district) = LOWER(d.district)
-              AND LOWER(f.state) = LOWER(d.state)
-              AND f.offers_surgery) AS surgical_facilities
-  FROM public.districts d
+         d.surgical_facility_count AS surgical_facilities
+  FROM gold.geography d
   WHERE d.lat IS NOT NULL AND d.lon IS NOT NULL
 `;
 

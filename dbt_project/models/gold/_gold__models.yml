@@ -1,0 +1,123 @@
+version: 2
+
+models:
+  - name: gold_specialties
+    description: Distinct specialties offered across facilities, with coverage counts.
+    columns:
+      - name: specialty_code
+        data_tests:
+          - not_null
+          - unique
+      - name: specialty_label
+        data_tests:
+          - not_null
+      - name: n_facilities
+        data_tests:
+          - not_null
+
+  - name: gold_procedures
+    description: Distinct procedure descriptions with facility counts.
+    columns:
+      - name: procedure_id
+        data_tests:
+          - not_null
+          - unique
+      - name: procedure_text
+        data_tests:
+          - not_null
+
+  - name: gold_equipment
+    description: Distinct equipment descriptions with facility counts.
+    columns:
+      - name: equipment_id
+        data_tests:
+          - not_null
+          - unique
+      - name: equipment_text
+        data_tests:
+          - not_null
+
+  - name: gold_capabilities
+    description: Distinct capability statements with facility counts.
+    columns:
+      - name: capability_id
+        data_tests:
+          - not_null
+          - unique
+      - name: capability_text
+        data_tests:
+          - not_null
+
+  - name: gold_facility_capability_profile
+    description: >-
+      Per-facility serving rollup: specialty/procedure/equipment/capability
+      counts plus the specialty label set. One row per facility.
+    columns:
+      - name: facility_id
+        data_tests:
+          - not_null
+          - unique
+
+  - name: gold_metric
+    description: >-
+      Metric dimension for the row-based metric store — one row per distinct
+      metric, with a human label and an inferred unit. Lookup side of
+      gold_metric_values.
+    columns:
+      - name: metric_key
+        description: Surrogate key = hash(metric_name). PK.
+        data_tests:
+          - not_null
+          - unique
+      - name: metric_name
+        description: Source column name that was pivoted into a row.
+        data_tests:
+          - not_null
+          - unique
+      - name: metric_label
+        description: Human-friendly label (from the metric_definitions seed).
+        data_tests:
+          - not_null
+      - name: metric_category
+        description: Thematic grouping (e.g. Maternal Health, Anaemia, Hypertension).
+        data_tests:
+          - not_null
+      - name: metric_unit
+        description: Inferred unit (percent | ratio | inr | count | value).
+        data_tests:
+          - not_null
+
+  - name: gold_metric_values
+    description: >-
+      Row-based (long-format) metric store. Every wide NFHS-5 district indicator
+      column is pivoted into one row per (district, metric). metric_value is a
+      safe numeric cast (NULL for non-numeric / suppressed source markers);
+      metric_value_text keeps the verbatim source value.
+    columns:
+      - name: metric_value_id
+        description: Surrogate key = hash(state, district, metric_name). PK.
+        data_tests:
+          - not_null
+          - unique
+      - name: metric_key
+        description: FK to gold_metric.metric_key.
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('gold_metric')
+              field: metric_key
+      - name: entity_type
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ["district"]
+      - name: entity_id
+        description: District name (the entity the metric is measured for).
+        data_tests:
+          - not_null
+      - name: metric_name
+        data_tests:
+          - not_null
+      - name: source
+        data_tests:
+          - not_null

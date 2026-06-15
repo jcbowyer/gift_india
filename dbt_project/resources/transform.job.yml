@@ -1,0 +1,40 @@
+resources:
+  jobs:
+    gift_india_transform:
+      name: "gift_india — medallion transform (dbt)"
+      description: >-
+        Builds the bronze → silver → gold medallion from the Virtue Foundation
+        Delta Sharing source. Silver explodes the facility specialties,
+        procedures, equipment, and capabilities; gold serves the dimensions and
+        the per-facility capability profile.
+
+      tasks:
+        - task_key: dbt_build
+          dbt_task:
+            # Bundle root (this dir) is synced to the workspace as the project.
+            project_directory: ""
+            commands:
+              - "dbt deps"
+              - "dbt build --target ${bundle.target}"
+            catalog: ${var.catalog}
+            schema: ${var.schema}
+            warehouse_id: ${var.warehouse_id}
+            source: WORKSPACE
+          environment_key: dbt
+
+      # Serverless compute that runs the dbt CLI process (the SQL itself runs on
+      # the SQL warehouse above).
+      environments:
+        - environment_key: dbt
+          spec:
+            client: "2"
+            dependencies:
+              - "dbt-databricks>=1.8.0,<2.0.0"
+
+      schedule:
+        quartz_cron_expression: "0 0 8 * * ?"
+        timezone_id: "Asia/Kolkata"
+        pause_status: PAUSED
+
+      queue:
+        enabled: true

@@ -12,6 +12,17 @@ gift_india India turns that data into action. Describe a team in plain
 language — _"3-surgeon cataract team, 5 days, willing to travel rural"_ — and the
 copilot ranks the **medical deserts** where that team will help the most people.
 
+## Quick start
+
+```bash
+databricks auth login --profile gift-india --host https://dbc-0be3157e-0574.cloud.databricks.com
+./startup.sh
+```
+
+`startup.sh` checks Databricks auth, installs web deps on first run, and starts the
+app at http://localhost:8000 (live Lakebase data). For manual steps see
+[Quickstart](#quickstart); to deploy see [Publish to Lakebase](#publish-to-lakebase).
+
 ## The four hackathon tracks
 
 | Track | What it does | Status here |
@@ -63,37 +74,52 @@ Schema `virtue_foundation_dataset` contains:
 when deployed, a local Postgres when configured, and the synthetic dataset
 otherwise — so the engine, copilot, and UI never change.
 
-## Quickstart (zero dependencies)
+## Quickstart
+
+The app is a **Databricks AppKit app**: a React client + Express server
+(`gift_india_web`) that reads live data from **Lakebase Postgres**. The Python data
+loaders/engine live in `gift_india_api`.
+
+First authenticate to the Databricks workspace, then run the dev server:
 
 ```bash
-pip install -r requirements.txt
-streamlit run app.py
+databricks auth login --profile gift-india --host https://dbc-0be3157e-0574.cloud.databricks.com
+
+cd gift_india_web
+npm install
+npm run dev          # or, from the repo root: make web
 ```
 
-Then open the local URL Streamlit prints (usually http://localhost:8501). With no
-database configured, the app runs on the deterministic synthetic dataset.
+`npm run dev` reads `gift_india_web/.env` (Databricks workspace + Lakebase endpoint)
+and serves the app at the URL it prints (defaults to http://localhost:8000, and
+falls back to the next free port). The Express server exposes `/api/*` routes
+(`/api/stats`, `/api/specialties`, `/api/districts`, `/api/recommend`, `/api/plans`)
+that query the **gold serving tables** (`gold.facilities` / `gold.geography`) in
+Lakebase. Serving reads gold only — the raw landing tables live in `bronze`, and
+`public` is left to the managed Postgres / Lakebase (Neon) system objects.
 
-## Local development with Postgres
+## Data loaders & local Postgres
 
-For a more production-like loop, run a local Postgres that **mirrors the Lakebase
-schema**, then point the app at it. This is the fast inner loop: edit, reload,
-query real SQL — no Databricks round-trip.
+The dataset is generated and loaded by the Python loaders in `gift_india_api/src`.
+For a production-like data loop, run a local Postgres that **mirrors the Lakebase
+medallion**, land the raw dataset in `bronze`, build `silver` + `gold` with dbt,
+validate it, then publish to Lakebase.
 
 ```bash
 cp .env.example .env          # sets GIFT_INDIA_DB_URL=postgresql://gift_india:gift_india@localhost:5432/gift_india
 
-make db-up                    # start Postgres 17 (docker compose); creates the schema on first run
-make load                     # generate + load the dataset (python -m src.load_db)
-make run                      # streamlit run app.py  → now reads from local Postgres
+make db-up                    # start Postgres 17 (docker compose); creates the bronze schema on first run
+make data                     # land raw in bronze (make load) + build silver/gold (make dbt)
 ```
 
-`load_bundle()` auto-loads `.env`; once `GIFT_INDIA_DB_URL` is set the app reads the
-`public.facilities` / `public.districts` tables (and falls back to the synthetic
-dataset if the database is unreachable). `make db-reset` wipes and recreates the
-volume; `make load FORCE=1` regenerates the dataset before loading.
+`make load` lands the raw dataset in `bronze`; `make dbt` promotes it through
+`silver` to the `gold` serving tables the app reads. `make data` runs both.
+`make db-reset` wipes and recreates the volume; `make load FORCE=1` regenerates
+the dataset before loading.
 
 > Don't have Docker? Point `GIFT_INDIA_DB_URL` at any Postgres and run
-> `python -m src.load_db --dsn "$GIFT_INDIA_DB_URL"`.
+> `cd gift_india_api && python -m src.load_db --dsn "$GIFT_INDIA_DB_URL"`, then
+> `make dbt` to build the silver/gold layers.
 
 ## Publish to Lakebase
 
@@ -107,46 +133,66 @@ make publish \
   PROFILE=<your-cli-profile>
 
 # equivalently:
-python -m src.load_db --target lakebase \
+cd gift_india_api && python -m src.load_db --target lakebase \
   --endpoint projects/gift-india/branches/production/endpoints/<endpoint_id> \
   --profile <your-cli-profile>
 ```
 
+This lands the raw data in Lakebase `bronze`. Build the `silver`/`gold` serving
+tables against Lakebase afterwards by pointing the dbt profile at the endpoint
+(export `GIFT_INDIA_PGHOST` / `GIFT_INDIA_PGUSER` / `GIFT_INDIA_PGPASSWORD` /
+`GIFT_INDIA_PGDATABASE` / `GIFT_INDIA_PGSSLMODE=require` from the same OAuth
+credential, then `make dbt`) — the app reads `gold`, so it isn't served until
+dbt has run.
+
 Find the endpoint path with `databricks postgres list-endpoints projects/gift-india/branches/production`.
-The bundle (`databricks.yml` / `app.yaml`) deploys the Streamlit app with a
-Lakebase resource; deploy the app **before** loading so its service principal owns
-the schema (see the Lakebase docs on schema ownership).
+The bundle (`gift_india_web/databricks.yml` / `gift_india_web/app.yaml`) deploys the
+web app with a Lakebase resource; deploy the app **before** loading so its service
+principal owns the schemas (see the Lakebase docs on schema ownership).
 
 ## How it works
 
-1. **Data** (`src/data.py`) — generates/loads ~10K geotagged facility records and a
-   district table (population, existing surgical capacity by specialty).
-2. **Engine** (`src/matching.py`) — scores each district's *unmet need* for a
-   specialty and ranks placement candidates by need × specialty gap × accessibility.
-3. **Copilot** (`src/copilot.py`) — parses a natural-language team description into a
-   structured query the engine can answer.
-4. **UI** (`app.py`) — a Streamlit app with a chat-style copilot, a ranked
-   recommendation list, and an interactive medical-desert map.
+1. **Data** (`gift_india_api/src/data.py`) — generates/loads ~10K geotagged facility
+   records and a district table (population, existing surgical capacity by specialty);
+   `load_db.py` loads them into local Postgres / Lakebase.
+2. **Engine** — the web server (`gift_india_web/server/routes/gift_india/routes.ts`)
+   scores each district's *unmet need* for a specialty directly in SQL over the gold
+   serving tables (`gold.geography` / `gold.facilities`), ranking candidates by
+   need × specialty gap × reach × accessibility.
+3. **Web app** (`gift_india_web`) — a Databricks AppKit app (React client + Express
+   server) with a navigator copilot, a ranked recommendation list, an interactive
+   medical-desert map, and saved placement plans, reading live data from Lakebase.
 
 ## Project layout
 
 ```
 gift_india/
-├── app.py              # Streamlit demo (copilot + map + planner)
-├── requirements.txt
-├── docker-compose.yml  # local Postgres for dev
-├── Makefile            # db-up / load / run / publish shortcuts
-├── .env.example        # GIFT_INDIA_DB_URL for local dev
-├── databricks.yml      # bundle: deploys the app + Lakebase resource
-├── app.yaml            # Databricks App run command
+├── gift_india_web/         # Databricks AppKit app (React client + Express server)
+│   ├── client/             # React frontend (Navigator, Map, Plans pages)
+│   ├── server/
+│   │   ├── server.ts       # Express entry (AppKit + Lakebase plugins)
+│   │   └── routes/gift_india/routes.ts  # /api/* routes + SQL scoring engine
+│   ├── databricks.yml      # bundle: deploys the app + Lakebase resource
+│   ├── app.yaml            # Databricks App run command (npm run start)
+│   └── package.json        # dev / build / start scripts
+├── gift_india_dbt/         # dbt (Postgres) medallion: bronze → silver → gold
+│   ├── models/silver/      # cleaned/typed facilities + geography
+│   ├── models/gold/        # serving: facilities + geography linked by lat/lon
+│   ├── macros/             # haversine_km, geography_id, schema naming
+│   └── seeds/              # state → state_code lookup
+├── gift_india_api/
+│   └── src/
+│       ├── data.py         # dataset generation + Postgres/Lakebase loaders
+│       ├── db.py           # connectivity (local Postgres + Lakebase creds)
+│       ├── load_db.py      # CLI: create schema + load (local | lakebase)
+│       ├── matching.py     # legacy scoring engine (now done in SQL by the web app)
+│       └── copilot.py      # natural-language request parsing
+├── requirements.txt        # Python deps for the gift_india_api loaders
+├── docker-compose.yml      # local Postgres for dev
+├── Makefile                # db-up / load / web / publish shortcuts
+├── .env.example            # GIFT_INDIA_DB_URL for local dev
 ├── db/
-│   └── schema.sql      # serving schema (local Postgres + Lakebase)
-├── src/
-│   ├── data.py         # dataset generation + Postgres/Lakebase loaders
-│   ├── db.py           # connectivity (local Postgres + Lakebase creds)
-│   ├── load_db.py      # CLI: create schema + load (local | lakebase)
-│   ├── matching.py     # recommendation engine
-│   └── copilot.py      # natural-language request parsing
-├── docs/architecture/  # medallion + metric-store design
-└── data/               # generated CSVs (gitignored)
+│   └── schema.sql          # bronze landing schema (raw tables the loader writes)
+├── docs/architecture/      # medallion + metric-store design
+└── data/                   # generated CSVs (gitignored)
 ```

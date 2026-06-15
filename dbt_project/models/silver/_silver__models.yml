@@ -1,0 +1,104 @@
+version: 2
+
+models:
+  - name: silver_facilities
+    description: Conformed, typed facility entity (one row per facility).
+    columns:
+      - name: facility_id
+        description: Entity-resolved facility primary key.
+        data_tests:
+          - not_null
+          - unique
+      - name: state
+        description: Full state / region name.
+      - name: lat
+        description: Latitude (double).
+      - name: lon
+        description: Longitude (double).
+
+  - name: silver_facility_specialties
+    description: >-
+      One row per (facility, specialty). Exploded from the source `specialties`
+      JSON array of camelCase codes, humanised into a label.
+    columns:
+      - name: facility_specialty_id
+        description: Surrogate key = hash(facility_id, specialty_code).
+        data_tests:
+          - not_null
+          - unique
+      - name: facility_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_facilities')
+                field: facility_id
+      - name: specialty_code
+        data_tests:
+          - not_null
+      - name: specialty_label
+        data_tests:
+          - not_null
+
+  - name: silver_facility_procedures
+    description: >-
+      One row per (facility, procedure). Exploded from the source `procedure`
+      JSON array of free-text procedure descriptions.
+    columns:
+      - name: facility_procedure_id
+        description: Surrogate key = hash(facility_id, procedure_text).
+        data_tests:
+          - not_null
+          - unique
+      - name: facility_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_facilities')
+                field: facility_id
+      - name: procedure_text
+        data_tests:
+          - not_null
+
+  - name: silver_facility_equipment
+    description: >-
+      One row per (facility, equipment item). Exploded from the source
+      `equipment` JSON array of free-text equipment descriptions.
+    columns:
+      - name: facility_equipment_id
+        description: Surrogate key = hash(facility_id, equipment_text).
+        data_tests:
+          - not_null
+          - unique
+      - name: facility_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_facilities')
+                field: facility_id
+      - name: equipment_text
+        data_tests:
+          - not_null
+
+  - name: silver_facility_capabilities
+    description: >-
+      One row per (facility, capability). Exploded from the source `capability`
+      JSON array of free-text capability statements.
+    columns:
+      - name: facility_capability_id
+        description: Surrogate key = hash(facility_id, capability_text).
+        data_tests:
+          - not_null
+          - unique
+      - name: facility_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_facilities')
+                field: facility_id
+      - name: capability_text
+        data_tests:
+          - not_null

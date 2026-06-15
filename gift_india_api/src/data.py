@@ -264,16 +264,18 @@ def _read_sql(conn, sql: str) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=cols)
 
 
+# Serving reads gold only (gold.facilities + gold.geography) — never the raw
+# bronze landing tables.
 _FACILITIES_SQL = """
     SELECT facility_id, name, type, district, state, lat, lon,
            specialties, offers_surgery, annual_surgeries, website_url,
            match_confidence
-    FROM public.facilities
+    FROM gold.facilities
 """
 _DISTRICTS_SQL = """
     SELECT district, state, lat, lon, population, urbanity,
            fp_unmet_pct, institutional_birth_pct, csection_pct, anaemia_pct
-    FROM public.districts
+    FROM gold.geography
 """
 
 

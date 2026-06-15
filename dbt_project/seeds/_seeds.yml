@@ -1,0 +1,22 @@
+version: 2
+
+seeds:
+  - name: metric_definitions
+    description: >-
+      Friendly label + category for each metric in the gold metric store, keyed
+      by the source column name (metric_name). Drives gold_metric.metric_label
+      and gold_metric.metric_category.
+    columns:
+      - name: metric_name
+        description: Source NFHS-5 column name (join key to gold_metric).
+        data_tests:
+          - not_null
+          - unique
+      - name: metric_label
+        description: Human-friendly metric name.
+        data_tests:
+          - not_null
+      - name: metric_category
+        description: Thematic grouping (e.g. Maternal Health, Anaemia).
+        data_tests:
+          - not_null

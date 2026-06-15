@@ -28,9 +28,17 @@ into trustworthy, queryable metrics:
 > **Today vs. live.** The demo app generates a synthetic ~10K-record dataset in
 > [`src/data.py`](../../src/data.py) and computes metrics at runtime in
 > [`src/matching.py`](../../src/matching.py). This doc describes the **governed,
-> production** shape of that same data on Databricks (`databricks_virtue_foundation_dataset_dais_2026`,
-> schema `virtue_foundation_dataset`). The app's `load_bundle()` swaps from CSV
-> to Databricks loaders with no change to the engine.
+> production** shape of that same data on Databricks. The app's `load_bundle()`
+> swaps from CSV to Databricks loaders with no change to the engine.
+
+> **Naming.** Our Unity Catalog **catalog is `gift_india`**, with the medallion
+> schemas `gift_india.bronze`, `gift_india.silver`, and `gift_india.gold` (the
+> bare `bronze.`/`silver.`/`gold.` references below are all under the `gift_india`
+> catalog). The continuously-synced serving tables land in the **Lakebase
+> Postgres database `gift_india`** (Lakebase project `gift-india`). This is
+> distinct from the upstream source — the Virtue Foundation listing
+> `databricks_virtue_foundation_dataset_dais_2026` (schema `virtue_foundation_dataset`),
+> which we read but do not rename.
 
 ---
 

@@ -1,7 +1,7 @@
-streamlit>=1.36
+# Python deps for the gift_india_api data loaders/engine (gift_india_api/src).
+# The web app (gift_india_web) is a separate Node/TypeScript project.
 pandas>=2.2
 numpy>=1.26
-pydeck>=0.9
 psycopg[binary]>=3.2
 databricks-sdk>=0.81
 requests>=2.32
