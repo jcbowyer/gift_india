@@ -40,14 +40,24 @@ resolution).
 
 The governed Virtue Foundation data lives on Databricks. Working workspaces:
 
-| Workspace | Owner | URL |
-|-----------|-------|-----|
-| John Bowyer's workspace | John Bowyer | https://dbc-0be3157e-0574.cloud.databricks.com/ |
-| Mason Bushyeager's workspace | Mason Bushyeager | https://dbc-0951416d-6d0e.cloud.databricks.com/ |
+| Workspace | Owner | Email | URL |
+|-----------|-------|-------|-----|
+| John Bowyer's workspace | John Bowyer | jbowyer@carequest.org | https://dbc-0be3157e-0574.cloud.databricks.com/ |
+ 
 
-**Governed dataset:** `databricks_virtue_foundation_dataset_dais_2026` —
-[open in Unity Catalog](https://dbc-0951416d-6d0e.cloud.databricks.com/explore/data/databricks_virtue_foundation_dataset_dais_2026?o=7474648526487231)
-(Mason Bushyeager's workspace).
+**Additional contact:** kappasig@gmail.com
+
+**Governed dataset:** `databricks_virtue_foundation_dataset_dais_2026` lives in
+**John Bowyer's workspace** (shared via Delta Sharing) —
+[open in Unity Catalog](https://dbc-0be3157e-0574.cloud.databricks.com/explore/data/databricks_virtue_foundation_dataset_dais_2026?o=7474652488103392).
+
+Schema `virtue_foundation_dataset` contains:
+
+| Table | Description |
+|-------|-------------|
+| `facilities` | Geotagged healthcare facility records |
+| `india_post_pincode_directory` | India Post pincode reference directory |
+| `nfhs_5_district_health_indicators` | NFHS-5 district-level health indicators |
 
 To point the app at the live data, implement Databricks loaders in `src/data.py`'s
 `load_bundle()` (e.g. via `databricks-sql-connector` or the Databricks SDK) so they
