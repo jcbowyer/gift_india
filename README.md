@@ -34,7 +34,24 @@ resolution).
 > For the hackathon demo the dataset is **synthetically generated** with realistic
 > Indian districts, coordinates, populations and specialties, so the app runs with
 > zero external dependencies. Swap `src/data.py` for the governed Virtue Foundation
-> dataset to go live.
+> dataset (see below) to go live.
+
+## Databricks workspaces & data source
+
+The governed Virtue Foundation data lives on Databricks. Working workspaces:
+
+| Workspace | Owner | URL |
+|-----------|-------|-----|
+| John Bowyer's workspace | John Bowyer | https://dbc-0be3157e-0574.cloud.databricks.com/ |
+| Mason Bushyeager's workspace | Mason Bushyeager | https://dbc-0951416d-6d0e.cloud.databricks.com/ |
+
+**Governed dataset:** `databricks_virtue_foundation_dataset_dais_2026` —
+[open in Unity Catalog](https://dbc-0951416d-6d0e.cloud.databricks.com/explore/data/databricks_virtue_foundation_dataset_dais_2026?o=7474648526487231)
+(Mason Bushyeager's workspace).
+
+To point the app at the live data, implement Databricks loaders in `src/data.py`'s
+`load_bundle()` (e.g. via `databricks-sql-connector` or the Databricks SDK) so they
+return the same `facilities` / `districts` shape the engine expects.
 
 ## Quickstart
 
