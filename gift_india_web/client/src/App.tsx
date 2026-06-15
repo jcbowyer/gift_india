@@ -68,8 +68,8 @@ function Layout() {
             <Stethoscope className="h-5 w-5" />
           </span>
           <div className="leading-tight">
-            <span className="block text-base font-semibold text-foreground">gift_india India</span>
-            <span className="block text-[11px] text-muted-foreground">Surgical team placement copilot</span>
+            <span className="block text-base font-semibold text-foreground">GIFT India</span>
+            <span className="block text-[11px] text-muted-foreground">Gold Insights & Facility Templates for India</span>
           </div>
         </div>
         <NavLinks className="hidden md:flex gap-1 ml-4" linkClass={navLinkClass} />
@@ -83,7 +83,7 @@ function Layout() {
               </Button>
               <SheetContent side="left">
                 <SheetHeader>
-                  <SheetTitle>gift_india India</SheetTitle>
+                  <SheetTitle>GIFT India</SheetTitle>
                 </SheetHeader>
                 <NavLinks className="flex flex-col gap-1 mt-4" linkClass={mobileNavLinkClass} onClick={() => setMobileNavOpen(false)} />
               </SheetContent>

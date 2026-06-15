@@ -1,0 +1,51 @@
+district,state,lat,lon,population,urbanity
+Mumbai,Maharashtra,19.076,72.877,12442373,0.98
+Delhi,Delhi,28.704,77.102,16787941,0.97
+Bengaluru,Karnataka,12.972,77.595,9621551,0.95
+Hyderabad,Telangana,17.385,78.487,6809970,0.94
+Ahmedabad,Gujarat,23.023,72.571,5577940,0.91
+Chennai,Tamil Nadu,13.083,80.27,4646732,0.96
+Kolkata,West Bengal,22.573,88.364,4496694,0.96
+Pune,Maharashtra,18.52,73.857,3124458,0.9
+Jaipur,Rajasthan,26.912,75.787,3073350,0.78
+Lucknow,Uttar Pradesh,26.847,80.946,2817105,0.66
+Kanpur,Uttar Pradesh,26.449,80.331,2765348,0.62
+Nagpur,Maharashtra,21.146,79.088,2405421,0.68
+Patna,Bihar,25.594,85.137,1684222,0.43
+Indore,Madhya Pradesh,22.72,75.857,1964086,0.74
+Bhopal,Madhya Pradesh,23.26,77.413,1798218,0.7
+Ranchi,Jharkhand,23.344,85.31,1073440,0.34
+Raipur,Chhattisgarh,21.251,81.63,1010087,0.31
+Guwahati,Assam,26.144,91.736,957352,0.3
+Bhubaneswar,Odisha,20.296,85.825,837737,0.36
+Srinagar,Jammu & Kashmir,34.084,74.797,1180570,0.28
+Varanasi,Uttar Pradesh,25.317,82.973,1201815,0.4
+Gorakhpur,Uttar Pradesh,26.76,83.374,673446,0.22
+Muzaffarpur,Bihar,26.12,85.364,393724,0.14
+Gaya,Bihar,24.796,84.999,470839,0.16
+Jodhpur,Rajasthan,26.238,73.024,1033918,0.41
+Bikaner,Rajasthan,28.022,73.312,644406,0.2
+Jaisalmer,Rajasthan,26.915,70.908,65471,0.07
+Barmer,Rajasthan,25.751,71.418,83517,0.06
+Koraput,Odisha,18.812,82.712,39485,0.05
+Malkangiri,Odisha,18.347,81.888,25590,0.04
+Bastar,Chhattisgarh,19.107,81.954,56181,0.05
+Dantewada,Chhattisgarh,18.899,81.355,19865,0.03
+Kalahandi,Odisha,19.914,83.165,30172,0.04
+Sheopur,Madhya Pradesh,25.667,76.696,64359,0.06
+Barwani,Madhya Pradesh,22.03,74.901,56220,0.06
+Kishanganj,Bihar,26.097,87.945,105782,0.08
+Sitamarhi,Bihar,26.595,85.49,56490,0.05
+Nuh (Mewat),Haryana,28.107,77.001,75088,0.07
+Banswara,Rajasthan,23.546,74.443,101017,0.09
+Dungarpur,Rajasthan,23.843,73.714,51564,0.05
+Lahaul-Spiti,Himachal Pradesh,32.578,77.358,12017,0.03
+Kargil,Ladakh,34.557,76.126,16338,0.04
+Leh,Ladakh,34.164,77.584,30870,0.07
+Tawang,Arunachal Pradesh,27.586,91.859,11202,0.04
+Dibang Valley,Arunachal Pradesh,28.7,95.9,8004,0.02
+Kohima,Nagaland,25.671,94.11,99039,0.13
+Churachandpur,Manipur,24.333,93.683,38415,0.06
+Wayanad,Kerala,11.605,76.083,145184,0.18
+Gadchiroli,Maharashtra,20.181,80.003,41829,0.05
+Nandurbar,Maharashtra,21.366,74.241,92335,0.08

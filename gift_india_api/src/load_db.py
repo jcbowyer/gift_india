@@ -9,17 +9,18 @@ Local dev (uses ``GIFT_INDIA_DB_URL`` / ``.env`` / the docker-compose default)::
 
     python -m src.load_db
 
-Publish to Lakebase (resolves host + OAuth token via the Databricks CLI)::
+Publish to Lakebase (resolves host + OAuth token via the Databricks CLI). The
+loader logs in as the shared ``admins`` group role so the ``gift_india`` catalog,
+its schema, and tables are all owned by ``admins``::
 
     python -m src.load_db --target lakebase \\
-        --endpoint projects/gift-india/branches/production/endpoints/<endpoint_id> \\
+        --endpoint projects/carenavigator/branches/production/endpoints/primary \\
         --profile <profile>
 """
 from __future__ import annotations
 
 import argparse
 import math
-import os
 from pathlib import Path
 from urllib.parse import quote
 
@@ -28,7 +29,15 @@ import numpy as np
 from . import db
 from .data import build_dataset
 
-_SCHEMA_SQL = Path(__file__).resolve().parent.parent / "db" / "schema.sql"
+_SCHEMA_SQL = Path(__file__).resolve().parents[2] / "db" / "schema.sql"
+
+# Postgres role that should own the `gift_india` catalog, its schema, and every
+# table. On Lakebase this is the shared `admins` group role: the loader logs in
+# AS the group (any group member authenticates with the group role name as the
+# username and their own OAuth token), so everything it creates is owned by
+# `admins` directly — no ownership transfer needed. See the Lakebase docs on
+# Postgres group roles / object ownership.
+DEFAULT_OWNER = "admins"
 
 _DISTRICT_COLS = ["district", "state", "lat", "lon", "population", "urbanity"]
 _FACILITY_COLS = [
@@ -42,6 +51,17 @@ def _ensure_schema(conn) -> None:
     with conn.cursor() as cur:
         cur.execute(_SCHEMA_SQL.read_text())
     conn.commit()
+
+
+def _schema_owner(conn, schema: str) -> str | None:
+    """Return the role that owns ``schema`` (or ``None`` if it does not exist)."""
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT pg_get_userbyid(nspowner) FROM pg_namespace WHERE nspname = %s",
+            (schema,),
+        )
+        row = cur.fetchone()
+    return row[0] if row else None
 
 
 def _native(value):
@@ -82,7 +102,10 @@ def _load(conn, schema: str, force: bool) -> tuple[int, int]:
 
 def _lakebase_dsn(args) -> str:
     creds = db.lakebase_credentials(args.endpoint, args.profile)
-    user = args.user or os.getenv("PGUSER") or db.current_user(args.profile)
+    # Log in AS the owner group role so created objects are owned by it. Any
+    # member of the Databricks group authenticates with the group role name and
+    # their own short-lived OAuth token.
+    user = args.user or args.owner
     return (
         f"postgresql://{quote(user)}:{quote(creds['token'])}@"
         f"{creds['host']}:5432/{args.database}?sslmode=require"
@@ -101,10 +124,18 @@ def main(argv: list[str] | None = None) -> int:
         help="Lakebase endpoint resource path (required for --target lakebase).",
     )
     parser.add_argument("--profile", help="Databricks CLI profile.")
-    parser.add_argument("--user", help="Postgres role (defaults to Databricks user).")
+    parser.add_argument(
+        "--owner", default=DEFAULT_OWNER,
+        help="Lakebase group role to own the catalog/schema/tables; the loader "
+             f"logs in as it (default: {DEFAULT_OWNER}).",
+    )
+    parser.add_argument(
+        "--user",
+        help="Override the Lakebase login role (defaults to --owner).",
+    )
     parser.add_argument(
         "--database", default="gift_india",
-        help="Lakebase database name (default: gift_india).",
+        help="Lakebase database / catalog name (default: gift_india).",
     )
     parser.add_argument("--schema", default=db.DEFAULT_SCHEMA)
     parser.add_argument(
@@ -126,11 +157,13 @@ def main(argv: list[str] | None = None) -> int:
     with db.connect(dsn) as conn:
         _ensure_schema(conn)
         n_districts, n_facilities = _load(conn, args.schema, args.force)
+        owner = _schema_owner(conn, args.schema)
 
     print(
         f"Loaded {n_districts:,} districts and {n_facilities:,} facilities "
         f"into {args.schema}.* on {where}."
     )
+    print(f"Schema {args.schema} and its tables are owned by {owner!r}.")
     return 0
 
 

@@ -8,9 +8,22 @@ Foundation maintains geotagged healthcare data describing *where care actually
 lives today*. The hard problem: **match the right surgical team to the right
 location based on specialty and need.**
 
-gift_india India turns that data into action. Describe a team in plain
+GIFT India turns that data into action. Describe a team in plain
 language — _"3-surgeon cataract team, 5 days, willing to travel rural"_ — and the
 copilot ranks the **medical deserts** where that team will help the most people.
+
+## What G.I.F.T. stands for
+
+**Gold Insights & Facility Templates for India.**
+
+**Why it works:** It is punchy, impossible to forget, and captures the exact spirit
+of a "Hackathon for Good."
+
+**How to pitch it:**
+
+> "NGO planners shouldn't have to fight 10,000 messy rows of web-scraped data to
+> save lives. We built G.I.F.T. India—a Databricks app that delivers Gold-standard
+> Insights and verified Facility Templates to map healthcare across India."
 
 ## Quick start
 
@@ -127,28 +140,38 @@ The **same loader** publishes the dataset to Databricks Lakebase, so the deploye
 app reads the data you validated locally. It resolves the endpoint host and a
 short-lived OAuth credential via the Databricks CLI.
 
+All data lives in the **`gift_india` catalog** (Lakebase database), and the
+catalog, the `bronze` schema, and every table are owned by the shared **`admins`
+group role**. The loader achieves this by **logging in as the `admins` group**:
+any member of the Databricks `admins` group authenticates with the group role
+name as the username and their own OAuth token as the password, so everything it
+creates is owned by `admins` directly (see the Lakebase docs on
+[Postgres group roles](https://docs.databricks.com/aws/en/oltp/projects/postgres-roles)
+and [object ownership](https://docs.databricks.com/aws/en/oltp/projects/transfer-object-ownership)).
+
 ```bash
 make publish \
-  ENDPOINT=projects/gift-india/branches/production/endpoints/<endpoint_id> \
+  ENDPOINT=projects/carenavigator/branches/production/endpoints/primary \
   PROFILE=<your-cli-profile>
 
-# equivalently:
+# equivalently (logs in as the `admins` group, loads into the gift_india catalog):
 cd gift_india_api && python -m src.load_db --target lakebase \
-  --endpoint projects/gift-india/branches/production/endpoints/<endpoint_id> \
+  --endpoint projects/carenavigator/branches/production/endpoints/primary \
   --profile <your-cli-profile>
 ```
 
-This lands the raw data in Lakebase `bronze`. Build the `silver`/`gold` serving
-tables against Lakebase afterwards by pointing the dbt profile at the endpoint
-(export `GIFT_INDIA_PGHOST` / `GIFT_INDIA_PGUSER` / `GIFT_INDIA_PGPASSWORD` /
-`GIFT_INDIA_PGDATABASE` / `GIFT_INDIA_PGSSLMODE=require` from the same OAuth
-credential, then `make dbt`) — the app reads `gold`, so it isn't served until
-dbt has run.
+This lands the raw data in the `gift_india` catalog's `bronze` schema. Build the
+`silver`/`gold` serving tables against Lakebase afterwards by pointing the dbt
+profile at the endpoint — export `GIFT_INDIA_PGHOST` / `GIFT_INDIA_PGPASSWORD` /
+`GIFT_INDIA_PGSSLMODE=require` from the same OAuth credential, set
+`GIFT_INDIA_PGDATABASE=gift_india`, and set `GIFT_INDIA_PGUSER=admins` so the
+`silver`/`gold` schemas are also owned by `admins`, then `make dbt`. The app
+reads `gold`, so it isn't served until dbt has run.
 
-Find the endpoint path with `databricks postgres list-endpoints projects/gift-india/branches/production`.
+Find the endpoint path with `databricks postgres list-endpoints projects/carenavigator/branches/production`.
 The bundle (`gift_india_web/databricks.yml` / `gift_india_web/app.yaml`) deploys the
-web app with a Lakebase resource; deploy the app **before** loading so its service
-principal owns the schemas (see the Lakebase docs on schema ownership).
+web app with a Lakebase resource pointed at the `gift_india` database; the app's
+service principal must be a member of the `admins` group to read the catalog.
 
 ## How it works
 
@@ -163,6 +186,29 @@ principal owns the schemas (see the Lakebase docs on schema ownership).
    server) with a navigator copilot, a ranked recommendation list, an interactive
    medical-desert map, and saved placement plans, reading live data from Lakebase.
 
+## Two dbt projects (different warehouses, not duplicates)
+
+Transformation happens in **two distinct dbt projects that run on different
+engines** — this is intentional, not redundancy:
+
+| Project | Adapter | Runs on | Builds | Consumer |
+|---------|---------|---------|--------|----------|
+| `dbt_project/` | `databricks` | Databricks (DAB Job) | `workspace.gift_india_{bronze,silver,gold}` capability/metric marts from the governed Virtue Foundation Delta Share | Databricks analytics |
+| `gift_india_dbt/` | `postgres` | Lakebase / local Postgres | `silver` + `gold.facilities` / `gold.geography` (lat/long-linked serving tables) from the Postgres `bronze` landing | The web app + `data.py` |
+
+Because they target different warehouses (and even different schema names —
+`gift_india_silver` on Databricks vs `silver` on Postgres) they never collide.
+The **app's serving layer is `gift_india_dbt`** (`gold.facilities` /
+`gold.geography`); `dbt_project` is the upstream Databricks medallion.
+
+Build them from the repo root:
+
+```bash
+make data            # Postgres serving medallion (load bronze + build silver/gold)
+make dbt-databricks  # Databricks medallion (dbt_project/ on the SQL warehouse)
+make pipeline        # both of the above
+```
+
 ## Project layout
 
 ```
@@ -175,11 +221,14 @@ gift_india/
 │   ├── databricks.yml      # bundle: deploys the app + Lakebase resource
 │   ├── app.yaml            # Databricks App run command (npm run start)
 │   └── package.json        # dev / build / start scripts
-├── gift_india_dbt/         # dbt (Postgres) medallion: bronze → silver → gold
-│   ├── models/silver/      # cleaned/typed facilities + geography
-│   ├── models/gold/        # serving: facilities + geography linked by lat/lon
+├── gift_india_dbt/         # dbt (POSTGRES) serving medallion — what the app reads
+│   ├── models/silver/      # cleaned/typed facilities + geography (Lakebase bronze → silver)
+│   ├── models/gold/        # serving: gold.facilities + gold.geography linked by lat/lon
 │   ├── macros/             # haversine_km, geography_id, schema naming
 │   └── seeds/              # state → state_code lookup
+├── dbt_project/            # dbt (DATABRICKS) source medallion — DAB job on Databricks
+│   ├── databricks.yml      # Databricks Asset Bundle (scheduled dbt Job)
+│   └── models/             # VF Delta Share → bronze/silver/gold capability marts
 ├── gift_india_api/
 │   └── src/
 │       ├── data.py         # dataset generation + Postgres/Lakebase loaders

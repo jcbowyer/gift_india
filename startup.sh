@@ -39,6 +39,24 @@ if [ ! -d node_modules ]; then
   npm install
 fi
 
-# 4. Run the dev server — serves both the web client and the /api routes.
-echo "▶ Starting dev server on http://localhost:$PORT (Ctrl-C to stop)…"
+# 4. Open the web client in a browser once the dev server is accepting connections.
+URL="http://localhost:$PORT"
+open_browser() {
+  if command -v xdg-open >/dev/null 2>&1; then xdg-open "$URL" >/dev/null 2>&1
+  elif command -v wslview >/dev/null 2>&1; then wslview "$URL" >/dev/null 2>&1
+  elif command -v open >/dev/null 2>&1; then open "$URL" >/dev/null 2>&1
+  elif command -v powershell.exe >/dev/null 2>&1; then powershell.exe -NoProfile Start-Process "$URL" >/dev/null 2>&1
+  else echo "  (Could not auto-open a browser — visit $URL manually.)"; fi
+}
+(
+  for _ in $(seq 1 60); do
+    if (exec 3<>"/dev/tcp/localhost/$PORT") 2>/dev/null; then exec 3>&- 3<&-; break; fi
+    sleep 0.5
+  done
+  echo "▶ Opening $URL in your browser…"
+  open_browser
+) &
+
+# 5. Run the dev server — serves both the web client and the /api routes.
+echo "▶ Starting dev server on $URL (Ctrl-C to stop)…"
 exec npm run dev

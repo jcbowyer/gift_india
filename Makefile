@@ -1,14 +1,16 @@
 # gift_india India — common dev tasks.
 #
 #   make db-up      start local Postgres (docker compose)
-#   make load       generate + land the raw dataset into the bronze schema
-#   make data       full medallion loop: load (bronze) + dbt build (silver/gold)
-#   make db-down    stop local Postgres (keeps data)
-#   make db-reset   stop + wipe the data volume, then start fresh
-#   make web        run the gift_india_web app locally (npm run dev)
-#   make publish    publish the dataset to Lakebase (set ENDPOINT, PROFILE)
+#   make load           generate + land the raw dataset into the bronze schema
+#   make data           Postgres serving loop: load (bronze) + dbt build (silver/gold)
+#   make dbt-databricks  build the upstream Databricks medallion (dbt_project/)
+#   make pipeline        build BOTH medallions (Databricks marts + Postgres serving)
+#   make db-down        stop local Postgres (keeps data)
+#   make db-reset       stop + wipe the data volume, then start fresh
+#   make web            run the gift_india_web app locally (npm run dev)
+#   make publish        publish the dataset to Lakebase (set ENDPOINT, PROFILE)
 
-.PHONY: db-up db-down db-reset load data web scrape publish dbt dbt-test dbt-docs
+.PHONY: db-up db-down db-reset load data pipeline web scrape publish dbt dbt-test dbt-docs dbt-databricks
 
 db-up:
 	docker compose up -d
@@ -59,3 +61,17 @@ dbt-test:
 
 dbt-docs:
 	cd gift_india_dbt && DBT_PROFILES_DIR=. dbt docs generate && DBT_PROFILES_DIR=. dbt docs serve
+
+# Build the upstream Databricks medallion (dbt_project/, adapter: databricks).
+# Runs the dbt SQL on the workspace SQL warehouse — needs the Databricks CLI
+# authenticated (DATABRICKS_CONFIG_PROFILE, default `gift-india`; see startup.sh)
+# and the dbt-databricks toolchain (pip install -r dbt_project/requirements.txt).
+dbt-databricks:
+	cd dbt_project && DATABRICKS_CONFIG_PROFILE=$(or $(PROFILE),gift-india) dbt deps && \
+		DATABRICKS_CONFIG_PROFILE=$(or $(PROFILE),gift-india) dbt build
+
+# Full transform across BOTH warehouses (the two medallions are independent
+# runtimes, so this just builds each):
+#   1. dbt-databricks — governed Delta Share → gold capability/metric marts (Databricks)
+#   2. data           — bronze load → silver/gold serving tables the app reads (Postgres)
+pipeline: dbt-databricks data

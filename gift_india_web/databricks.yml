@@ -34,6 +34,6 @@ targets:
       host: https://dbc-0be3157e-0574.cloud.databricks.com
 
     variables:
-      postgres_branch: projects/gift-india/branches/production
-      postgres_database: projects/gift-india/branches/production/databases/gift-india
-      postgres_project: projects/gift-india
+      postgres_branch: projects/carenavigator/branches/production
+      postgres_database: projects/carenavigator/branches/production/databases/gift-india
+      postgres_project: projects/carenavigator
