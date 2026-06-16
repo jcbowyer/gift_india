@@ -6,18 +6,54 @@ import { Pool } from 'pg';
 import compression from 'compression';
 import { setupgift_indiaRoutes } from './routes/gift_india/routes';
 
-function resolveLocalDbUrl(): string | undefined {
-  // Node's --env-file does not override shell exports. Re-read gift_india_web/.env
-  // so a stale GIFT_INDIA_DB_URL on :5432 never beats the file's :5433.
-  const envPath = resolve(dirname(fileURLToPath(import.meta.url)), '../.env');
-  if (existsSync(envPath)) {
-    for (const raw of readFileSync(envPath, 'utf8').split('\n')) {
-      const line = raw.trim();
-      if (!line || line.startsWith('#') || !line.startsWith('GIFT_INDIA_DB_URL=')) continue;
-      const val = line.slice('GIFT_INDIA_DB_URL='.length).trim().replace(/^["']|["']$/g, '');
-      if (val) return val;
-    }
+function readEnvVars(envPath: string): Map<string, string> {
+  const vars = new Map<string, string>();
+  if (!existsSync(envPath)) return vars;
+  for (const raw of readFileSync(envPath, 'utf8').split('\n')) {
+    const line = raw.trim();
+    if (!line || line.startsWith('#')) continue;
+    const eq = line.indexOf('=');
+    if (eq < 0) continue;
+    const key = line.slice(0, eq).trim();
+    const val = line.slice(eq + 1).trim().replace(/^["']|["']$/g, '');
+    vars.set(key, val);
   }
+  return vars;
+}
+
+function buildDbUrlFromParts(vars: Map<string, string>): string | undefined {
+  const host = vars.get('GIFT_INDIA_PGHOST');
+  const port = vars.get('GIFT_INDIA_PGPORT');
+  const user = vars.get('GIFT_INDIA_PGUSER');
+  const password = vars.get('GIFT_INDIA_PGPASSWORD');
+  const database = vars.get('GIFT_INDIA_PGDATABASE');
+  if (!host && !port && !user && !database) return undefined;
+  const h = host || 'localhost';
+  const p = port || '5433';
+  const u = user || 'postgres';
+  const d = database || 'gift_india';
+  const auth = password
+    ? `${encodeURIComponent(u)}:${encodeURIComponent(password)}`
+    : encodeURIComponent(u);
+  return `postgresql://${auth}@${h}:${p}/${d}`;
+}
+
+function resolveLocalDbUrl(): string | undefined {
+  // Node's --env-file does not override shell exports. Re-read repo .env files so a
+  // stale GIFT_INDIA_DB_URL on :5432 never beats the configured :5433 warehouse.
+  const webEnvPath = resolve(dirname(fileURLToPath(import.meta.url)), '../.env');
+  const rootEnvPath = resolve(dirname(fileURLToPath(import.meta.url)), '../../.env');
+  const merged = new Map<string, string>();
+  for (const envPath of [rootEnvPath, webEnvPath]) {
+    for (const [key, val] of readEnvVars(envPath)) merged.set(key, val);
+  }
+
+  const explicitUrl = merged.get('GIFT_INDIA_DB_URL');
+  if (explicitUrl) return explicitUrl;
+
+  const fromParts = buildDbUrlFromParts(merged);
+  if (fromParts) return fromParts;
+
   return process.env.GIFT_INDIA_DB_URL;
 }
 

@@ -27,6 +27,17 @@ if ! databricks current-user me --profile "$PROFILE" >/dev/null 2>&1; then
 fi
 echo "✓ Databricks profile '$PROFILE' authenticated"
 
+# 1b. Load repo .env so local Postgres (:5433) wins over a stale shell export on :5432.
+if [ -f "$ROOT_DIR/.env" ]; then
+  set -a
+  # shellcheck source=/dev/null
+  source "$ROOT_DIR/.env"
+  set +a
+fi
+if [ -z "${GIFT_INDIA_DB_URL:-}" ] && [ -n "${GIFT_INDIA_PGPORT:-}" ]; then
+  export GIFT_INDIA_DB_URL="postgresql://${GIFT_INDIA_PGUSER:-postgres}:${GIFT_INDIA_PGPASSWORD:-}@${GIFT_INDIA_PGHOST:-localhost}:${GIFT_INDIA_PGPORT}/${GIFT_INDIA_PGDATABASE:-gift_india}"
+fi
+
 # 2. Kill any prior dev server, Vite HMR websocket, and free the target port.
 PORT="${DATABRICKS_APP_PORT:-8000}"
 echo "▶ Stopping any existing dev server / Vite HMR / process on port $PORT…"

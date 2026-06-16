@@ -21,6 +21,25 @@ _SCHEMA_SQL = Path(__file__).resolve().parents[2] / "db" / "schema.sql"
 
 APP_DDL = """
 CREATE SCHEMA IF NOT EXISTS app;
+CREATE TABLE IF NOT EXISTS app.merge_reviews (
+  id              SERIAL PRIMARY KEY,
+  candidate_id    TEXT NOT NULL,
+  decision        TEXT NOT NULL,
+  reviewed_by     TEXT,
+  note            TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS merge_reviews_candidate_idx ON app.merge_reviews (candidate_id);
+CREATE TABLE IF NOT EXISTS app.website_url_updates (
+  id              SERIAL PRIMARY KEY,
+  facility_id     TEXT NOT NULL,
+  facility_name   TEXT,
+  old_url         TEXT,
+  new_url         TEXT NOT NULL,
+  reviewed_by     TEXT,
+  note            TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 CREATE TABLE IF NOT EXISTS app.data_quality_flags (
   id              SERIAL PRIMARY KEY,
   facility_id     TEXT NOT NULL,
@@ -91,11 +110,10 @@ def refresh_flags(conn: psycopg.Connection) -> dict[str, int]:
             """
             INSERT INTO app.data_quality_flags (facility_id, flag_type, severity, detail, related_id)
             SELECT a.facility_id, 'contradiction', 'high',
-                   COALESCE(c.capability_label, a.capability) || ': '
+                   a.capability || ': '
                    || a.contradicting_count || ' contradicting evidence item(s).',
                    a.capability
             FROM gold.facility_capability_assessments a
-            LEFT JOIN gold.capabilities c ON c.capability = a.capability
             WHERE a.contradicting_count > 0
               AND NOT EXISTS (
                 SELECT 1 FROM app.data_quality_flags dq

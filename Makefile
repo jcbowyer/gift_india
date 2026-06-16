@@ -12,7 +12,7 @@
 #   make test           run the gift_india_api Python unit tests (pytest)
 #   make publish        publish the dataset to Lakebase (set ENDPOINT, PROFILE)
 
-.PHONY: db-up db-down db-reset load load-real data pipeline web scrape load-crawl crawl jci-scrape load-jci load-jci-crawl jci nabh-scrape load-nabh nabh nhpr-scrape load-nhpr nhpr pmjay-scrape load-pmjay pmjay med-travel shapefiles test publish dbt dbt-test dbt-docs dbt-databricks narrate-evidence narrate-pilot narrate-pilot-stub pg-check
+.PHONY: db-up db-down db-reset load load-real data pipeline web scrape load-crawl crawl jci-scrape load-jci load-jci-crawl jci nabh-scrape load-nabh nabh nhpr-scrape load-nhpr nhpr pmjay-scrape load-pmjay pmjay med-travel shapefiles test publish dbt dbt-test dbt-docs dbt-databricks comments comments-lakebase sync-genie narrate-evidence narrate-pilot narrate-pilot-stub pg-check splink-duplicates refresh-data-quality-flags data-readiness
 
 # Load repo .env (+ optional .env.local) and sync GIFT_INDIA_PG* from GIFT_INDIA_DB_URL.
 define LOAD_GIFT_ENV
@@ -238,6 +238,30 @@ pg-check:
 # For Lakebase: export PGHOST/PGUSER/PGPASSWORD/PGDATABASE/PGSSLMODE before running.
 dbt: pg-check
 	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. $(DBT) build
+	@$(LOAD_GIFT_ENV) && $(PYTHON) scripts/apply_table_comments.py
+
+# Splink probabilistic duplicate finder → bronze.merge_candidates.
+# Run after bronze sources are loaded (`make load-real` or `make data`).
+splink-duplicates: pg-check
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.splink_duplicates $(if $(SKIP_IF_POPULATED),--skip-if-populated,)
+
+refresh-data-quality-flags: pg-check
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.refresh_data_quality_flags
+
+data-readiness: splink-duplicates refresh-data-quality-flags
+
+# Apply bronze/app/non-dbt gold COMMENT ON metadata (dbt persist_docs handles models/seeds).
+comments: pg-check
+	@$(LOAD_GIFT_ENV) && $(PYTHON) scripts/apply_table_comments.py
+
+# Same as comments, against Lakebase (requires ENDPOINT + authenticated Databricks CLI).
+comments-lakebase:
+	@test -n "$(ENDPOINT)" || (echo "ERROR: set ENDPOINT=projects/.../endpoints/<id>"; exit 1)
+	$(PYTHON) scripts/apply_table_comments.py --target lakebase --endpoint $(ENDPOINT) $(if $(PROFILE),--profile $(PROFILE),)
+
+# Mirror Lakebase gold.* to workspace.gift_serving Delta tables for Genie (includes comments).
+sync-genie:
+	$(PYTHON) scripts/sync_lakebase_to_uc.py
 
 dbt-test: pg-check
 	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. $(DBT) test

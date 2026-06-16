@@ -20,7 +20,7 @@ import {
   TableRow,
 } from '@databricks/appkit-ui/react';
 import { Trash2, ArrowRight, PencilLine, ShieldCheck } from 'lucide-react';
-import { api, SIGNAL_META, type OverrideRecord, type TrustSignal } from '../lib/api';
+import { api, SIGNAL_META, type OverrideRecord, type TrustSignal, type MergeReviewRecord, type WebsiteUrlUpdateRecord } from '../lib/api';
 import { SignalBadge } from '../components/trust';
 
 const CAP_LABEL: Record<string, string> = {
@@ -38,15 +38,19 @@ function asSignal(s: string): TrustSignal {
 
 export function ReviewsPage() {
   const [reviews, setReviews] = useState<OverrideRecord[]>([]);
+  const [mergeReviews, setMergeReviews] = useState<MergeReviewRecord[]>([]);
+  const [urlUpdates, setUrlUpdates] = useState<WebsiteUrlUpdateRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
-    api
-      .overrides()
-      .then((rows) => {
-        if (active) setReviews(rows);
+    Promise.all([api.overrides(), api.mergeReviews(), api.websiteUrlUpdates()])
+      .then(([rows, merges, urls]) => {
+        if (!active) return;
+        setReviews(rows);
+        setMergeReviews(merges);
+        setUrlUpdates(urls);
       })
       .catch((err) => {
         if (active) setError(err instanceof Error ? err.message : 'Failed to load reviews');
@@ -77,8 +81,7 @@ export function ReviewsPage() {
         <div className="space-y-1">
           <h2 className="text-2xl font-bold text-foreground">My reviews</h2>
           <p className="text-muted-foreground">
-            Assessments you overrode, with your reviewer notes. Stored in <code>app.capability_overrides</code> on
-            Lakebase and applied on top of the computed trust signals and scores.
+            Human-in-the-loop decisions — capability overrides, Splink merge reviews, and website URL updates on record.
           </p>
         </div>
       </div>
@@ -173,6 +176,86 @@ export function ReviewsPage() {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="gift-elevate gift-fade-in" data-demo="merge-reviews">
+        <CardHeader>
+          <CardTitle>Merge reviews</CardTitle>
+          <CardDescription>Splink duplicate-finder recommendations you approved or rejected.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <Skeleton className="h-10 w-full rounded" />
+          ) : mergeReviews.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No merge reviews yet — use Data Quality → Duplicate finder.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Pair</TableHead>
+                  <TableHead>Match</TableHead>
+                  <TableHead>Decision</TableHead>
+                  <TableHead>Note</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {mergeReviews.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="text-sm">
+                      <div>{r.leftName} ({r.leftSource})</div>
+                      <div className="text-muted-foreground">↔ {r.rightName} ({r.rightSource})</div>
+                    </TableCell>
+                    <TableCell className="tabular-nums">{Math.round(r.matchProbability * 100)}%</TableCell>
+                    <TableCell className="capitalize font-medium">{r.decision}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{r.note || '—'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="gift-elevate gift-fade-in" data-demo="url-updates">
+        <CardHeader>
+          <CardTitle>Website URL updates</CardTitle>
+          <CardDescription>Missing-finder URL corrections applied to bronze.facilities_virtue.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <Skeleton className="h-10 w-full rounded" />
+          ) : urlUpdates.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No URL updates yet — use Data Quality → Web addresses.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Facility</TableHead>
+                  <TableHead>URL change</TableHead>
+                  <TableHead>Note</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {urlUpdates.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell>
+                      <Link to={`/facility/${encodeURIComponent(r.facilityId)}`} className="font-medium text-primary hover:underline">
+                        {r.facilityName || r.facilityId}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      <div className="text-muted-foreground line-through">{r.oldUrl || '(none)'}</div>
+                      <a href={r.newUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                        {r.newUrl}
+                      </a>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{r.note || '—'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

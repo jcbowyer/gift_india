@@ -1,6 +1,13 @@
 import { useState, useEffect, useMemo, Fragment } from 'react';
 import { api } from '../lib/api';
 import { GeographyCoverageMap } from '../components/GeographyCoverageMap';
+import {
+  AutomatedFlagsPanel,
+  DataQualityFlagKpis,
+  DuplicateFinderPanel,
+  MissingUrlRow,
+  useDataQualityFlagSummary,
+} from '../components/DataQualityTools';
 import type {
   DataQualityReport,
   DataQualityMissingFacility,
@@ -8,6 +15,7 @@ import type {
   DataQualityGeographyStateRow,
 } from '../lib/api';
 
+type WorkspaceTab = 'urls' | 'duplicates' | 'flags';
 type SortKey = 'state' | 'total' | 'withUrl' | 'pct' | 'missing';
 type GeoSortKey = 'state' | 'totalDistricts' | 'mappedDistricts' | 'pct' | 'facilities';
 type SortDir = 'asc' | 'desc';
@@ -73,6 +81,8 @@ export function DataQualityPage() {
   const [geoDrillState, setGeoDrillState] = useState<string | null>(null);
   const [geoDrillData, setGeoDrillData] = useState<DataQualityUnmappedDistrict[] | null>(null);
   const [geoDrillLoading, setGeoDrillLoading] = useState(false);
+  const [workspaceTab, setWorkspaceTab] = useState<WorkspaceTab>('urls');
+  const flagSummary = useDataQualityFlagSummary();
 
   useEffect(() => {
     api
@@ -205,13 +215,40 @@ export function DataQualityPage() {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Data Quality</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Web address coverage — tracks which facilities have a known website URL and whether that site was successfully
-          scraped. Computed from{' '}
-          <code className="font-mono text-xs bg-muted px-1 rounded">gold.facilities</code> joined
-          against{' '}
-          <code className="font-mono text-xs bg-muted px-1 rounded">bronze.facility_web_crawl</code>.
+          Track 4 fix-list — missing web addresses, Splink duplicate-finder merge recommendations, and automated readiness
+          flags with human-in-the-loop review. Nothing silently merges into gold.
         </p>
       </div>
+
+      <DataQualityFlagKpis summary={flagSummary} />
+
+      <div className="flex gap-2 border-b pb-0">
+        {(
+          [
+            ['urls', 'Web addresses'],
+            ['duplicates', 'Duplicate finder'],
+            ['flags', 'Automated flags'],
+          ] as const
+        ).map(([tab, label]) => (
+          <button
+            key={tab}
+            onClick={() => setWorkspaceTab(tab)}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+              workspaceTab === tab
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {workspaceTab === 'duplicates' && <DuplicateFinderPanel />}
+      {workspaceTab === 'flags' && <AutomatedFlagsPanel />}
+
+      {workspaceTab === 'urls' && (
+        <>
 
       {/* KPI row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" data-demo="web-address-kpis">
@@ -338,28 +375,23 @@ export function DataQualityPage() {
                                       <th className="px-3 py-2 text-left font-semibold text-muted-foreground">
                                         District
                                       </th>
+                                      <th className="px-3 py-2 text-left font-semibold text-muted-foreground">
+                                        Add URL
+                                      </th>
                                       <th className="px-3 py-2 text-right font-semibold text-muted-foreground">
-                                        Beds
+                                        Action
                                       </th>
                                     </tr>
                                   </thead>
                                   <tbody>
                                     {drillData.map((f) => (
-                                      <tr
+                                      <MissingUrlRow
                                         key={f.facilityId}
-                                        className="border-b last:border-0 hover:bg-muted/40"
-                                      >
-                                        <td className="px-3 py-1.5 font-medium">{f.name}</td>
-                                        <td className="px-3 py-1.5 text-muted-foreground">
-                                          {f.type ?? '—'}
-                                        </td>
-                                        <td className="px-3 py-1.5 text-muted-foreground">
-                                          {f.district}
-                                        </td>
-                                        <td className="px-3 py-1.5 text-right tabular-nums">
-                                          {f.beds != null ? f.beds.toLocaleString() : '—'}
-                                        </td>
-                                      </tr>
+                                        facility={f}
+                                        onSaved={(id) =>
+                                          setDrillData((prev) => prev?.filter((x) => x.facilityId !== id) ?? null)
+                                        }
+                                      />
                                     ))}
                                   </tbody>
                                 </table>
@@ -549,6 +581,8 @@ export function DataQualityPage() {
           &lt;25%
         </span>
       </div>
+        </>
+      )}
     </div>
   );
 }

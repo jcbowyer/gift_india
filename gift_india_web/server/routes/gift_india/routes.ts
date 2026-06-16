@@ -164,6 +164,11 @@ function num(v: unknown): number | null {
   return v === null || v === undefined ? null : Number(v);
 }
 
+function isMissingRelation(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return /does not exist|relation .* not found/i.test(msg);
+}
+
 // ── scorecard: per-area metrics rolled up from the district grain ─────────────
 // One combined row per district carrying the NFHS-5 health rates, care-supply
 // counts and capability-trust aggregates. Scopes (nation / region / state /
@@ -1628,6 +1633,10 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           })),
         );
       } catch (err) {
+        if (isMissingRelation(err)) {
+          res.json([]);
+          return;
+        }
         console.error('data-quality/flags failed:', err);
         res.status(500).json({ error: 'Failed to load data quality flags' });
       }
@@ -1660,6 +1669,10 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           totalOpen: Object.values(byType).reduce((a, b) => a + b, 0),
         });
       } catch (err) {
+        if (isMissingRelation(err)) {
+          res.json({ byType: {}, pendingMergeReviews: 0, totalOpen: 0 });
+          return;
+        }
         console.error('data-quality/flag-summary failed:', err);
         res.status(500).json({ error: 'Failed to load flag summary' });
       }
@@ -1712,6 +1725,10 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           })),
         );
       } catch (err) {
+        if (isMissingRelation(err)) {
+          res.json([]);
+          return;
+        }
         console.error('data-quality/duplicates failed:', err);
         res.status(500).json({ error: 'Failed to load duplicate candidates' });
       }

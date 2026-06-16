@@ -23,7 +23,6 @@ UC_SCHEMA = "workspace.gift_serving"
 TABLES = (
     "facilities",
     "facility_capability_assessments",
-    "capability_evidence",
     "capability_scored",
     "geography",
 )
@@ -80,6 +79,61 @@ def pg_columns(cur, table: str) -> list[tuple[str, str]]:
     return cur.fetchall()
 
 
+def pg_table_comment(cur, schema: str, table: str) -> str | None:
+    cur.execute(
+        """
+        SELECT obj_description(c.oid)
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = %s AND c.relname = %s
+          AND c.relkind IN ('r', 'v', 'm')
+        """,
+        (schema, table),
+    )
+    row = cur.fetchone()
+    return row[0] if row and row[0] else None
+
+
+def pg_column_comments(cur, schema: str, table: str) -> list[tuple[str, str]]:
+    cur.execute(
+        """
+        SELECT a.attname, col_description(a.attrelid, a.attnum)
+        FROM pg_attribute a
+        JOIN pg_class c ON a.attrelid = c.oid
+        JOIN pg_namespace n ON c.relnamespace = n.oid
+        WHERE n.nspname = %s AND c.relname = %s
+          AND a.attnum > 0 AND NOT a.attisdropped
+        ORDER BY a.attnum
+        """,
+        (schema, table),
+    )
+    return [(name, comment) for name, comment in cur.fetchall() if comment]
+
+
+def sql_literal(value: str) -> str:
+    return "'" + value.replace("'", "''") + "'"
+
+
+def apply_uc_comments(
+    uc_cur,
+    table: str,
+    table_comment: str | None,
+    column_comments: list[tuple[str, str]],
+) -> int:
+    applied = 0
+    if table_comment:
+        uc_cur.execute(
+            f"COMMENT ON TABLE {UC_SCHEMA}.{table} IS {sql_literal(table_comment)}"
+        )
+        applied += 1
+    for col, comment in column_comments:
+        uc_cur.execute(
+            f"COMMENT ON COLUMN {UC_SCHEMA}.{table}.`{col}` IS {sql_literal(comment)}"
+        )
+        applied += 1
+    return applied
+
+
 def ddl_for(table: str, columns: list[tuple[str, str]]) -> str:
     parts = []
     for name, pg_type in columns:
@@ -98,6 +152,7 @@ def main() -> int:
         uc_cur.execute(f"CREATE SCHEMA IF NOT EXISTS {UC_SCHEMA}")
 
         for table in TABLES:
+            print(f"syncing {table}...", flush=True)
             pg_cur.execute(f"SELECT COUNT(*) FROM gold.{table}")
             count = pg_cur.fetchone()[0]
             if count == 0:
@@ -154,7 +209,17 @@ def main() -> int:
                 uc_cur.executemany(insert_sql, batch)
                 written += len(batch)
 
-            print(f"synced {table}: {written} rows")
+            table_comment = pg_table_comment(pg_cur, "gold", table)
+            col_comments = pg_column_comments(pg_cur, "gold", table)
+            try:
+                comment_count = apply_uc_comments(
+                    uc_cur, table, table_comment, col_comments
+                )
+            except Exception as exc:  # noqa: BLE001 — log and continue data sync
+                comment_count = 0
+                print(f"warn {table}: could not apply UC comments ({exc})")
+
+            print(f"synced {table}: {written} rows ({comment_count} comments)")
 
     pg.close()
     return 0

@@ -93,7 +93,7 @@ def _load_records(conn: psycopg.Connection) -> pd.DataFrame:
 
         for table, source, id_col, name_col, district_expr, lat_col, lon_col in [
             ("bronze.facilities_jci", "jci", "jci_org_id", "jci_name", "COALESCE(city, '')", "NULL", "NULL"),
-            ("bronze.facilities_nabh", "nabh", "nabh_org_id", "nabh_name", "COALESCE(city, district, '')", "lat", "lng"),
+            ("bronze.facilities_nabh", "nabh", "nabh_org_id", "nabh_name", "COALESCE(city, '')", "lat", "lng"),
             ("bronze.facilities_pmjay", "pmjay", "pmjay_org_id", "pmjay_name", "COALESCE(district, '')", "lat", "lng"),
         ]:
             cur.execute(
@@ -275,6 +275,8 @@ def _merge_predictions(*frames: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_merge_candidates(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty:
+        return pd.DataFrame()
     splink_df = _splink_pairs(df)
     det_df = _deterministic_pairs(df)
     merged = _merge_predictions(splink_df, det_df)
