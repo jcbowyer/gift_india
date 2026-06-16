@@ -16,6 +16,24 @@ Times are budgets, not handcuffs — compress the Lakehouse / tech table beats i
 
 ---
 
+## ✅ What's live in this build (demo on what finished)
+
+| Layer | Status | Numbers to cite |
+|-------|--------|-----------------|
+| **Layer 1 · SQL trust scores** | ✅ **Done** | **9,959** real facilities · **33,722** claimed capabilities scored · **159k** citations from facility records |
+| **NABH crosswalk** | ✅ **Done** | **2,363** facilities matched to NABH accreditation |
+| **JCI crosswalk** | 🟡 **Pilot** | **11** facilities matched (seed loaded; full portal cross-ref is roadmap) |
+| **Website crawl** | 🟡 **Pilot** | **34** successful page snapshots (pilot districts; national crawl in progress) |
+| **Layer 2 · LLM narration** | 🟡 **Partial** | **35** real `databricks-gpt-oss-20b` cards · **~3,930** deterministic **stub** cards for pilot districts |
+
+**Demo rule:** Lead with **SQL dials + facility-record citations + NABH flags**. Mention JCI/crawl/LLM as *architecture shown, scale in flight* — don't imply every row has them.
+
+**LLM note:** `make narrate-pilot` hit a Databricks **429** (*output tokens per minute* quota on `databricks-gpt-oss-20b`). The dial never depends on narration — stub cards keep the UI demo-safe offline.
+
+**Strong ICU picks for live demo:** **Maharashtra** (156 strong), **Tamil Nadu** (81), **Uttar Pradesh** (80).
+
+---
+
 ## ⏱️ 0:00 – 0:20 · Title slide
 
 **Screen:** Trust Gauge landing (`/`) — immersive title card.
@@ -86,7 +104,7 @@ pause before *"patient-safety failure."*
 
 ---
 
-## ⏱️ 1:25 – 2:55 · Solution — live walkthrough (1½ min)
+## ⏱️ 1:25 – 3:00 · Solution — live walkthrough (~1¾ min)
 
 The core loop: **capability + region → ranked list → deep dive on citations → override → reviews.**
 
@@ -103,60 +121,65 @@ The core loop: **capability + region → ranked list → deep dive on citations 
 > backed by evidence. Green is **strong**, amber is **partial**, red is **weak / suspicious**.
 > The number in the dial is a trust score computed in our gold tables, not a vibe."*
 
-### 2:05 – 2:25 · Deep dive on citations
-**Do:** Expand the **top (strong)** result. Read one supporting citation aloud.
+### 2:05 – 2:20 · Deep dive on citations
+**Do:** Expand the **top (strong)** result in **Maharashtra** or **Tamil Nadu**. Read one supporting citation aloud — specialties, bed count, or entity confidence from the **facility record**.
 
-> *"Open any facility and you see the receipts — the actual citations behind the claim: JCI
-> accreditation, the state registry, PMJAY empanelment, the facility's own website. Each one
-> quotes a real source field with a reliability weight. **Supporting evidence in green,
-> contradicting in red.** Nothing is fabricated — every snippet traces to a source row."*
+> *"Open any facility and you see the receipts — real columns from the governed Virtue dataset: on-record **specialties**, **facility type & scale**, **entity-match confidence**. Where we've finished accreditation crosswalks, you'll see **NABH** on **2,300+** facilities. Each snippet quotes a source field with a reliability weight. **Supporting in green, contradicting in red.** Nothing fabricated."*
 
-**Do:** Now switch the trust filter to **Suspicious** and expand a red one.
+### 2:20 – 2:35 · Automated flagging (human-in-the-loop starts here)
+**Do:** Switch the trust filter to **Suspicious**. Point at the amber **Human review** badge, left border, and **reason** line on a flagged row. Expand one flagged facility.
 
-> *"And here's why this matters — a facility that *lists* an ICU but has **contradicting
-> evidence** and a low entity-match confidence. The system doesn't hide it; it flags it,
-> with the reason attached."*
+> *"The system doesn't wait for Priya to hunt. Flagged rows get an amber **Human review** badge, a left border, and the **reason** attached — contradicting evidence, low entity-match confidence, or a Layer 2 review signal. **Automated surfacing; human judgment on what to do next.**"*
 
-### 2:25 – 2:45 · Override (human-in-the-loop)
+> *(Optional, one line only — don't linger:)* *"JCI Gold Seal crosswalk and live website crawl are pilot-scale today — **11** JCI matches, **34** crawled pages — the architecture is there; national coverage is the next sprint."*
+
+### 2:35 – 2:50 · Override (human-in-the-loop)
 **Do:** Click **Override assessment**, pick a signal, type a note
 (*"Confirmed by phone with the district health officer, 2 ICU beds operational"*), **Save**.
 
-> *"But the machine isn't the final word. A planner with ground truth — a phone call, an
+> *"The flag fired automatically — Priya still has the last word. A planner with ground truth — a phone call, an
 > inspection — **overrides** the assessment and leaves a note. That override is saved to
-> Lakebase and now layers on top of the computed signal."*
+> Lakebase and now layers on top of the computed signal. **SQL supervises the model; humans supervise both.**"*
 
-### 2:45 – 2:55 · An auditable trail
+### 2:50 – 3:00 · An auditable trail
 
 **Screen:** **My Reviews** (`/reviews`).
 
 > *"Every override is logged here — an auditable trail of human judgment over the evidence.
 > Governance you can actually defend."*
 
+### 3:00 – 3:20 · Data Quality — web address, missing & duplicate finder
+
+**Screen:** **Data Quality** (`/data-quality`) — user menu → Data Quality.
+
+**Do:** Scan the **web-address coverage** KPIs. Click a state with missing URLs; expand the **missing-finder** drill-down.
+
+> *"Track 4 starts here — **Data Quality**. The **missing finder** is live: web-address coverage from `gold.facilities`, drill any state to list facilities with **no website URL** — the crawl can't corroborate what isn't on record.*
+>
+> *The **duplicate finder** runs on **Splink**: probabilistic linkage across bronze `facilities_virtue`, `facilities_jci`, `facilities_nabh`, `facilities_pmjay` — **merge recommendations** with match scores, not silent gold merges. Planners approve before MDM combines rows."*
+
 ---
 
-## ⏱️ 2:55 – 3:30 · Why it matters (35s)
+## ⏱️ 3:20 – 3:50 · Why it matters — Navigator & Scorecard (30s)
 
-**Screen:** Bounce through **Navigator** (`/navigator`) → **Scorecard** (`/scorecard`) while you talk.
+**Screen:** **Navigator** (`/navigator`) → **Scorecard** (`/scorecard`).
 
-> *"Four things make this trustworthy rather than just clever:*
+> *"Four things make this trustworthy — and all four are **live in this build**:*
 >
-> 1. **JCI as the global gold standard.** The Joint Commission International Gold Seal is the
->    most recognized international accreditation — it's the backbone of our trust taxonomy. A
->    Gold Seal maps straight to **strong** evidence.
-> 2. **India focus — on purpose.** Huge population, enormous regional variation, the messiest
->    source data anywhere. If it works here, it works.
-> 3. **Human-in-the-loop overrides.** The planner always has the last word, on the record.
-> 4. **Built on governed data + Lakebase.** This runs on the governed Virtue Foundation
->    dataset, served from Lakebase Postgres — not a spreadsheet someone emailed around."*
+> 1. **SQL-first trust scores** — **33,000+** claimed capabilities ranked in auditable SQL, not model vibes.
+> 2. **NABH accreditation crosswalk** — **2,363** facilities resolved with match confidence on the record.
+> 3. **Human-in-the-loop overrides** — automated flags surface conflicts; the planner always has the last word, saved for audit.
+> 4. **Governed Virtue Foundation data** — **~10k** real facilities on Lakebase, not a forwarded spreadsheet.
+>
+> *India focus on purpose: huge population, wild regional variation. If entity resolution and trust scoring work here, they work anywhere."*
 
 **Do (Navigator):** *"Zoom from nation to state to district — see where trustworthy capacity
 actually exists, and where the deserts are."*
-**Do (Scorecard):** *"Benchmark any district against its region and the nation — turn trust into
-allocation decisions."*
+**Do (Scorecard):** *"Automated flags roll up — amber banner, Human review badges on flagged capabilities, **Ask Genie** over the same governed SQL. Benchmark a district; expand a flagged row."*
 
 ---
 
-## ⏱️ 3:30 – 3:50 · How the trust dial works — Layer 1 scoring (20s)
+## ⏱️ 3:50 – 4:08 · How the trust dial works — Layer 1 scoring (18s)
 
 **Screen:** Trust Gauge (`/`) — immersive talk track (no live clicks required).
 
@@ -180,64 +203,47 @@ allocation decisions."*
 
 ---
 
-## ⏱️ 3:50 – 4:05 · SQL scores, AI explains — the narration prompt (15s)
+## ⏱️ 4:08 – 4:20 · SQL scores, narration stub — Layer 2 (12s)
 
 **Screen:** Trust Gauge (`/`) — immersive.
 
-> *"Layer 2 is where AI enters — but only as a **translator**, not a judge.*
+> *"Layer 2 is where AI would translate the frozen SQL context into prose — but the dial never waits on it.*
 >
-> *We build a frozen `evidence_context` block in SQL — facility facts, supporting and
-> contradicting counts, the pre-computed score and tier — and hand it to the narration agent
-> with one hard rule: **use the numbers exactly as provided; do not recompute.***
+> *We build a frozen `evidence_context` block in SQL and hand it to a narration agent with one hard rule: **use the numbers exactly as provided; do not recompute.** In production that's `databricks-gpt-oss-20b` via serving endpoints.*
 >
-> *The prompt embeds the same grading rubric as the SQL. It maps tier → planner verdict —
-> Confirmed, Likely, Needs review, Unsupported — and **caps at Needs review** whenever
-> contradicting evidence or a `weak_suspicious` trust signal is present.*
+> *In this build we finished **35** real LLM narrations before Databricks returned **429** — the workspace **output-tokens-per-minute** quota on the shared foundation-model endpoint. The pilot districts still have **~3,900** deterministic **stub** cards so the UI demo never blocks on quota.*
 >
-> *Swap the model, change the prose card — the dial does not move. SQL supervises the LLM;
-> Priya supervises both."*
+> *Swap the model or hit rate limits — **the dial does not move.** SQL supervises the LLM; Priya supervises both."*
 
-**Do:** Optional — expand a facility with a narration card and point at the verdict line
-matching the dial.
+**Do:** Optional — expand a pilot-district facility; note the evidence card matches the dial tier (stub or LLM).
 
 ---
 
-## ⏱️ 4:05 – 4:20 · Where we're improving next — JCI cross-ref & anomaly detection (15s)
+## ⏱️ 4:20 – 4:30 · What's next — JCI, crawl, LLM scale (10s)
 
 **Screen:** Trust Gauge (`/`) — immersive.
 
-> *"Today's pilot is honest about its edges — and that's where the roadmap gets interesting.*
+> *"What's finished is the trust **foundation** — SQL scores, Virtue citations, NABH crosswalk, human overrides. What's scaling next:*
 >
-> **JCI cross-referencing** — we already resolve JCI Gold Seal organizations onto governed
-> `facility_id`s with tiered matching: exact name + state, then brand + city, then brand +
-> state — each with `match_method` and `match_confidence`. Next: tighten the crosswalk with
-> portal verification, accreditation **scope** (which services the seal actually covers), and
-> surface *why* JCI attached to this row in the citation panel.
->
-> **Anomaly detection** — the same signals that rank facilities are a ready-made fraud radar:
-> claimed ICU with no specialty corroboration, high bed count but `weak_suspicious` entity
-> match, supporting website copy contradicted by registry rows. We flag them today; tomorrow
-> we batch-score districts for **systematic gaming patterns** — facilities that look fine in
-> isolation but cluster as outliers against their peers.
->
-> *Trust scoring is the foundation; cross-source validation and anomaly surfacing are how we
-> keep gaming the directory from becoming gaming the patient."*
+> - **JCI cross-referencing** — tiered entity resolution is built; **11** Gold Seal matches today → portal verification + accreditation **scope** on the citation panel.
+> - **Website crawl** — **34** pilot pages landed → national crawl feeds first-party corroboration.
+> - **LLM narration at scale** — provisioned throughput or `--serve-delay` batching past the **429** token quota; stub cards hold the demo until then.
+> - **Anomaly detection** — contradicting-evidence flags today → district-level outlier scoring tomorrow.
 
 **Do:** Brief pause on *"fraud radar"* — then advance to the technical stack beats.
 
 ---
 
-## ⏱️ 4:20 – 4:35 · Built on Lakehouse (15s)
+## ⏱️ 4:30 – 4:42 · Built on Lakehouse (12s)
 
 **Human-in-the-loop · why we defy the AI-default**
 
-> *"Everyone defaults to chatbots. We treat AI as an extractor, Splink before identity
+> *"Everyone defaults to chatbots. We treat AI as an extractor, Splink **merge recommendations** before identity
 > guesswork, and platform-native tooling before franken-code."*
 
 > *"We're not building on duct tape and prayers — the Databricks Lakehouse is our foundation.*
 >
-> - **MDM & Lakebase** — we treat data like a product; deduplicated hospitals with verified
->   accreditation, surfaced through AgentBricks `ai_query`.
+> - **MDM & Lakebase** — bronze `facilities_*` per source; Splink duplicate-finder scores; human-approved merges into gold.
 > - **Grounded verification** — autonomous agents crawl live sites and cross-reference CMS and
 >   accreditation boards. We look for the gap between what they claim and what they can prove.
 > - **Databricks Apps & Genie** — a secure clinical navigator that's read the compliance library.
@@ -245,7 +251,7 @@ matching the dial.
 
 ---
 
-## ⏱️ 4:35 – 4:50 · Tech stack: Decisions we made for ourselves (15s)
+## ⏱️ 4:42 – 4:55 · Tech stack: Decisions we made for ourselves (13s)
 
 **Screen:** Immersive title card — decision matrix only.
 
@@ -253,14 +259,14 @@ matching the dial.
 |---------------|--------------------------------|------------------------------|
 | **AI_Classify vs. AI_Query** | We treat AI as an extractor (structured data), not a conversationalist. | Avoids hallucinated "answers" and conversational fluff; forces database-ready outputs. |
 | **Batching & Model Selection** | Cost-optimized routing: simple tasks to small models, complex to "heavy" models. | Prevents model bloat and stops overspending on low-complexity routine tasks. |
-| **Data Augmentation** | We use Splink for probabilistic record linkage before AI processing. | AI doesn't "guess" identities; we rely on proven statistical models to ensure data quality first. |
+| **Data Augmentation** | Splink probabilistic linkage surfaces **merge recommendations** across bronze sources — humans approve before gold. | Match scores, not LLM guesswork — duplicate pairs queue for planner review; nothing silently merges. |
 | **Native Platform Leverage** | We use Dabs, Genie, AI_Query, and Lakehouse FTS for everything possible. | We minimize "franken-coding" by relying on platform-native infrastructure rather than custom scripts. |
 
-**Do:** Scan the table — land on **AI_Classify vs. AI_Query** and **Splink before AI processing**.
+**Do:** Scan the table — land on **Splink merge recommendations** and **AI_Classify vs. AI_Query**.
 
 ---
 
-## ⏱️ 4:50 – 5:00 · The "30 years" problem: Call to Action (10s)
+## ⏱️ 4:55 – 5:05 · The "30 years" problem: Call to Action (10s)
 
 > *"There's a massive difference between 30 years of experience and one year repeated 30 times.
 > Databricks isn't just storage — it's how we turn learning into an ontology of decisions. We
@@ -269,21 +275,34 @@ matching the dial.
 
 ---
 
-## ⏱️ 5:00 – 5:08 · Future (8s)
+## ⏱️ 5:05 – 5:12 · Future opportunities (7s)
 
 > *"GIFT Gauge is **Track 1 — can this facility do what it claims?** The same governed trust
-> layer feeds the other tracks lightly:*
+> layer feeds what's next:*
 >
-> - **Track 2 · Medical Desert Planner** — the Navigator already shows where trustworthy
->   capacity is missing.
-> - **Track 3 · Referral Copilot** — once you trust the capability, you can route a patient to it.
-> - **Track 4 · Data Readiness** — the contradicting-evidence flags are a ready-made data-quality signal.
+> 1. **Navigator + beds & population** — augment the map with beds per 100k and
+>    population-weighted supply metrics layered on trust scores, so gaps aren't just a low dial —
+>    they're **underserved people** with thin, unverified capacity.
+> 2. **Medical Desert Planner (Track 2)** — composite gap scoring where weak trust *and* low
+>    beds or facilities per capita overlap in the same district.
+> 3. **Referral Copilot (Track 3)** — once you trust the capability, route the patient to the
+>    nearest defensible facility with an auditable rationale.
+> 4. **Data Readiness Gauge (Track 4)** — contradiction flags and entity-confidence gaps as a
+>    fix-list for the Virtue dataset upstream.
+> 5. **District anomaly radar** — outlier scoring on facilities whose claims diverge sharply
+>    from peers in the same region.
+> 6. **National crawl + accreditation scope** — JCI portal verification and first-party website
+>    corroboration at full national coverage.
+> 7. **Planner Genie** — natural-language queries over the same SQL scores Priya can reproduce
+>    in a hearing (*"show ICU deserts in eastern Uttar Pradesh"*).
 >
-> *Trust is the foundation the other three stand on."*
+> *Trust is the foundation everything else stands on."*
+
+**Do:** Scan the list — land on **#1** (beds + population on the map) and **#2** (desert planner); compress if you're over 5:30.
 
 ---
 
-## ⏱️ 5:08 – 5:30 · Closing the loop (22s)
+## ⏱️ 5:12 – 5:30 · Closing the loop (18s)
 
 **Screen:** Back to Trust Gauge (`/`).
 
@@ -309,8 +328,11 @@ your team feel relief first?"*
 
 ## ✅ Pre-flight checklist
 
-- [ ] App running on live Lakebase (`./startup.sh`) — hero stats are non-zero.
-- [ ] A known **strong** ICU facility and a known **suspicious** one in your chosen state.
+- [ ] App running (`./startup.sh` or `make web`) — hero stats show **~10k** facilities, non-zero citations.
+- [ ] **Layer 1 built:** `make load-real && make dbt` (or Lakebase equivalent) — trust dials populated.
+- [ ] Demo state picked: **Maharashtra** ICU (many **strong** rows) + one **Suspicious** row for contrast.
 - [ ] **My Reviews** cleared of rehearsal overrides.
-- [ ] Network for the Navigator TopoJSON map is warm (open `/navigator` once before you start).
-- [ ] **✨ Demo** guide opens on the title slide and advances with `→` / `Space`.
+- [ ] Navigator map warmed (open `/navigator` once before you start).
+- [ ] **Data Quality** warmed (open `/data-quality` once; pick a state with missing URLs for drill-down).
+- [ ] **✨ Demo** guide opens on the title slide; advance with `→` / `Space`.
+- [ ] *Don't claim:* every facility has JCI, live website crawl, or LLM prose — cite the **finished** layers above.

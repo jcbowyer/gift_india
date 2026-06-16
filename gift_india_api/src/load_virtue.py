@@ -116,13 +116,67 @@ LOADS = [
 ]
 
 
-def _copy_csv(cur, table: str, columns: str, path: Path) -> int:
+def _sanitize_csv_cell(value: str | None) -> str | None:
+    if value is None:
+        return None
+    value = value.replace("\x00", "").strip()
+    return value if value.lower() not in {"", "null", "none", "nan"} else ""
+
+
+def _copy_csv(
+    cur,
+    table: str,
+    columns: str,
+    path: Path,
+    *,
+    dedupe_key: str | None = None,
+    dedupe_keys: tuple[str, ...] | None = None,
+) -> int:
     # Databricks CSV export writes SQL NULL as the literal token `null`.
-    with path.open("r", encoding="utf-8") as fh, cur.copy(
-        f"COPY {table} ({columns}) FROM STDIN WITH (FORMAT CSV, HEADER true, NULL 'null')"
-    ) as copy:
-        while chunk := fh.read(1 << 20):
-            copy.write(chunk)
+    if dedupe_key or dedupe_keys:
+        import csv
+        import io
+
+        key_fields = (dedupe_key,) if dedupe_key else tuple(dedupe_keys or ())
+        with path.open("r", encoding="utf-8", newline="") as fh:
+            reader = csv.DictReader(fh)
+            fieldnames = reader.fieldnames or []
+            seen: set[tuple[str, ...]] = set()
+            buf = io.StringIO()
+            writer = csv.DictWriter(buf, fieldnames=fieldnames, lineterminator="\n")
+            writer.writeheader()
+            for row in reader:
+                parts = tuple(_sanitize_csv_cell(row.get(k)) or "" for k in key_fields)
+                if not all(parts) or parts in seen:
+                    continue
+                seen.add(parts)
+                writer.writerow(
+                    {k: (_sanitize_csv_cell(v) or "null") for k, v in row.items()}
+                )
+        payload = buf.getvalue()
+        with cur.copy(
+            f"COPY {table} ({columns}) FROM STDIN WITH (FORMAT CSV, HEADER true, NULL 'null')"
+        ) as copy:
+            copy.write(payload)
+    else:
+        import csv
+        import io
+
+        with path.open("r", encoding="utf-8", newline="") as fh:
+            reader = csv.DictReader(fh)
+            fieldnames = reader.fieldnames or []
+            buf = io.StringIO()
+            writer = csv.DictWriter(buf, fieldnames=fieldnames, lineterminator="\n")
+            writer.writeheader()
+            for row in reader:
+                writer.writerow(
+                    {k: (_sanitize_csv_cell(v) or "null") for k, v in row.items()}
+                )
+        payload = buf.getvalue()
+        with cur.copy(
+            f"COPY {table} ({columns}) FROM STDIN WITH (FORMAT CSV, HEADER true, NULL 'null')"
+        ) as copy:
+            copy.write(payload)
     cur.execute(f"SELECT count(*) FROM {table}")
     return cur.fetchone()[0]
 
@@ -140,7 +194,7 @@ def _set_owner(conn, owner: str) -> None:
 
 def _lakebase_dsn(args) -> str:
     creds = db.lakebase_credentials(args.endpoint, args.profile)
-    user = args.user or args.owner
+    user = args.user or args.owner or db.current_user(args.profile)
     return (
         f"postgresql://{quote(user)}:{quote(creds['token'])}@"
         f"{creds['host']}:5432/{args.database}?sslmode=require"
@@ -183,12 +237,22 @@ def main(argv: list[str] | None = None) -> int:
         conn.commit()
         for table, fname, cols in LOADS:
             with conn.cursor() as cur:
-                n = _copy_csv(cur, table, cols, csv_dir / fname)
+                if table == "gold.facilities":
+                    dedupe_key, dedupe_keys = "facility_id", None
+                elif table == "gold.facility_capability_assessments":
+                    dedupe_key, dedupe_keys = None, ("facility_id", "capability")
+                else:
+                    dedupe_key, dedupe_keys = None, None
+                n = _copy_csv(
+                    cur, table, cols, csv_dir / fname,
+                    dedupe_key=dedupe_key, dedupe_keys=dedupe_keys,
+                )
             conn.commit()
             print(f"  loaded {n:,} rows -> {table}")
         if args.target == "lakebase":
-            _set_owner(conn, args.owner)
-            print(f"  gold.* owned by {args.owner!r}")
+            owner = args.owner or db.current_user(args.profile)
+            _set_owner(conn, owner)
+            print(f"  gold.* owned by {owner!r}")
 
     print(f"Done. Real VF gold.* served on {where}.")
     return 0

@@ -66,7 +66,7 @@ Our human-in-the-loop stack defies the AI-default on purpose:
 |---------------|--------------------------------|------------------------------|
 | **AI_Classify vs. AI_Query** | We treat AI as an extractor (structured data), not a conversationalist. | Avoids hallucinated "answers" and conversational fluff; forces database-ready outputs. |
 | **Batching & Model Selection** | Cost-optimized routing: simple tasks to small models, complex to "heavy" models. | Prevents model bloat and stops overspending on low-complexity routine tasks. |
-| **Data Augmentation** | We use Splink for probabilistic record linkage before AI processing. | AI doesn't "guess" identities; we rely on proven statistical models to ensure data quality first. |
+| **Data Augmentation** | Splink probabilistic linkage surfaces **merge recommendations** across bronze sources — humans approve before gold. | Match scores, not LLM guesswork — duplicate pairs queue for planner review; nothing silently merges. |
 | **Native Platform Leverage** | We use Dabs, Genie, AI_Query, and Lakehouse FTS for everything possible. | We minimize "franken-coding" by relying on platform-native infrastructure rather than custom scripts. |
 
 Layer 1 trust scores are computed in **SQL** (auditable, reproducible). Layer 2 narration
@@ -141,12 +141,14 @@ talk track and live product beats.
 | **1:05** | **Burning question** | Hero stats | *"Can this hospital **actually** do what it claims?"* |
 | **1:25** | **Intent** | Clicks **ICU**, picks a **state** | *"Capability + region. No SQL."* |
 | **1:45** | **Ranked trust** | Scans the list — green / amber / red dials | *"Every claim ranked by **evidence strength**, not vibes."* |
-| **2:05** | **Receipts** | Expands a **strong** facility; reads a citation | *"JCI, NABH, PMJAY — each quotes a **real source field**."* |
-| **2:25** | **Human wins** | **Override assessment** → note → **My Reviews** | *"My judgment is on the record."* |
-| **2:55** | **Steer care** | **Navigator** → **Scorecard** | *"Where is trustworthy capacity missing?"* |
+| **2:05** | **Receipts** | Expands **strong** ICU in **Maharashtra** | *"Facility-record citations + **NABH** — real source fields, not invented."* |
+| **2:20** | **Automated flags** | Switches to **Suspicious** — Human review badge + reason | *"System surfaces conflicts — human decides."* |
+| **2:35** | **Human wins** | **Override assessment** → note → **My Reviews** | *"Flag fired automatically; my judgment is on the record."* |
+| **3:00** | **Data Quality** | **Data Quality** — missing web-address finder | *"Splink merge recommendations across bronze sources — nothing silent."* |
+| **3:20** | **Steer care** | **Navigator** → **Scorecard** (flagged capabilities) | *"SQL scores + NABH crosswalk — live today."* |
 | **3:30** | **How we score** | Immersive script | *"45% supporting ratio, 25% breadth, 30% match confidence — SQL, not vibes."* |
-| **3:50** | **AI explains only** | Immersive script | *"Frozen evidence_context + rubric — the LLM never recomputes the dial."* |
-| **4:05** | **Roadmap** | Immersive script | *"JCI cross-ref tightening + anomaly detection for gaming patterns."* |
+| **3:50** | **Narration stub** | Immersive script | *"**35** real LLM cards; **~3,900** stubs after **429** quota — dial unchanged."* |
+| **4:05** | **Scaling next** | Immersive script | *"JCI (**11**), crawl (**34**), LLM batch — foundation done, scale in flight."* |
 | **4:20** | **Lakehouse** | Immersive tech beats | *"MDM, grounded verification, Genie — defy the AI-default."* |
 | **5:08** | **Close** | Back to Trust Gauge | *"Stop guessing. Start steering. **GIFT Gauge.**"* |
 

@@ -281,8 +281,7 @@
       "resources": {
         "required": [],
         "optional": []
-      },
-      "requiredByTemplate": true
+      }
     },
     "serving": {
       "name": "serving",

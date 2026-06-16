@@ -347,6 +347,76 @@ export interface DataQualityUnmappedDistrict {
   district: string;
 }
 
+export interface DataQualityFlagSummary {
+  byType: Record<string, number>;
+  pendingMergeReviews: number;
+  totalOpen: number;
+}
+
+export interface DataQualityFlag {
+  id: number;
+  facilityId: string;
+  facilityName: string;
+  flagType: string;
+  severity: string;
+  detail: string;
+  relatedId: string | null;
+  status: string;
+  createdAt: string;
+  state: string;
+  stateCode: string;
+  district: string;
+}
+
+export interface MergeCandidate {
+  candidateId: string;
+  leftSource: string;
+  leftId: string;
+  leftName: string;
+  rightSource: string;
+  rightId: string;
+  rightName: string;
+  matchProbability: number;
+  matchWeight: number | null;
+  state: string;
+  district: string | null;
+  recommendation: string;
+  flagReason: string;
+  computedAt: string;
+  reviewDecision: string | null;
+  reviewNote: string | null;
+  reviewedAt: string | null;
+  reviewedBy: string | null;
+}
+
+export interface MergeReviewRecord {
+  id: number;
+  candidateId: string;
+  decision: string;
+  reviewedBy: string;
+  note: string | null;
+  createdAt: string;
+  leftSource: string;
+  leftId: string;
+  leftName: string;
+  rightSource: string;
+  rightId: string;
+  rightName: string;
+  matchProbability: number;
+  recommendation: string;
+}
+
+export interface WebsiteUrlUpdateRecord {
+  id: number;
+  facilityId: string;
+  facilityName: string;
+  oldUrl: string | null;
+  newUrl: string;
+  reviewedBy: string;
+  note: string | null;
+  createdAt: string;
+}
+
 async function getJSON<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
@@ -425,6 +495,38 @@ export const api = {
     getJSON<DataQualityUnmappedDistrict[]>(
       `/api/data-quality/unmapped-districts?state=${encodeURIComponent(state)}`,
     ),
+  dataQualityFlagSummary: () => getJSON<DataQualityFlagSummary>('/api/data-quality/flag-summary'),
+  dataQualityFlags: (params?: { state?: string; type?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.state) qs.set('state', params.state);
+    if (params?.type) qs.set('type', params.type);
+    const q = qs.toString();
+    return getJSON<DataQualityFlag[]>(`/api/data-quality/flags${q ? `?${q}` : ''}`);
+  },
+  dataQualityDuplicates: (state?: string) =>
+    getJSON<MergeCandidate[]>(
+      `/api/data-quality/duplicates${state ? `?state=${encodeURIComponent(state)}` : ''}`,
+    ),
+  saveMergeReview: async (body: { candidateId: string; decision: 'merge' | 'reject' | 'defer'; note?: string }) => {
+    const res = await fetch('/api/data-quality/merge-reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    return (await res.json()) as MergeReviewRecord;
+  },
+  mergeReviews: () => getJSON<MergeReviewRecord[]>('/api/data-quality/merge-reviews'),
+  saveWebsiteUrl: async (body: { facilityId: string; newUrl: string; note?: string }) => {
+    const res = await fetch('/api/data-quality/website-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    return (await res.json()) as WebsiteUrlUpdateRecord;
+  },
+  websiteUrlUpdates: () => getJSON<WebsiteUrlUpdateRecord[]>('/api/data-quality/website-url-updates'),
 };
 
 /** Default 0–1 trust score when a planner picks a signal in the override dialog. */

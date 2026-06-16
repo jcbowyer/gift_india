@@ -3,110 +3,289 @@ version: 2
 models:
   - name: silver_geography
     description: >-
-      Cleaned, typed, conformed district records (one row per district within a
-      state) with `state_code` attached and coordinates validated. The geography
-      grain for the medallion.
+      Silver layer: cleaned, typed district records (one row per district within a
+      state) with state_code attached and coordinates validated. Feeds
+      silver_geography_resolved and ultimately gold.geography.
     columns:
       - name: district
+        description: District name as landed in bronze.
         tests: [not_null]
       - name: state
+        description: State name as landed in bronze.
         tests: [not_null]
       - name: state_code
-        description: 2-letter state / UT code joined from the state_codes seed.
+        description: Two-letter state / UT code joined from the state_codes seed.
       - name: lat
+        description: District centroid latitude (WGS84).
         tests: [not_null]
       - name: lon
+        description: District centroid longitude (WGS84).
         tests: [not_null]
       - name: population
         description: District population (persons).
+      - name: urbanity
+        description: Urbanity index (0–1).
+      - name: fp_unmet_pct
+        description: NFHS-5 family planning unmet need (%).
+      - name: institutional_birth_pct
+        description: NFHS-5 institutional delivery rate (%).
+      - name: csection_pct
+        description: NFHS-5 caesarean section rate (%).
+      - name: anaemia_pct
+        description: NFHS-5 anaemia prevalence (%).
+
+  - name: silver_geography_resolved
+    description: >-
+      Silver geography with canonical state names resolved via the gazetteer
+      (state_codes + state_aliases). Adds geography_id for gold layer. Preserves
+      source_state for audit.
+    columns:
+      - name: district
+        description: District name.
+      - name: source_state
+        description: Raw state label from the Virtue source before gazetteer resolution.
+      - name: canonical_state
+        description: Resolved canonical Indian state / UT name.
+      - name: canonical_state_code
+        description: Two-letter code for the canonical state.
+      - name: district_norm
+        description: Normalised district slug for fuzzy matching (lowercase alphanumeric).
+      - name: lat
+        description: District centroid latitude.
+      - name: lon
+        description: District centroid longitude.
+      - name: population
+        description: District population.
+      - name: urbanity
+        description: Urbanity index (0–1).
+      - name: fp_unmet_pct
+        description: NFHS-5 family planning unmet need (%).
+      - name: institutional_birth_pct
+        description: NFHS-5 institutional delivery rate (%).
+      - name: csection_pct
+        description: NFHS-5 caesarean section rate (%).
+      - name: anaemia_pct
+        description: NFHS-5 anaemia prevalence (%).
+      - name: geography_id
+        description: "Surrogate key: `<state_code>-<district-slug>`. Feeds gold.geography."
 
   - name: silver_facilities
     description: >-
-      Cleaned, typed, conformed facility records with `state_code` attached,
-      coordinates validated, and duplicate `facility_id`s resolved to the highest
-      `match_confidence`.
+      Silver layer: cleaned, typed facility records with state_code attached,
+      coordinates validated, and duplicate facility_ids resolved to highest
+      match_confidence. Feeds silver_facilities_resolved and gold.facilities.
     columns:
       - name: facility_id
+        description: Stable facility primary key.
         tests:
           - not_null
           - unique
       - name: name
+        description: Facility name.
         tests: [not_null]
       - name: type
+        description: Facility type classification.
         tests: [not_null]
       - name: district
+        description: District where the facility is located.
         tests: [not_null]
       - name: state
+        description: State name as landed in bronze.
         tests: [not_null]
+      - name: state_code
+        description: Two-letter state code from state_codes seed.
       - name: lat
+        description: Facility latitude (WGS84).
         tests: [not_null]
       - name: lon
+        description: Facility longitude (WGS84).
         tests: [not_null]
+      - name: beds
+        description: Inpatient bed count.
+      - name: annual_surgeries
+        description: Reported annual surgical volume.
       - name: offers_surgery
+        description: True when surgical services are offered.
         tests: [not_null]
+      - name: specialties
+        description: Pipe-delimited clinical specialties.
+      - name: website_url
+        description: Official facility website URL.
       - name: match_confidence
-        description: Named-entity-resolution confidence score (0-1).
+        description: Named-entity-resolution confidence score (0–1).
+
+  - name: silver_facilities_resolved
+    description: >-
+      Silver facilities with canonical state resolved via the gazetteer lookup.
+      Adds district_norm for geography entity resolution. Feeds gold.facilities
+      and gold.facility_geography.
+    columns:
+      - name: facility_id
+        description: Stable facility primary key.
+      - name: name
+        description: Facility name.
+      - name: type
+        description: Facility type.
+      - name: district
+        description: District name.
+      - name: source_state
+        description: Raw state label before gazetteer resolution.
+      - name: lat
+        description: Facility latitude.
+      - name: lon
+        description: Facility longitude.
+      - name: beds
+        description: Bed count.
+      - name: annual_surgeries
+        description: Annual surgeries.
+      - name: offers_surgery
+        description: Surgical services flag.
+      - name: specialties
+        description: Pipe-delimited specialties.
+      - name: website_url
+        description: Website URL.
+      - name: match_confidence
+        description: Entity-resolution confidence (0–1).
+      - name: canonical_state
+        description: Gazetteer-resolved canonical state name.
+      - name: canonical_state_code
+        description: Gazetteer-resolved state code.
+      - name: district_norm
+        description: Normalised district slug for matching.
+
+  - name: silver_state_lookup
+    description: >-
+      Gazetteer lookup mapping normalised place labels to canonical state names.
+      Union of state_codes names and hand-curated state_aliases for Virtue typos.
+    columns:
+      - name: raw_norm
+        description: Normalised input label (lowercase alphanumeric) used as join key.
+      - name: canonical_state
+        description: Canonical Indian state / UT name for this label.
+      - name: state_code
+        description: Two-letter state code when known (null for alias-only rows).
 
   - name: silver_facilities_jci
     description: >-
-      Cleaned, typed, deduped JCI-accredited organizations in India, with the
-      canonical entity-resolution keys (`match_name`, `brand_key`) re-derived via
-      the `jci_normalize` macro and a `state_code` attached. One row per
-      `jci_org_id`. Feeds the gold.facility_jci crosswalk.
+      Cleaned, typed, deduped JCI-accredited organizations in India with
+      entity-resolution keys (match_name, brand_key). One row per jci_org_id.
+      Feeds gold.facility_jci crosswalk.
     columns:
       - name: jci_org_id
+        description: Stable JCI organization identifier.
         tests:
           - not_null
           - unique
       - name: jci_name
+        description: Organization name as published by the source.
         tests: [not_null]
+      - name: city
+        description: City where the JCI organization is located.
+      - name: state
+        description: State where the JCI organization is located.
+      - name: state_code
+        description: Two-letter state code.
+      - name: country
+        description: Country (default India).
+      - name: accreditation_program
+        description: JCI accreditation programme name.
       - name: match_name
-        description: Normalized name used to entity-resolve to a facility_id.
+        description: Normalized name used for entity resolution to facility_id.
         tests: [not_null]
+      - name: brand_key
+        description: First two significant name tokens for brand-level matching.
+      - name: website_url
+        description: Official hospital homepage URL.
+      - name: snapshot_dir
+        description: Path to scraped homepage snapshot.
       - name: verified_on_portal
-        description: True for rows spot-checked against the official JCI directory.
+        description: True when spot-checked against the official JCI directory.
         tests: [not_null]
+      - name: source
+        description: Aggregator the row was compiled from.
+      - name: source_url
+        description: URL of the source page.
       - name: data_source
+        description: Provenance tag (always 'jci').
         tests:
           - not_null
           - accepted_values:
               values: ['jci']
+      - name: collected_at
+        description: When this JCI record was collected (UTC).
 
   - name: silver_facilities_nabh
     description: >-
-      Cleaned, typed, deduped NABH-accredited / -certified / -empanelled facilities
-      in India, with the canonical entity-resolution keys (`match_name`, `brand_key`)
-      re-derived via the shared `jci_normalize` macro and a `state_code` attached.
-      One row per `nabh_org_id`. Feeds the gold.facility_nabh crosswalk.
+      Cleaned, typed, deduped NABH accredited / certified / empanelled facilities
+      in India with entity-resolution keys. One row per nabh_org_id. Feeds
+      gold.facility_nabh crosswalk.
     columns:
       - name: nabh_org_id
+        description: Stable NABH organization identifier.
         tests:
           - not_null
           - unique
       - name: nabh_name
+        description: Organization name from the NABH directory.
         tests: [not_null]
-      - name: match_name
-        description: Normalized name used to entity-resolve to a facility_id.
-        tests: [not_null]
+      - name: city
+        description: City from the NABH record.
+      - name: state
+        description: State from the NABH record.
+      - name: state_code
+        description: Two-letter state code.
+      - name: pincode
+        description: Postal pincode.
+      - name: country
+        description: Country (default India).
+      - name: accreditation_program
+        description: "NABH programme (e.g. Hospitals, SHCO)."
       - name: accreditation_status
-        description: NABH status badge — Accredited, Certified, or Empaneled.
+        description: "NABH status: Accredited | Certified | Empaneled."
         tests:
           - accepted_values:
               values: ['Accredited', 'Certified', 'Empaneled']
               config:
                 severity: warn
+      - name: reference_no
+        description: NABH reference / certificate number.
+      - name: certificate_url
+        description: Portal URL to certificate PDF.
+      - name: address
+        description: Full address as published.
+      - name: match_name
+        description: Normalized name for entity resolution.
+        tests: [not_null]
+      - name: brand_key
+        description: Brand key for fuzzy matching.
+      - name: website_url
+        description: Official homepage URL.
+      - name: phone
+        description: Contact phone from NABH directory.
+      - name: lat
+        description: Latitude from NABH geocoordinates.
+      - name: lng
+        description: Longitude from NABH geocoordinates.
+      - name: verified_on_portal
+        description: True when sourced from official nabh.co portal.
+      - name: source
+        description: Source label.
+      - name: source_url
+        description: Source URL.
       - name: data_source
+        description: Provenance tag (always 'nabh').
         tests:
           - not_null
           - accepted_values:
               values: ['nabh']
+      - name: collected_at
+        description: When this NABH record was collected (UTC).
 
   - name: silver_facility_web_crawl
     description: >-
-      Cleaned, typed, deduped facility website crawls — one row per facility (or
-      per URL when unlinked), keeping the most recent successful crawl and
-      falling back to the latest attempt when a URL only ever failed. Derives a
-      primary contact email/phone from the boilerplate-stripped `raw_text`.
+      Cleaned, deduped facility website crawls — one row per facility (or URL when
+      unlinked). Keeps the most recent successful crawl. Feeds website-sourced
+      gold.capability_evidence rows.
     columns:
       - name: crawl_id
         description: sha256(website_url + crawled_at) of the kept crawl.
@@ -114,19 +293,44 @@ models:
           - not_null
           - unique
       - name: crawl_key
-        description: Grain key — facility_id, or the resolved URL when unlinked.
+        description: Grain key — facility_id, or resolved URL when unlinked.
         tests:
           - not_null
           - unique
+      - name: facility_id
+        description: Linked facility (null when crawl is not yet entity-resolved).
+      - name: name
+        description: Facility name from crawl metadata.
       - name: website_url
+        description: Requested website URL.
         tests: [not_null]
+      - name: final_url
+        description: Final URL after redirects.
       - name: crawled_at
-        tests: [not_null]
-      - name: crawl_ok
-        description: True when the kept crawl succeeded (status = 'ok').
+        description: Crawl timestamp (UTC).
         tests: [not_null]
       - name: status
+        description: "Crawl outcome: ok | http_error | fetch_error."
         tests:
           - not_null
           - accepted_values:
               values: ['ok', 'http_error', 'fetch_error']
+      - name: crawl_ok
+        description: True when the kept crawl succeeded (status = ok).
+        tests: [not_null]
+      - name: http_status
+        description: HTTP response status code.
+      - name: content_type
+        description: Response Content-Type header.
+      - name: title
+        description: HTML page title.
+      - name: error
+        description: Error message when crawl failed.
+      - name: text_length
+        description: Character length of stripped page text.
+      - name: raw_text
+        description: Boilerplate-stripped page text used for evidence extraction.
+      - name: contact_email
+        description: First email address extracted from page text.
+      - name: contact_phone
+        description: First plausible Indian phone number extracted from page text.

@@ -3,7 +3,7 @@
 # Run dbt from this directory with this profile:
 #   cd gift_india_dbt && DBT_PROFILES_DIR=. dbt build
 #
-# Defaults match **system PostgreSQL on localhost:5432** (see ../claude.md — no Docker).
+# Defaults match **system PostgreSQL on localhost:5433** (see ../claude.md — no Docker).
 # Override via GIFT_INDIA_PG* in the repo .env, or export for Lakebase deploys.
 gift_india_postgres:
   target: dev
@@ -11,7 +11,7 @@ gift_india_postgres:
     dev:
       type: postgres
       host: "{{ env_var('GIFT_INDIA_PGHOST', 'localhost') }}"
-      port: "{{ env_var('GIFT_INDIA_PGPORT', '5432') | as_number }}"
+      port: "{{ env_var('GIFT_INDIA_PGPORT', '5433') | as_number }}"
       user: "{{ env_var('GIFT_INDIA_PGUSER', 'postgres') }}"
       password: "{{ env_var('GIFT_INDIA_PGPASSWORD', '') }}"
       dbname: "{{ env_var('GIFT_INDIA_PGDATABASE', 'gift_india') }}"

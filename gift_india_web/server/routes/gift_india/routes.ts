@@ -85,6 +85,43 @@ const SETUP_SQL = `
   );
   ALTER TABLE app.capability_overrides ADD COLUMN IF NOT EXISTS original_score DOUBLE PRECISION;
   ALTER TABLE app.capability_overrides ADD COLUMN IF NOT EXISTS override_score DOUBLE PRECISION;
+
+  CREATE TABLE IF NOT EXISTS app.merge_reviews (
+    id              SERIAL PRIMARY KEY,
+    candidate_id    TEXT NOT NULL,
+    decision        TEXT NOT NULL,
+    reviewed_by     TEXT,
+    note            TEXT,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS merge_reviews_candidate_idx ON app.merge_reviews (candidate_id);
+
+  CREATE TABLE IF NOT EXISTS app.website_url_updates (
+    id              SERIAL PRIMARY KEY,
+    facility_id     TEXT NOT NULL,
+    facility_name   TEXT,
+    old_url         TEXT,
+    new_url         TEXT NOT NULL,
+    reviewed_by     TEXT,
+    note            TEXT,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS website_url_updates_facility_idx ON app.website_url_updates (facility_id);
+
+  CREATE TABLE IF NOT EXISTS app.data_quality_flags (
+    id              SERIAL PRIMARY KEY,
+    facility_id     TEXT NOT NULL,
+    flag_type       TEXT NOT NULL,
+    severity        TEXT NOT NULL DEFAULT 'medium',
+    detail          TEXT,
+    related_id      TEXT,
+    status          TEXT NOT NULL DEFAULT 'open',
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    resolved_at     TIMESTAMPTZ,
+    resolved_by     TEXT
+  );
+  CREATE INDEX IF NOT EXISTS data_quality_flags_facility_idx ON app.data_quality_flags (facility_id);
+  CREATE INDEX IF NOT EXISTS data_quality_flags_status_idx ON app.data_quality_flags (status, flag_type);
 `;
 
 async function assertGoldServingTables(lakebase: LakebaseQuery): Promise<void> {
@@ -1531,6 +1568,314 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
       } catch (err) {
         console.error('data-quality/unmapped-districts failed:', err);
         res.status(500).json({ error: 'Failed to load unmapped districts' });
+      }
+    });
+
+    const MergeReviewBody = z.object({
+      candidateId: z.string().min(1),
+      decision: z.enum(['merge', 'reject', 'defer']),
+      note: z.string().optional(),
+    });
+
+    const WebsiteUrlBody = z.object({
+      facilityId: z.string().min(1),
+      newUrl: z.string().min(1),
+      note: z.string().optional(),
+    });
+
+    app.get('/api/data-quality/flags', async (req, res) => {
+      const parsed = DataQualityStateQuery.safeParse(req.query);
+      const state = parsed.success ? (parsed.data.state ?? null) : null;
+      const flagType = typeof req.query.type === 'string' ? req.query.type : null;
+      const params: unknown[] = [];
+      const clauses = ["dq.status = 'open'"];
+      if (state) {
+        params.push(state);
+        clauses.push(`f.state = $${params.length}`);
+      }
+      if (flagType) {
+        params.push(flagType);
+        clauses.push(`dq.flag_type = $${params.length}`);
+      }
+      try {
+        const { rows } = await appkit.lakebase.query(
+          `SELECT dq.id, dq.facility_id, dq.flag_type, dq.severity, dq.detail,
+                  dq.related_id, dq.status, dq.created_at,
+                  f.name AS facility_name, f.state, f.state_code, f.district
+           FROM app.data_quality_flags dq
+           LEFT JOIN gold.facilities f ON f.facility_id = dq.facility_id
+           WHERE ${clauses.join(' AND ')}
+           ORDER BY
+             CASE dq.severity WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END,
+             dq.created_at DESC
+           LIMIT 500`,
+          params,
+        );
+        res.json(
+          rows.map((r) => ({
+            id: Number(r.id),
+            facilityId: txt(r.facility_id),
+            facilityName: txt(r.facility_name),
+            flagType: txt(r.flag_type),
+            severity: txt(r.severity),
+            detail: txt(r.detail),
+            relatedId: r.related_id ? txt(r.related_id) : null,
+            status: txt(r.status),
+            createdAt: r.created_at,
+            state: txt(r.state),
+            stateCode: txt(r.state_code),
+            district: txt(r.district),
+          })),
+        );
+      } catch (err) {
+        console.error('data-quality/flags failed:', err);
+        res.status(500).json({ error: 'Failed to load data quality flags' });
+      }
+    });
+
+    app.get('/api/data-quality/flag-summary', async (_req, res) => {
+      try {
+        const { rows } = await appkit.lakebase.query(`
+          SELECT flag_type, COUNT(*)::int AS count
+          FROM app.data_quality_flags
+          WHERE status = 'open'
+          GROUP BY flag_type
+        `);
+        const byType: Record<string, number> = {};
+        for (const r of rows) byType[txt(r.flag_type)] = Number(r.count ?? 0);
+
+        const { rows: dupRows } = await appkit.lakebase.query(`
+          SELECT COUNT(*)::int AS pending
+          FROM bronze.merge_candidates mc
+          WHERE mc.match_probability >= 0.55
+            AND NOT EXISTS (
+              SELECT 1 FROM app.merge_reviews mr
+              WHERE mr.candidate_id = mc.candidate_id
+                AND mr.decision IN ('merge', 'reject')
+            )
+        `);
+        res.json({
+          byType,
+          pendingMergeReviews: Number(dupRows[0]?.pending ?? 0),
+          totalOpen: Object.values(byType).reduce((a, b) => a + b, 0),
+        });
+      } catch (err) {
+        console.error('data-quality/flag-summary failed:', err);
+        res.status(500).json({ error: 'Failed to load flag summary' });
+      }
+    });
+
+    app.get('/api/data-quality/duplicates', async (req, res) => {
+      const parsed = DataQualityStateQuery.safeParse(req.query);
+      const state = parsed.success ? (parsed.data.state ?? null) : null;
+      try {
+        const { rows } = await appkit.lakebase.query(
+          `SELECT mc.*,
+                  lr.decision AS review_decision,
+                  lr.note AS review_note,
+                  lr.created_at AS reviewed_at,
+                  lr.reviewed_by
+           FROM bronze.merge_candidates mc
+           LEFT JOIN LATERAL (
+             SELECT decision, note, created_at, reviewed_by
+             FROM app.merge_reviews
+             WHERE candidate_id = mc.candidate_id
+             ORDER BY created_at DESC
+             LIMIT 1
+           ) lr ON TRUE
+           WHERE mc.match_probability >= 0.55
+             ${state ? 'AND mc.state = $1' : ''}
+           ORDER BY mc.match_probability DESC, mc.computed_at DESC
+           LIMIT 500`,
+          state ? [state] : [],
+        );
+        res.json(
+          rows.map((r) => ({
+            candidateId: txt(r.candidate_id),
+            leftSource: txt(r.left_source),
+            leftId: txt(r.left_id),
+            leftName: txt(r.left_name),
+            rightSource: txt(r.right_source),
+            rightId: txt(r.right_id),
+            rightName: txt(r.right_name),
+            matchProbability: Number(r.match_probability),
+            matchWeight: r.match_weight == null ? null : Number(r.match_weight),
+            state: txt(r.state),
+            district: r.district ? txt(r.district) : null,
+            recommendation: txt(r.recommendation),
+            flagReason: txt(r.flag_reason),
+            computedAt: r.computed_at,
+            reviewDecision: r.review_decision ? txt(r.review_decision) : null,
+            reviewNote: r.review_note ? txt(r.review_note) : null,
+            reviewedAt: r.reviewed_at ?? null,
+            reviewedBy: r.reviewed_by ? txt(r.reviewed_by) : null,
+          })),
+        );
+      } catch (err) {
+        console.error('data-quality/duplicates failed:', err);
+        res.status(500).json({ error: 'Failed to load duplicate candidates' });
+      }
+    });
+
+    app.post('/api/data-quality/merge-reviews', async (req, res) => {
+      const parsed = MergeReviewBody.safeParse(req.body);
+      if (!parsed.success) {
+        res.status(400).json({ error: 'Invalid merge review payload' });
+        return;
+      }
+      const user = currentUser(req);
+      const { candidateId, decision, note } = parsed.data;
+      try {
+        const { rows } = await appkit.lakebase.query(
+          `INSERT INTO app.merge_reviews (candidate_id, decision, reviewed_by, note)
+           VALUES ($1, $2, $3, $4)
+           RETURNING id, candidate_id, decision, reviewed_by, note, created_at`,
+          [candidateId, decision, user, note?.trim() || null],
+        );
+        if (decision === 'merge' || decision === 'reject') {
+          await appkit.lakebase.query(
+            `UPDATE app.data_quality_flags
+             SET status = 'resolved', resolved_at = NOW(), resolved_by = $2
+             WHERE related_id = $1 AND flag_type = 'duplicate_pair' AND status = 'open'`,
+            [candidateId, user],
+          );
+        }
+        const r = rows[0];
+        res.status(201).json({
+          id: Number(r.id),
+          candidateId: txt(r.candidate_id),
+          decision: txt(r.decision),
+          reviewedBy: txt(r.reviewed_by),
+          note: r.note ? txt(r.note) : null,
+          createdAt: r.created_at,
+        });
+      } catch (err) {
+        console.error('data-quality/merge-reviews failed:', err);
+        res.status(500).json({ error: 'Failed to save merge review' });
+      }
+    });
+
+    app.get('/api/data-quality/merge-reviews', async (req, res) => {
+      try {
+        const { rows } = await appkit.lakebase.query(
+          `SELECT mr.id, mr.candidate_id, mr.decision, mr.reviewed_by, mr.note, mr.created_at,
+                  mc.left_source, mc.left_id, mc.left_name,
+                  mc.right_source, mc.right_id, mc.right_name,
+                  mc.match_probability, mc.recommendation
+           FROM app.merge_reviews mr
+           JOIN bronze.merge_candidates mc ON mc.candidate_id = mr.candidate_id
+           WHERE mr.reviewed_by = $1
+           ORDER BY mr.created_at DESC
+           LIMIT 200`,
+          [currentUser(req)],
+        );
+        res.json(
+          rows.map((r) => ({
+            id: Number(r.id),
+            candidateId: txt(r.candidate_id),
+            decision: txt(r.decision),
+            reviewedBy: txt(r.reviewed_by),
+            note: r.note ? txt(r.note) : null,
+            createdAt: r.created_at,
+            leftSource: txt(r.left_source),
+            leftId: txt(r.left_id),
+            leftName: txt(r.left_name),
+            rightSource: txt(r.right_source),
+            rightId: txt(r.right_id),
+            rightName: txt(r.right_name),
+            matchProbability: Number(r.match_probability),
+            recommendation: txt(r.recommendation),
+          })),
+        );
+      } catch (err) {
+        console.error('data-quality/merge-reviews list failed:', err);
+        res.status(500).json({ error: 'Failed to load merge reviews' });
+      }
+    });
+
+    app.post('/api/data-quality/website-url', async (req, res) => {
+      const parsed = WebsiteUrlBody.safeParse(req.body);
+      if (!parsed.success) {
+        res.status(400).json({ error: 'Invalid website URL payload' });
+        return;
+      }
+      const user = currentUser(req);
+      const { facilityId, newUrl, note } = parsed.data;
+      const trimmedUrl = newUrl.trim();
+      try {
+        const { rows: facRows } = await appkit.lakebase.query(
+          `SELECT facility_id, name, website_url FROM gold.facilities WHERE facility_id = $1`,
+          [facilityId],
+        );
+        if (facRows.length === 0) {
+          res.status(404).json({ error: 'Facility not found' });
+          return;
+        }
+        const fac = facRows[0];
+        const oldUrl = fac.website_url ? txt(fac.website_url) : null;
+
+        await appkit.lakebase.query(
+          `UPDATE bronze.facilities_virtue SET website_url = $2 WHERE facility_id = $1`,
+          [facilityId, trimmedUrl],
+        );
+
+        const { rows } = await appkit.lakebase.query(
+          `INSERT INTO app.website_url_updates
+             (facility_id, facility_name, old_url, new_url, reviewed_by, note)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           RETURNING id, facility_id, facility_name, old_url, new_url, reviewed_by, note, created_at`,
+          [facilityId, txt(fac.name), oldUrl, trimmedUrl, user, note?.trim() || null],
+        );
+
+        await appkit.lakebase.query(
+          `UPDATE app.data_quality_flags
+           SET status = 'resolved', resolved_at = NOW(), resolved_by = $2
+           WHERE facility_id = $1 AND flag_type = 'missing_url' AND status = 'open'`,
+          [facilityId, user],
+        );
+
+        const r = rows[0];
+        res.status(201).json({
+          id: Number(r.id),
+          facilityId: txt(r.facility_id),
+          facilityName: txt(r.facility_name),
+          oldUrl: r.old_url ? txt(r.old_url) : null,
+          newUrl: txt(r.new_url),
+          reviewedBy: txt(r.reviewed_by),
+          note: r.note ? txt(r.note) : null,
+          createdAt: r.created_at,
+        });
+      } catch (err) {
+        console.error('data-quality/website-url failed:', err);
+        res.status(500).json({ error: 'Failed to update website URL' });
+      }
+    });
+
+    app.get('/api/data-quality/website-url-updates', async (req, res) => {
+      try {
+        const { rows } = await appkit.lakebase.query(
+          `SELECT id, facility_id, facility_name, old_url, new_url, reviewed_by, note, created_at
+           FROM app.website_url_updates
+           WHERE reviewed_by = $1
+           ORDER BY created_at DESC
+           LIMIT 200`,
+          [currentUser(req)],
+        );
+        res.json(
+          rows.map((r) => ({
+            id: Number(r.id),
+            facilityId: txt(r.facility_id),
+            facilityName: txt(r.facility_name),
+            oldUrl: r.old_url ? txt(r.old_url) : null,
+            newUrl: txt(r.new_url),
+            reviewedBy: txt(r.reviewed_by),
+            note: r.note ? txt(r.note) : null,
+            createdAt: r.created_at,
+          })),
+        );
+      } catch (err) {
+        console.error('data-quality/website-url-updates failed:', err);
+        res.status(500).json({ error: 'Failed to load website URL updates' });
       }
     });
   });

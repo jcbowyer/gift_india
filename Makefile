@@ -22,6 +22,7 @@ endef
 # Prefer the repo venv when present; fall back to python3 on PATH.
 # Use $(CURDIR) so the interpreter still resolves after `cd gift_india_api`.
 PYTHON := $(if $(wildcard $(CURDIR)/.venv/bin/python),$(CURDIR)/.venv/bin/python,python3)
+DBT := $(if $(wildcard $(CURDIR)/.venv/bin/dbt),$(CURDIR)/.venv/bin/dbt,dbt)
 
 # Docker Compose v2 plugin (`docker compose`) or standalone v1 (`docker-compose`).
 ifneq (,$(shell docker compose version >/dev/null 2>&1 && echo ok))
@@ -236,13 +237,13 @@ pg-check:
 # See claude.md — system Postgres :5432; no Docker unless you opt in.
 # For Lakebase: export PGHOST/PGUSER/PGPASSWORD/PGDATABASE/PGSSLMODE before running.
 dbt: pg-check
-	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. $(PYTHON) -m dbt build
+	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. $(DBT) build
 
 dbt-test: pg-check
-	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. $(PYTHON) -m dbt test
+	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. $(DBT) test
 
 dbt-docs: pg-check
-	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. $(PYTHON) -m dbt docs generate && DBT_PROFILES_DIR=. $(PYTHON) -m dbt docs serve
+	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. $(DBT) docs generate && DBT_PROFILES_DIR=. $(DBT) docs serve
 
 # Build the upstream Databricks medallion (dbt_project/, adapter: databricks).
 # Runs the dbt SQL on the workspace SQL warehouse — needs the Databricks CLI

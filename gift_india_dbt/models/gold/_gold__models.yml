@@ -3,15 +3,16 @@ version: 2
 models:
   - name: geography
     description: >-
-      Gold serving dimension of places (one row per district within a state),
-      keyed by `geography_id`, carrying centroid lat/lon, NFHS-5 indicators, and
-      rolled-up facility counts. gold.facilities links to this table.
+      GIFT Gauge gold serving dimension of Indian districts (one row per canonical
+      geography_id). Join gold.facilities on geography_id for district-level analytics.
+      Includes NFHS-5 health indicators and rolled-up facility counts. Primary table
+      for Genie questions about district health context and facility density.
     config:
       contract:
         enforced: true
     columns:
       - name: geography_id
-        description: "Surrogate key: `<state_code>-<district-slug>` (e.g. `mh-mumbai`)."
+        description: "Surrogate key: `<state_code>-<district-slug>` (e.g. `mh-mumbai`). Primary key."
         data_type: text
         constraints:
           - type: not_null
@@ -20,13 +21,15 @@ models:
           - unique
           - not_null
       - name: district
+        description: Canonical district name within the state.
         data_type: text
         constraints: [{type: not_null}]
       - name: state
+        description: Canonical Indian state or union territory name.
         data_type: text
         constraints: [{type: not_null}]
       - name: state_code
-        description: 2-letter state / UT code.
+        description: Two-letter state / UT code (e.g. MH, KA).
         data_type: text
       - name: lat
         description: District centroid latitude (WGS84).
@@ -40,37 +43,42 @@ models:
         description: District population (persons).
         data_type: integer
       - name: urbanity
-        description: Urbanity index (0-1).
+        description: Urbanity index from 0 (rural) to 1 (urban).
         data_type: double precision
       - name: fp_unmet_pct
+        description: NFHS-5 family planning unmet need (% of women).
         data_type: double precision
       - name: institutional_birth_pct
+        description: NFHS-5 institutional delivery rate (%).
         data_type: double precision
       - name: csection_pct
+        description: NFHS-5 caesarean section rate (%).
         data_type: double precision
       - name: anaemia_pct
+        description: NFHS-5 anaemia prevalence among women (%).
         data_type: double precision
       - name: facility_count
-        description: Facilities located in this geography.
+        description: Count of healthcare facilities linked to this geography.
         data_type: integer
       - name: surgical_facility_count
-        description: Facilities in this geography that offer surgery.
+        description: Count of facilities in this geography that offer surgery.
         data_type: integer
       - name: annual_surgeries_total
-        description: Sum of annual surgeries across facilities in this geography.
+        description: Sum of annual surgeries across all facilities in this geography.
         data_type: integer
 
   - name: facilities
     description: >-
-      Gold serving table of geotagged healthcare facilities. Linked to
-      gold.geography by `geography_id` and to its district centroid by lat/lon
-      via `distance_from_centroid_km` (great-circle km).
+      GIFT Gauge gold serving table of geotagged Indian healthcare facilities.
+      One row per facility. Includes JCI/NABH accreditation flags from entity
+      resolution, trust-relevant attributes (beds, specialties, surgery flag), and
+      geography linkage. Primary table for Genie facility lookups and scorecard queries.
     config:
       contract:
         enforced: true
     columns:
       - name: facility_id
-        description: Stable facility primary key (e.g. `VF-000123`).
+        description: Stable facility primary key (e.g. VF-000123). Primary key.
         data_type: text
         constraints:
           - type: not_null
@@ -79,13 +87,15 @@ models:
           - unique
           - not_null
       - name: name
+        description: Official or governed facility name.
         data_type: text
         constraints: [{type: not_null}]
       - name: type
+        description: "Facility type (e.g. District Hospital, Private Hospital, Community Health Centre)."
         data_type: text
         constraints: [{type: not_null}]
       - name: geography_id
-        description: FK to gold.geography.geography_id.
+        description: Foreign key to gold.geography.geography_id (canonical district).
         data_type: text
         constraints:
           - type: foreign_key
@@ -96,12 +106,15 @@ models:
                 to: ref('geography')
                 field: geography_id
       - name: district
+        description: District where the facility is located.
         data_type: text
         constraints: [{type: not_null}]
       - name: state
+        description: Indian state or union territory name.
         data_type: text
         constraints: [{type: not_null}]
       - name: state_code
+        description: Two-letter state / UT code.
         data_type: text
       - name: lat
         description: Facility latitude (WGS84).
@@ -112,49 +125,52 @@ models:
         data_type: double precision
         constraints: [{type: not_null}]
       - name: beds
+        description: Reported inpatient bed count.
         data_type: integer
       - name: annual_surgeries
+        description: Reported annual surgical volume.
         data_type: integer
       - name: offers_surgery
+        description: True when the facility record indicates surgical services.
         data_type: boolean
         constraints: [{type: not_null}]
       - name: specialties
-        description: Pipe-delimited list of surgical specialties offered.
+        description: Pipe-delimited list of clinical specialties on record.
         data_type: text
       - name: website_url
         description: Canonical facility website URL (null when unknown).
         data_type: text
       - name: match_confidence
-        description: Named-entity-resolution confidence score (0-1).
+        description: Named-entity-resolution confidence score (0–1) for this facility record.
         data_type: double precision
       - name: distance_from_centroid_km
-        description: Great-circle km from the facility to its geography centroid.
+        description: Great-circle distance in km from facility to its district centroid.
         data_type: numeric
       - name: jci_accredited
         description: >-
-          True when this facility entity-resolves (confidence >= 0.70) to a
-          JCI-accredited organization in gold.facility_jci.
+          True when entity-resolved (confidence >= 0.70) to a JCI-accredited
+          organization in gold.facility_jci.
         data_type: boolean
         constraints: [{type: not_null}]
       - name: jci_organization_name
         description: Resolved JCI organization name (null when not accredited).
         data_type: text
       - name: jci_match_method
-        description: "Entity-resolution tier: exact_name_state | brand_city | brand_state."
+        description: "JCI entity-resolution tier: exact_name_state | brand_city | brand_state."
         data_type: text
       - name: jci_match_confidence
-        description: Confidence (0-1) of the JCI entity-resolution match.
+        description: Confidence (0–1) of the JCI entity-resolution match.
         data_type: numeric
       - name: jci_source
-        description: Aggregator/source the JCI accreditation row came from.
+        description: Aggregator or source the JCI accreditation row came from.
         data_type: text
       - name: jci_data_source
-        description: Provenance tag of the accreditation signal ('jci').
+        description: Provenance tag of the JCI signal (always 'jci').
         data_type: text
       - name: nabh_accredited
         description: >-
-          True when this facility entity-resolves (confidence >= 0.70) to a NABH
-          accredited / certified / empanelled organization in gold.facility_nabh.
+          True when entity-resolved (confidence >= 0.70) to a NABH accredited /
+          certified / empanelled organization in gold.facility_nabh.
         data_type: boolean
         constraints: [{type: not_null}]
       - name: nabh_organization_name
@@ -167,24 +183,58 @@ models:
         description: "Resolved NABH programme (e.g. Hospitals, SHCO, AYUSH Hospitals)."
         data_type: text
       - name: nabh_match_method
-        description: "Entity-resolution tier: exact_name_state | brand_city | brand_state."
+        description: "NABH entity-resolution tier: exact_name_state | brand_city | brand_state."
         data_type: text
       - name: nabh_match_confidence
-        description: Confidence (0-1) of the NABH entity-resolution match.
+        description: Confidence (0–1) of the NABH entity-resolution match.
         data_type: numeric
       - name: nabh_source
-        description: Source the NABH accreditation row came from ('nabh_directory').
+        description: Source the NABH accreditation row came from.
         data_type: text
       - name: nabh_data_source
-        description: Provenance tag of the accreditation signal ('nabh').
+        description: Provenance tag of the NABH signal (always 'nabh').
         data_type: text
+
+  - name: facility_geography
+    description: >-
+      Gold crosswalk linking each facility to its canonical geography_id via tiered
+      entity resolution (exact district match, spatial nearest-centroid fallback).
+      Use to join gold.facilities to gold.geography when geography_id is needed.
+    columns:
+      - name: facility_id
+        description: Foreign key to gold.facilities.facility_id. One row per facility.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('facilities')
+                field: facility_id
+      - name: geography_id
+        description: Foreign key to gold.geography.geography_id (resolved district).
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('geography')
+                field: geography_id
+      - name: match_method
+        description: >-
+          Resolution tier: canonical_exact | source_exact | state_district |
+          spatial_state | spatial_nearest.
+        tests:
+          - not_null
+      - name: match_confidence
+        description: Confidence (0–1) of the facility-to-geography match.
+        tests: [not_null]
+      - name: distance_km
+        description: Great-circle km between facility coordinates and geography centroid.
 
   - name: facility_jci
     description: >-
-      Entity-resolution crosswalk: governed facilities resolved (inner join on
-      normalized name / brand key + state) to JCI-accredited organizations. One
-      row per matched facility_id, carrying the match tier + confidence and the
-      JCI provenance. gold.facilities reads this to flag `jci_accredited`.
+      Entity-resolution crosswalk from governed facilities to JCI-accredited
+      organizations. One row per matched facility_id. gold.facilities reads this
+      to set jci_accredited. Use for Genie queries about international accreditation.
     columns:
       - name: facility_id
         description: Resolved facility primary key.
@@ -195,18 +245,41 @@ models:
               arguments:
                 to: ref('facilities')
                 field: facility_id
+      - name: facility_name
+        description: Governed facility name at time of resolution.
+      - name: district
+        description: Facility district.
+      - name: state
+        description: Facility state.
       - name: jci_org_id
+        description: Stable JCI organization identifier (sha256 hash prefix).
         tests: [not_null]
       - name: jci_organization_name
+        description: JCI-accredited organization name as published by the source.
         tests: [not_null]
+      - name: accreditation_program
+        description: JCI accreditation programme (e.g. Academic Medical Center Hospital).
+      - name: verified_on_portal
+        description: True when spot-checked against the official JCI directory.
       - name: match_method
+        description: "Entity-resolution tier: exact_name_state | brand_city | brand_state."
         tests:
           - not_null
           - accepted_values:
               values: ['exact_name_state', 'brand_city', 'brand_state']
       - name: match_confidence
+        description: Match confidence (0–1); gold.facilities flags accredited at >= 0.70.
         tests: [not_null]
+      - name: jci_source
+        description: Aggregator or list the JCI row was compiled from.
+      - name: jci_source_url
+        description: URL of the source aggregator page.
+      - name: jci_website_url
+        description: Official hospital homepage URL from the JCI record.
+      - name: jci_snapshot_dir
+        description: Relative path to scraped homepage snapshot (if captured).
       - name: data_source
+        description: Provenance tag (always 'jci').
         tests:
           - not_null
           - accepted_values:
@@ -214,11 +287,9 @@ models:
 
   - name: facility_nabh
     description: >-
-      Entity-resolution crosswalk: governed facilities resolved (inner join on
-      normalized name / brand key + state) to NABH accredited / certified /
-      empanelled organizations. One row per matched facility_id, carrying the match
-      tier + confidence, the NABH status/programme/reference, and provenance.
-      gold.facilities reads this to flag `nabh_accredited`.
+      Entity-resolution crosswalk from governed facilities to NABH accredited /
+      certified / empanelled organizations. One row per matched facility_id.
+      gold.facilities reads this to set nabh_accredited.
     columns:
       - name: facility_id
         description: Resolved facility primary key.
@@ -229,24 +300,50 @@ models:
               arguments:
                 to: ref('facilities')
                 field: facility_id
+      - name: facility_name
+        description: Governed facility name at time of resolution.
+      - name: district
+        description: Facility district.
+      - name: state
+        description: Facility state.
       - name: nabh_org_id
+        description: Stable NABH organization identifier (sha256 hash prefix).
         tests: [not_null]
       - name: nabh_organization_name
+        description: NABH organization name as published by the official directory.
         tests: [not_null]
+      - name: accreditation_program
+        description: "NABH programme (e.g. Hospitals, SHCO, AYUSH Hospitals)."
       - name: accreditation_status
+        description: "NABH status: Accredited | Certified | Empaneled."
         tests:
           - accepted_values:
               values: ['Accredited', 'Certified', 'Empaneled']
               config:
                 severity: warn
+      - name: nabh_reference_no
+        description: NABH accreditation / reference number (e.g. H-2021-0846).
+      - name: nabh_certificate_url
+        description: Portal URL to the NABH certificate-and-scope PDF.
+      - name: verified_on_portal
+        description: True when sourced from the official nabh.co directory.
       - name: match_method
+        description: "Entity-resolution tier: exact_name_state | brand_city | brand_state."
         tests:
           - not_null
           - accepted_values:
               values: ['exact_name_state', 'brand_city', 'brand_state']
       - name: match_confidence
+        description: Match confidence (0–1); gold.facilities flags accredited at >= 0.70.
         tests: [not_null]
+      - name: nabh_source
+        description: Source label for the NABH row.
+      - name: nabh_source_url
+        description: URL of the NABH directory listing.
+      - name: nabh_website_url
+        description: Official hospital homepage from the NABH record.
       - name: data_source
+        description: Provenance tag (always 'nabh').
         tests:
           - not_null
           - accepted_values:
@@ -254,50 +351,139 @@ models:
 
   - name: facility_capability_assessments
     description: >-
-      Track 1 serving table: one row per (facility, capability) with a trust
-      signal derived from structured gold.facilities fields only.
+      Track 1 trust assessments: one row per (facility, capability). Each row
+      states whether the facility claims a capability (ICU, maternity, trauma,
+      oncology, emergency, NICU) and assigns a trust_signal and trust_score from
+      structured facility-record evidence. Primary table for Genie capability and
+      human-review flag queries. Join gold.facilities on facility_id.
     columns:
       - name: facility_id
+        description: Foreign key to gold.facilities.facility_id.
         tests:
           - not_null
       - name: capability
+        description: "Capability code: maternity | emergency | trauma | oncology | icu | nicu."
         tests:
           - not_null
+      - name: capability_label
+        description: Human-readable capability name (e.g. Intensive Care Unit (ICU)).
+      - name: capability_description
+        description: Plain-language definition of what this capability means clinically.
+      - name: claimed
+        description: True when the pipeline infers the facility claims this capability.
+      - name: trust_signal
+        description: >-
+          Trust classification: strong | partial | weak_suspicious | no_claim.
+          weak_suspicious triggers human-review flags in the app.
+      - name: trust_score
+        description: Numeric trust score (0–1) derived from on-record evidence and entity confidence.
+      - name: evidence_count
+        description: Total evidence items considered for this assessment.
+      - name: supporting_count
+        description: Count of evidence items that support the capability claim.
+      - name: contradicting_count
+        description: Count of evidence items that contradict the claim (e.g. low entity confidence).
+      - name: best_source
+        description: Highest-weight evidence source label (e.g. Facility record — specialties).
+      - name: summary
+        description: One-sentence pipeline summary of the trust assessment.
 
   - name: capability_evidence
     description: >-
-      Citations backing facility capability assessments. Snippets are built from
-      real facility-record column values and real crawled website text (a quoted
-      window from silver_facility_web_crawl) — never fabricated prose.
+      Citations backing each facility × capability assessment. Every snippet is
+      built from real facility-record column values or crawled website text —
+      never fabricated. Join facility_capability_assessments on (facility_id, capability).
+      Use for Genie evidence drill-down queries.
     columns:
       - name: evidence_id
+        description: Stable evidence row key (facility_id:capability:source suffix).
         tests:
           - unique
           - not_null
       - name: facility_id
+        description: Foreign key to gold.facilities.facility_id.
         tests:
           - not_null
       - name: capability
+        description: Capability code matching facility_capability_assessments.capability.
         tests:
           - not_null
+      - name: source_type
+        description: "Evidence provenance: facility_record | entity_resolution | website_crawl."
+      - name: source_label
+        description: Human-readable source label (e.g. Facility record — specialties).
+      - name: source_url
+        description: URL when the evidence comes from a website crawl (null for record-based evidence).
+      - name: stance
+        description: "Whether this evidence supports or contradicts the claim: supports | contradicts."
+      - name: weight
+        description: Relative weight (0–1) of this evidence item in the trust score.
+      - name: snippet
+        description: Quoted text excerpt from the facility record or crawled page.
+      - name: observed_at
+        description: Date the evidence was observed or computed.
 
   - name: capability_scored
     description: >-
-      Deterministic evidence_strength_score per (facility, capability) plus a
-      shared evidence_context block for Agent Bricks narration. Ranking uses
-      this score; LLM output in capability_evidence_json/md only narrates it.
+      Deterministic evidence_strength_score and evidence_tier per (facility, capability).
+      Ranking and grading use this table; LLM narration in capability_evidence_json/md
+      only interprets these frozen scores. Primary table for Genie tier and ranking queries.
     columns:
       - name: facility_id
+        description: Foreign key to gold.facilities.facility_id.
         tests:
           - not_null
+      - name: facility_name
+        description: Facility name (denormalized for narration and Genie readability).
       - name: capability
+        description: Capability code (maternity, icu, etc.).
         tests:
           - not_null
+      - name: capability_label
+        description: Human-readable capability name.
+      - name: capability_description
+        description: Plain-language capability definition.
+      - name: claimed
+        description: True when the facility claims this capability.
+      - name: trust_signal
+        description: Pipeline trust signal (strong, partial, weak_suspicious, no_claim).
+      - name: evidence_count
+        description: Total evidence items from the pipeline assessment.
+      - name: supporting_count
+        description: Supporting evidence count.
+      - name: contradicting_count
+        description: Contradicting evidence count — high values may trigger human review.
+      - name: best_source
+        description: Best evidence source label.
+      - name: summary
+        description: Pipeline summary sentence.
+      - name: facility_type
+        description: Facility type (denormalized from gold.facilities).
+      - name: city
+        description: Facility district (denormalized; labelled city for narration context).
+      - name: state
+        description: Facility state (denormalized).
+      - name: beds
+        description: Bed count (denormalized).
+      - name: website
+        description: Facility website URL (denormalized).
+      - name: specialties
+        description: Pipe-delimited specialties (denormalized).
+      - name: facility_confidence
+        description: Entity-resolution confidence (denormalized match_confidence).
       - name: evidence_strength_score
+        description: >-
+          Deterministic score (0–1) for ranking. Unclaimed capabilities score 0.0.
+          Computed in SQL, not by LLM.
         tests:
           - not_null
       - name: evidence_tier
+        description: "Tier bucket: Strong (>=0.85) | Moderate | Weak | Insufficient."
         tests:
           - not_null
           - accepted_values:
               values: ['Strong', 'Moderate', 'Weak', 'Insufficient']
+      - name: evidence_context
+        description: >-
+          Structured text block summarizing facility + capability + pipeline evidence
+          for LLM narration input. Treat pipeline numbers as ground truth.

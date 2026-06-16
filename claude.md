@@ -2,7 +2,7 @@
 
 ## Tech Stack
 - **Backend:** FastAPI (Python 3.11+)
-- **Data:** dbt Core + SQL (PostgreSQL — **system** Postgres on `localhost:5432`, not Docker)
+- **Data:** dbt Core + SQL (PostgreSQL — **system** Postgres on `localhost:5433`, not Docker)
 - **Frontend:** React (Vite, TypeScript); Docusaurus for documentation
 - **Data apps / demos:** Streamlit (Python) — lightweight analytical/data-exploration UIs and hackathon demos that read from the warehouse or a package loader. Use for internal dashboards and rapid prototypes, **not** as a replacement for the React product UI in `web_app/`.
 - **Tooling:** **uv** for Python dependency management & the workspace (NOT Poetry); Ruff for lint/format; Node.js for the frontend
@@ -65,15 +65,22 @@
 
 ## Database Access — Local PostgreSQL (NO Docker)
 
-**CRITICAL for agents:** This developer does **not** use Docker Compose for local Postgres. Do **not** run `make db-up`, do **not** suggest `docker compose up`, and **never default to port `5433`**. Port `5433` is the optional docker-compose mapping only; using it while system Postgres runs on `5432` causes connection failures and port conflicts.
+**CRITICAL for agents:** This developer does **not** use Docker Compose for local Postgres. Do **not** run `make db-up`, do **not** suggest `docker compose up`, and **do not use `docker-compose.yml`**. Port `5433` is **not** Docker here — it is the **system/WSL PostgreSQL** listen port for this machine.
 
-- **Local warehouse:** **system PostgreSQL** at `localhost:5432`, database `gift_india`.
-- **Credentials:** come from the repo `.env` — `GIFT_INDIA_DB_URL` for Python loaders / the web app, and `GIFT_INDIA_PG*` for dbt (`gift_india_dbt/profiles.yml`). Do not invent `postgres:password@5433`; read what is already in `.env`.
+- **Local warehouse:** **system PostgreSQL** at `localhost:5433`, database `gift_india`. **Every** local connection string, loader, dbt profile, and web-app env var must use port **`5433`** — never `5432` (that is a different Postgres instance on this host and will fail auth).
+- **Credentials:** come from the repo `.env` and `gift_india_web/.env` — `GIFT_INDIA_DB_URL` for Python loaders / the web app, and `GIFT_INDIA_PG*` for dbt (`gift_india_dbt/profiles.yml`). Read what is already in `.env`; do not invent passwords.
+- **Lakebase `PG*` vars:** `gift_india_web/.env` also carries `PGHOST` / `PGPORT` / `PGSSLMODE` for the deployed Lakebase endpoint. Those are **only** for AppKit's Lakebase plugin when `GIFT_INDIA_DB_URL` is unset. Local dev must connect via explicit fields parsed from `GIFT_INDIA_DB_URL` (host `localhost`, port `5433`) — `pg` will otherwise inherit `PGHOST` from the shell and hit the wrong server.
+- **Stale shell exports:** Node's `--env-file` does **not** override existing env vars. If the dev server was started with an old `GIFT_INDIA_DB_URL` on `:5432`, restart it after fixing `.env` (or `unset GIFT_INDIA_DB_URL GIFT_INDIA_PG*` before `./startup.sh`).
 - **Lakebase:** deployed / shared target only — use when explicitly publishing or running against the remote endpoint, not for routine local `make dbt`.
 - **Serving vs bronze:** the app reads `gold.*`; loaders land `bronze.*`; dbt promotes bronze → silver → gold.
-- **`docker-compose.yml`:** legacy optional path — **ignore unless the user explicitly asks for Docker.**
+- **`docker-compose.yml`:** **ignore** — legacy optional path; this project does not use Docker for Postgres.
 
-When Postgres connection errors appear, check `.env` points at **`5432`** (system) before changing anything else. Never “fix” auth by switching to Docker or port `5433` without the user asking.
+When Postgres connection errors appear (`password authentication failed`, empty API 500s), check in order:
+1. `.env` and `gift_india_web/.env` both point at **`localhost:5433`** (not `5432`).
+2. Restart the dev server so env-file values win over stale shell exports.
+3. Verify with `PGPASSWORD=… psql -h localhost -p 5433 -U postgres -d gift_india -c 'SELECT COUNT(*) FROM gold.facilities'`.
+
+Never “fix” connection errors by switching to Docker or port `5432`.
 
 ## Documentation Rules (Docusaurus)
 - **MANDATORY:** ALL docs go in `web_docs/docs/` subdirectories.

@@ -88,13 +88,26 @@ if (!fs.existsSync(source)) {
   }
 }
 
+function hasMapshaper() {
+  return spawnSync('which', ['mapshaper'], { encoding: 'utf8' }).status === 0;
+}
+
 fs.mkdirSync(topoDir, { recursive: true });
 fs.mkdirSync(districtDir, { recursive: true });
+
+const nationOut = path.join(publicDir, 'india-topo.json');
+if (!hasMapshaper()) {
+  if (fs.existsSync(nationOut)) {
+    console.log('[build-india-topo] mapshaper not on PATH; using committed client/public/topo assets');
+    process.exit(0);
+  }
+  console.error('[build-india-topo] mapshaper is required to build topo assets (install mapshaper or commit client/public/topo)');
+  process.exit(1);
+}
 
 const simplify = ['-simplify', 'dp', '0.008', 'keep-shapes'];
 
 // Nation view: states + nation outline only (districts lazy-loaded per state).
-const nationOut = path.join(publicDir, 'india-topo.json');
 runMapshaper([source, ...simplify, '-o', 'target=nation,states', nationOut], 'nation topo');
 console.log(`[build-india-topo] ${nationOut} (${kb(nationOut)})`);
 

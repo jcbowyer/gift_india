@@ -200,7 +200,7 @@ export function DataQualityPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6" data-demo="data-quality">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Data Quality</h1>
@@ -214,7 +214,7 @@ export function DataQualityPage() {
       </div>
 
       {/* KPI row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" data-demo="web-address-kpis">
         <KpiCard label="Total Facilities" value={summary.total.toLocaleString()} />
         <KpiCard label="With URL" value={summary.withUrl.toLocaleString()} />
         <KpiCard
@@ -325,7 +325,7 @@ export function DataQualityPage() {
                             {drillLoading ? (
                               <p className="text-xs text-muted-foreground py-2">Loading…</p>
                             ) : drillData && drillData.length > 0 ? (
-                              <div className="rounded-lg border overflow-hidden">
+                              <div className="rounded-lg border overflow-hidden" data-demo="missing-finder">
                                 <table className="w-full text-xs">
                                   <thead>
                                     <tr className="border-b bg-muted/60">

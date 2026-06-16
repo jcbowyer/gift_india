@@ -33,6 +33,9 @@ vars:
 # the dbt default `<target>_<schema>` prefix.
 models:
   gift_india_postgres:
+    +persist_docs:
+      relation: true
+      columns: true
     silver:
       +materialized: view
       +schema: silver
@@ -43,6 +46,9 @@ models:
 seeds:
   gift_india_postgres:
     +schema: silver
+    +persist_docs:
+      relation: true
+      columns: true
     state_codes:
       +column_types:
         state: text

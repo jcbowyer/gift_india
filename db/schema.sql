@@ -380,3 +380,32 @@ CREATE INDEX IF NOT EXISTS capability_evidence_json_tier_idx
     ON gold.capability_evidence_json (capability, evidence_tier);
 CREATE INDEX IF NOT EXISTS capability_evidence_md_tier_idx
     ON gold.capability_evidence_md (capability, evidence_tier);
+
+-- Splink probabilistic record linkage output — merge recommendations for human review.
+-- Populated by gift_india_api/src/splink_duplicates.py (`make splink-duplicates`).
+-- Nothing merges into gold silently; planners approve via app.merge_reviews.
+CREATE TABLE IF NOT EXISTS bronze.merge_candidates (
+    candidate_id       text             PRIMARY KEY,
+    left_source        text             NOT NULL,
+    left_id            text             NOT NULL,
+    left_name          text             NOT NULL,
+    right_source       text             NOT NULL,
+    right_id           text             NOT NULL,
+    right_name         text             NOT NULL,
+    match_probability  double precision NOT NULL,
+    match_weight       double precision,
+    state              text,
+    district           text,
+    recommendation     text             NOT NULL DEFAULT 'review',
+    flag_reason        text,
+    computed_at        timestamptz      NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS merge_candidates_state_idx
+    ON bronze.merge_candidates (state);
+CREATE INDEX IF NOT EXISTS merge_candidates_probability_idx
+    ON bronze.merge_candidates (match_probability DESC);
+CREATE INDEX IF NOT EXISTS merge_candidates_left_idx
+    ON bronze.merge_candidates (left_source, left_id);
+CREATE INDEX IF NOT EXISTS merge_candidates_right_idx
+    ON bronze.merge_candidates (right_source, right_id);
