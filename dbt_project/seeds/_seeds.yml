@@ -20,3 +20,48 @@ seeds:
         description: Thematic grouping (e.g. Maternal Health, Anaemia).
         data_tests:
           - not_null
+  - name: ref_capability_keyword
+    description: >
+      Reference taxonomy mapping free-text terms to clinical capabilities for the
+      Facility Trust Desk. Each row maps a term, expected in a given source field
+      (signal_type), to a capability, with a weight reflecting how diagnostic the
+      term is. Consumed by fact_capability_evidence during extraction. Matching is
+      case-insensitive; join silver field text to this seed on
+      source_field = signal_type.
+    config:
+      column_types:
+        capability: string
+        signal_type: string
+        term: string
+        weight: double
+        specificity: string
+    columns:
+      - name: capability
+        description: Controlled capability the term is evidence for.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['icu', 'nicu', 'maternity', 'emergency', 'oncology', 'trauma']
+      - name: signal_type
+        description: >
+          Source field this term should be matched against. 'description' rows
+          carry the low weight that lets the suspicious / description-only tier fire.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['specialty', 'equipment', 'procedure', 'capability', 'description']
+      - name: term
+        description: Lowercase token or phrase matched within the source field text.
+        tests:
+          - not_null
+      - name: weight
+        description: >
+          Diagnostic strength of a match; higher is stronger. specialty 3.0,
+          pathognomonic/high 2.5, moderate 1.5, claim 1.0, shared 0.5, description 0.3.
+        tests:
+          - not_null
+      - name: specificity
+        description: Human-readable tier for tuning and debugging.
+        tests:
+          - accepted_values:
+              values: ['controlled', 'pathognomonic', 'high', 'moderate', 'shared', 'claim', 'adjacent', 'description']

@@ -1,0 +1,156 @@
+capability,signal_type,term,weight,specificity
+emergency,specialty,emergency medicine,3.0,controlled
+emergency,specialty,accident & emergency,3.0,controlled
+emergency,capability,emergency,1.0,claim
+emergency,capability,casualty,1.0,claim
+emergency,capability,a&e,1.0,claim
+emergency,capability,emergency room,1.0,claim
+emergency,capability,emergency department,1.0,claim
+emergency,capability,24x7 emergency,1.0,claim
+emergency,capability,accident and emergency,1.0,claim
+emergency,procedure,triage,1.5,moderate
+emergency,procedure,resuscitation,1.5,moderate
+emergency,procedure,cpr,1.5,moderate
+emergency,procedure,stabilization,1.5,moderate
+emergency,procedure,ambulance service,1.5,moderate
+emergency,equipment,crash cart,2.5,high
+emergency,equipment,defibrillator,0.5,shared
+emergency,equipment,ecg,0.5,shared
+emergency,equipment,portable ventilator,0.5,shared
+emergency,description,emergency,0.3,description
+emergency,description,casualty,0.3,description
+icu,specialty,critical care medicine,3.0,controlled
+icu,specialty,intensive care,3.0,controlled
+icu,specialty,intensivist,3.0,controlled
+icu,capability,icu,1.0,claim
+icu,capability,intensive care unit,1.0,claim
+icu,capability,critical care,1.0,claim
+icu,capability,micu,1.0,claim
+icu,capability,sicu,1.0,claim
+icu,capability,hdu,1.0,claim
+icu,capability,high dependency unit,1.0,claim
+icu,procedure,mechanical ventilation,1.5,moderate
+icu,procedure,central line insertion,1.5,moderate
+icu,procedure,inotrope support,1.5,moderate
+icu,procedure,vasopressor support,1.5,moderate
+icu,procedure,intubation,0.5,shared
+icu,procedure,hemodynamic monitoring,0.5,shared
+icu,equipment,central monitoring station,2.5,high
+icu,equipment,abg analyzer,2.5,high
+icu,equipment,infusion pump,1.5,moderate
+icu,equipment,syringe pump,1.5,moderate
+icu,equipment,ventilator,0.5,shared
+icu,equipment,patient monitor,0.5,shared
+icu,description,icu,0.3,description
+icu,description,intensive care,0.3,description
+icu,description,critical care,0.3,description
+nicu,specialty,neonatology,3.0,controlled
+nicu,specialty,paediatrics,1.5,adjacent
+nicu,capability,nicu,1.0,claim
+nicu,capability,neonatal icu,1.0,claim
+nicu,capability,newborn icu,1.0,claim
+nicu,capability,sncu,1.0,claim
+nicu,capability,special newborn care unit,1.0,claim
+nicu,capability,neonatal intensive care,1.0,claim
+nicu,capability,level ii nursery,1.0,claim
+nicu,capability,level iii nursery,1.0,claim
+nicu,procedure,phototherapy,2.5,high
+nicu,procedure,exchange transfusion,2.5,high
+nicu,procedure,surfactant therapy,2.5,high
+nicu,procedure,neonatal resuscitation,2.5,high
+nicu,procedure,neonatal cpap,2.5,high
+nicu,equipment,incubator,2.5,pathognomonic
+nicu,equipment,radiant warmer,2.5,pathognomonic
+nicu,equipment,phototherapy unit,2.5,pathognomonic
+nicu,equipment,bilirubinometer,2.5,pathognomonic
+nicu,equipment,neonatal ventilator,2.5,pathognomonic
+nicu,description,nicu,0.3,description
+nicu,description,neonatal,0.3,description
+nicu,description,newborn,0.3,description
+maternity,specialty,obstetrics,3.0,controlled
+maternity,specialty,gynaecology,3.0,controlled
+maternity,specialty,gynecology,3.0,controlled
+maternity,specialty,obg,3.0,controlled
+maternity,specialty,obstetrics and gynaecology,3.0,controlled
+maternity,capability,maternity,1.0,claim
+maternity,capability,labour room,1.0,claim
+maternity,capability,labor room,1.0,claim
+maternity,capability,ldr,1.0,claim
+maternity,capability,antenatal,1.0,claim
+maternity,capability,birthing,1.0,claim
+maternity,capability,maternity ward,1.0,claim
+maternity,procedure,cesarean,2.5,pathognomonic
+maternity,procedure,caesarean,2.5,pathognomonic
+maternity,procedure,lscs,2.5,pathognomonic
+maternity,procedure,c-section,2.5,pathognomonic
+maternity,procedure,normal delivery,2.5,pathognomonic
+maternity,procedure,vaginal delivery,2.5,pathognomonic
+maternity,procedure,episiotomy,2.5,pathognomonic
+maternity,procedure,antenatal care,1.5,moderate
+maternity,procedure,instrumental delivery,1.5,moderate
+maternity,procedure,d&c,1.5,moderate
+maternity,equipment,ctg,2.5,high
+maternity,equipment,cardiotocograph,2.5,high
+maternity,equipment,fetal monitor,2.5,high
+maternity,equipment,labour delivery bed,2.5,high
+maternity,equipment,vacuum extractor,1.5,moderate
+maternity,equipment,obstetric forceps,1.5,moderate
+maternity,equipment,radiant warmer,0.5,shared
+maternity,description,maternity,0.3,description
+maternity,description,obstetric,0.3,description
+oncology,specialty,oncology,3.0,controlled
+oncology,specialty,medical oncology,3.0,controlled
+oncology,specialty,surgical oncology,3.0,controlled
+oncology,specialty,radiation oncology,3.0,controlled
+oncology,specialty,haemato-oncology,3.0,controlled
+oncology,specialty,hemato-oncology,3.0,controlled
+oncology,capability,cancer care,1.0,claim
+oncology,capability,cancer centre,1.0,claim
+oncology,capability,cancer center,1.0,claim
+oncology,capability,chemotherapy unit,1.0,claim
+oncology,capability,radiotherapy,1.0,claim
+oncology,procedure,chemotherapy,2.5,high
+oncology,procedure,radiotherapy,2.5,high
+oncology,procedure,radiation therapy,2.5,high
+oncology,procedure,brachytherapy,2.5,high
+oncology,procedure,tumour resection,2.5,high
+oncology,procedure,mastectomy,2.5,high
+oncology,procedure,bone marrow transplant,2.5,high
+oncology,procedure,immunotherapy,2.5,high
+oncology,procedure,biopsy,0.5,shared
+oncology,equipment,linear accelerator,2.5,pathognomonic
+oncology,equipment,linac,2.5,pathognomonic
+oncology,equipment,cobalt unit,2.5,pathognomonic
+oncology,equipment,teletherapy,2.5,pathognomonic
+oncology,equipment,brachytherapy unit,2.5,pathognomonic
+oncology,equipment,pet-ct,2.5,pathognomonic
+oncology,equipment,gamma camera,2.5,pathognomonic
+oncology,equipment,chemotherapy daycare,1.5,moderate
+oncology,equipment,infusion chair,1.5,moderate
+oncology,description,cancer,0.3,description
+oncology,description,oncology,0.3,description
+trauma,specialty,trauma surgery,3.0,controlled
+trauma,specialty,orthopaedics,1.5,adjacent
+trauma,specialty,orthopedics,1.5,adjacent
+trauma,capability,trauma,1.0,claim
+trauma,capability,trauma centre,1.0,claim
+trauma,capability,trauma center,1.0,claim
+trauma,capability,polytrauma,1.0,claim
+trauma,capability,level 1 trauma,1.0,claim
+trauma,capability,accident care,1.0,claim
+trauma,procedure,fracture fixation,2.5,high
+trauma,procedure,orif,2.5,high
+trauma,procedure,external fixation,2.5,high
+trauma,procedure,damage control surgery,2.5,high
+trauma,procedure,fasciotomy,2.5,high
+trauma,procedure,closed reduction,1.5,moderate
+trauma,procedure,fracture reduction,1.5,moderate
+trauma,procedure,splinting,1.5,moderate
+trauma,procedure,polytrauma management,1.5,moderate
+trauma,equipment,c-arm,1.5,moderate
+trauma,equipment,fracture table,1.5,moderate
+trauma,equipment,external fixator,1.5,moderate
+trauma,equipment,ct scanner,0.5,shared
+trauma,equipment,x-ray,0.5,shared
+trauma,description,trauma,0.3,description
+trauma,description,accident,0.3,description
