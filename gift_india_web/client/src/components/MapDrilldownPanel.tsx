@@ -28,12 +28,15 @@ import {
   type StateRating,
   type TrustSignal,
   formatNumber,
+  humanReviewStatusForRanking,
 } from '../lib/api';
 import type { HoverInfo } from './DrilldownMap';
 import {
   BestSourceBadge,
   CapabilityEvidence,
   EvidenceTally,
+  HumanReviewBadge,
+  HumanReviewCallout,
   SignalBadge,
   TrustScoreDial,
 } from './trust';
@@ -77,11 +80,11 @@ function BreakdownBar({ r }: { r: RegionRating }) {
         {seg(r.weak, SIGNAL_COLORS.weak_suspicious, 'Weak')}
         {seg(noClaim, SIGNAL_COLORS.no_claim, 'No claim')}
       </div>
-      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground">
-        <span>{r.strong} strong</span>
-        <span>{r.partial} partial</span>
-        <span>{r.weak} weak</span>
-        {noClaim > 0 && <span>{noClaim} no claim</span>}
+      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+        <span><span className="font-bold tabular-nums text-foreground">{r.strong}</span> strong</span>
+        <span><span className="font-bold tabular-nums text-foreground">{r.partial}</span> partial</span>
+        <span><span className="font-bold tabular-nums text-foreground">{r.weak}</span> weak</span>
+        {noClaim > 0 && <span><span className="font-bold tabular-nums text-foreground">{noClaim}</span> no claim</span>}
       </div>
     </div>
   );
@@ -108,21 +111,21 @@ function RegionDrilldownCard({
           <div className="min-w-0">
             <h3 className="truncate font-semibold text-foreground">{title}</h3>
             <p className="text-xs text-muted-foreground">{sub}</p>
-            <p className="mt-1 text-[11px] text-muted-foreground">
+            <p className="mt-1 text-sm font-medium tabular-nums text-foreground">
               {rating.avgScore === null
                 ? 'No claims assessed'
-                : `Region trust ${(rating.avgScore * 100).toFixed(0)} / 100`}
+                : <>Region trust <span className="font-bold">{(rating.avgScore * 100).toFixed(0)}</span> / 100</>}
             </p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 text-center">
-          <div className="rounded-lg border bg-card px-2 py-1.5">
-            <div className="text-base font-bold tabular-nums">{formatNumber(rating.facilities)}</div>
-            <div className="text-[10px] text-muted-foreground">facilities</div>
+          <div className="rounded-lg border bg-card px-2 py-2">
+            <div className="text-xl font-bold tabular-nums text-foreground">{formatNumber(rating.facilities)}</div>
+            <div className="text-xs text-muted-foreground">facilities</div>
           </div>
-          <div className="rounded-lg border bg-card px-2 py-1.5">
-            <div className="text-base font-bold tabular-nums">{formatNumber(rating.claiming)}</div>
-            <div className="text-[10px] text-muted-foreground">claim capability</div>
+          <div className="rounded-lg border bg-card px-2 py-2">
+            <div className="text-xl font-bold tabular-nums text-foreground">{formatNumber(rating.claiming)}</div>
+            <div className="text-xs text-muted-foreground">claim capability</div>
           </div>
         </div>
         <BreakdownBar r={rating} />
@@ -163,6 +166,7 @@ function FacilityDrilldownCard({
 
   const sig = effectiveTrustSignal(facility);
   const score = effectiveTrustScore(facility);
+  const humanReview = humanReviewStatusForRanking(facility);
 
   useEffect(() => {
     let cancelled = false;
@@ -213,7 +217,9 @@ function FacilityDrilldownCard({
   };
 
   return (
-    <Card className={`gift-fade-in ${pinned ? 'border-primary/40 gift-lift' : 'border-border/80'}`}>
+    <Card className={`gift-fade-in ${pinned ? 'border-primary/40 gift-lift' : 'border-border/80'} ${
+      humanReview.recommended ? 'border-amber-300/80 ring-1 ring-amber-200/50' : ''
+    }`}>
       <CardContent className="space-y-4 p-4">
         <div className="flex items-start justify-between gap-2">
           <GeoLevelBadge level="facility" />
@@ -237,10 +243,21 @@ function FacilityDrilldownCard({
             <h3 className="font-semibold leading-snug text-foreground">{facility.name}</h3>
             <div className="flex flex-wrap items-center gap-2">
               <SignalBadge signal={sig} />
+              {humanReview.recommended ? <HumanReviewBadge /> : null}
               <span className="text-[11px] text-muted-foreground">rank #{facility.rank}</span>
             </div>
           </div>
         </div>
+
+        {humanReview.recommended ? (
+          <HumanReviewCallout
+            status={humanReview}
+            onReview={() => {
+              setSourcesOpen(true);
+              setReviewOpen(true);
+            }}
+          />
+        ) : null}
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1">
@@ -263,7 +280,11 @@ function FacilityDrilldownCard({
           <Button
             variant="outline"
             size="sm"
-            className="gap-1.5"
+            className={
+              humanReview.recommended
+                ? 'gap-1.5 border-amber-400 bg-amber-50 font-semibold text-amber-950 hover:bg-amber-100/80'
+                : 'gap-1.5'
+            }
             onClick={() => {
               setSourcesOpen(true);
               setReviewOpen(true);
@@ -271,7 +292,7 @@ function FacilityDrilldownCard({
             disabled={loading || !cap}
           >
             <PencilLine className="h-4 w-4" />
-            Override score
+            {humanReview.recommended ? 'Start human review' : 'Override score'}
           </Button>
           <Button
             variant="outline"

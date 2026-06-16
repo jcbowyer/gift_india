@@ -6,6 +6,7 @@ import {
   type FacilityRanking,
   type FacilitySearchResult,
   type RegionState,
+  humanReviewStatusForCapability,
 } from '../lib/api';
 import { normName, placeMatch } from '../lib/mapPalette';
 
@@ -77,6 +78,7 @@ async function resolveRanking(
   try {
     const detail = await api.facility(pick.facilityId);
     const cap = detail.capabilities.find((c) => c.key === capability);
+    const humanReview = cap ? humanReviewStatusForCapability(cap) : { recommended: false, reason: null };
     return {
       rank: 0,
       facilityId: detail.facility.facilityId,
@@ -102,6 +104,8 @@ async function resolveRanking(
       overrideSignal: cap?.overrideSignal ?? null,
       overrideScore: cap?.overrideScore ?? null,
       overrideNote: cap?.overrideNote ?? null,
+      reviewRecommended: humanReview.recommended,
+      reviewReason: humanReview.reason,
     };
   } catch {
     return null;

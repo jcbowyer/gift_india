@@ -9,7 +9,7 @@ import { feature, mesh } from 'topojson-client';
 import type { Topology, GeometryCollection } from 'topojson-specification';
 import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import type { FacilityRanking, StateRating, DistrictRating } from '../lib/api';
-import { effectiveTrustSignal } from '../lib/api';
+import { effectiveTrustSignal, humanReviewStatusForRanking } from '../lib/api';
 import { SIGNAL_COLORS, normName, titleCase, placeMatch, resolveBoundaryState, resolveBoundaryDistrict, facilityBubbleCap, facilityBubbleRadius } from '../lib/mapPalette';
 import { DistrictLocator, districtKey, districtsForState } from '../lib/geoAssign';
 
@@ -305,6 +305,7 @@ function FacilityPin({
   highlight?: boolean;
 }) {
   const sig = effectiveTrustSignal(f);
+  const needsReview = humanReviewStatusForRanking(f).recommended;
   const r = (highlight ? 7 : isSel ? 7 : isHover ? 6 : 4.5) / k;
   const hitR = 16 / k;
   const label = f.name.length > (highlight ? 24 : 22) ? `${f.name.slice(0, highlight ? 22 : 20)}…` : f.name;
@@ -325,6 +326,18 @@ function FacilityPin({
       <circle cx={x} cy={y} r={hitR} fill="transparent" />
       {highlight && (
         <circle cx={x} cy={y} r={10 / k} fill="none" stroke="#0f172a" strokeWidth={2 / k} pointerEvents="none" />
+      )}
+      {needsReview && (
+        <circle
+          cx={x}
+          cy={y}
+          r={(r + 3.5) / k}
+          fill="none"
+          stroke="#f59e0b"
+          strokeWidth={1.75 / k}
+          strokeDasharray={`${4 / k} ${2 / k}`}
+          pointerEvents="none"
+        />
       )}
       <circle
         cx={x}
@@ -1537,7 +1550,7 @@ export function DrilldownMap({
             ⤢
           </button>
         </div>
-        <div className="rounded bg-white/80 px-2 py-1 text-[10px] font-medium text-slate-500 shadow-sm">
+        <div className="rounded bg-white/90 px-2.5 py-1 text-xs font-semibold tabular-nums text-slate-700 shadow-sm">
           {level === 'district'
             ? `${k.toFixed(1)}× · hover pin for name`
             : level === 'state' && expandHospitals

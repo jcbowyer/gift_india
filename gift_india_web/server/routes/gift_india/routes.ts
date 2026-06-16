@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Application, Request } from 'express';
-import { CAPABILITIES, type TrustSignal } from './capabilities';
+import { CAPABILITIES, type CapabilityGuide, type TrustSignal } from './capabilities';
 import { regionOf, statesInRegion, REGION_VALUES, type Region } from './regions';
 import { mapStateCtes } from './stateCanonical';
 import { setupIngestRoutes } from './ingest';
@@ -360,6 +360,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           key: string;
           label: string;
           description: string;
+          guide: CapabilityGuide;
           claiming: number;
           strong: number;
           partial: number;
@@ -371,6 +372,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             key: c.key,
             label: c.label,
             description: c.description,
+            guide: c.guide,
             claiming: Number(r.claiming ?? 0),
             strong: Number(r.strong ?? 0),
             partial: Number(r.partial ?? 0),
@@ -395,6 +397,16 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           key: ALL_CAPABILITY,
           label: 'All',
           description: 'Overall trust across every capability, one rating per facility.',
+          guide: {
+            headline:
+              'A rolled-up trust view across ICU, maternity, emergency, oncology, trauma, and NICU — one composite signal per facility.',
+            whatCounts: [
+              'Mean trust score across all six capability assessments for each facility',
+              'Useful for comparing overall evidence quality before drilling into a specific service line',
+            ],
+            howWeGrade:
+              'Each facility is classified by its average trust across capabilities. Switch to a specific capability for claim-level detail, evidence tiers, and citations.',
+          },
           claiming: Number(a.claiming ?? 0),
           strong: Number(a.strong ?? 0),
           partial: Number(a.partial ?? 0),
@@ -762,11 +774,15 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
                       s.evidence_tier,
                       a.evidence_count,
                       a.supporting_count, a.contradicting_count, a.best_source, a.summary,
-                      ov.override_signal, ov.override_score, ov.note AS override_note
+                      ov.override_signal, ov.override_score, ov.note AS override_note,
+                      (ej.assessment_json->>'review_recommended')::boolean AS review_recommended,
+                      ej.assessment_json->>'review_reason' AS review_reason
                FROM gold.facility_capability_assessments a
                JOIN gold.facilities f USING (facility_id)
                LEFT JOIN gold.capability_scored s
                  ON s.facility_id = a.facility_id AND s.capability = a.capability
+               LEFT JOIN gold.capability_evidence_json ej
+                 ON ej.facility_id = f.facility_id AND ej.capability = a.capability
                LEFT JOIN LATERAL (
                  SELECT override_signal, override_score, note FROM app.capability_overrides o
                  WHERE o.facility_id = f.facility_id AND o.capability = a.capability AND o.created_by = $8
@@ -808,32 +824,51 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
                LIMIT $7::int`,
               [capability, state ?? null, regionStates, district ?? null, signal ?? null, q ?? null, limit, currentUser(req)],
             );
-        const results = rows.map((r, i) => ({
-          rank: i + 1,
-          facilityId: txt(r.facility_id),
-          name: txt(r.name),
-          type: txt(r.type),
-          district: txt(r.district),
-          state: txt(r.state),
-          stateCode: txt(r.state_code),
-          beds: r.beds === null ? null : Number(r.beds),
-          lat: r.lat === null ? null : Number(r.lat),
-          lon: r.lon === null ? null : Number(r.lon),
-          websiteUrl: txt(r.website_url),
-          matchConfidence: r.match_confidence === null ? null : Number(r.match_confidence),
-          claimed: Boolean(r.claimed),
-          trustSignal: txt(r.trust_signal) as TrustSignal,
-          trustScore: Number(r.trust_score),
-          evidenceTier: r.evidence_tier ? txt(r.evidence_tier) : null,
-          evidenceCount: Number(r.evidence_count),
-          supportingCount: Number(r.supporting_count),
-          contradictingCount: Number(r.contradicting_count),
-          bestSource: txt(r.best_source),
-          summary: txt(r.summary),
-          overrideSignal: r.override_signal ? (txt(r.override_signal) as TrustSignal) : null,
-          overrideScore: r.override_score === null || r.override_score === undefined ? null : Number(r.override_score),
-          overrideNote: r.override_note ? txt(r.override_note) : null,
-        }));
+        const results = rows.map((r, i) => {
+          const trustSignal = txt(r.trust_signal) as TrustSignal;
+          const contradictingCount = Number(r.contradicting_count);
+          const reviewFromJson = r.review_recommended === true;
+          const reviewReasonFromJson = r.review_reason ? txt(r.review_reason) : null;
+          const reviewRecommended =
+            reviewFromJson ||
+            contradictingCount > 0 ||
+            trustSignal === 'weak_suspicious';
+          const reviewReason =
+            reviewReasonFromJson ??
+            (contradictingCount > 0
+              ? `${contradictingCount} contradicting evidence item${contradictingCount === 1 ? '' : 's'} on record.`
+              : trustSignal === 'weak_suspicious'
+                ? 'Low trust signal — planner should confirm with local ground truth.'
+                : null);
+          return {
+            rank: i + 1,
+            facilityId: txt(r.facility_id),
+            name: txt(r.name),
+            type: txt(r.type),
+            district: txt(r.district),
+            state: txt(r.state),
+            stateCode: txt(r.state_code),
+            beds: r.beds === null ? null : Number(r.beds),
+            lat: r.lat === null ? null : Number(r.lat),
+            lon: r.lon === null ? null : Number(r.lon),
+            websiteUrl: txt(r.website_url),
+            matchConfidence: r.match_confidence === null ? null : Number(r.match_confidence),
+            claimed: Boolean(r.claimed),
+            trustSignal,
+            trustScore: Number(r.trust_score),
+            evidenceTier: r.evidence_tier ? txt(r.evidence_tier) : null,
+            evidenceCount: Number(r.evidence_count),
+            supportingCount: Number(r.supporting_count),
+            contradictingCount,
+            bestSource: txt(r.best_source),
+            summary: txt(r.summary),
+            overrideSignal: r.override_signal ? (txt(r.override_signal) as TrustSignal) : null,
+            overrideScore: r.override_score === null || r.override_score === undefined ? null : Number(r.override_score),
+            overrideNote: r.override_note ? txt(r.override_note) : null,
+            reviewRecommended,
+            reviewReason: reviewRecommended ? reviewReason : null,
+          };
+        });
         res.json({ capability, region: parsed.data.region ?? null, state: state ?? null, district: district ?? null, results });
       } catch (err) {
         console.error('facilities failed:', err);

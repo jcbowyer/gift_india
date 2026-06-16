@@ -13,11 +13,18 @@ export interface Capability {
   key: string;
   label: string;
   description: string;
+  guide: CapabilityGuide;
   claiming: number;
   strong: number;
   partial: number;
   weak: number;
   noClaim: number;
+}
+
+export interface CapabilityGuide {
+  headline: string;
+  whatCounts: readonly string[];
+  howWeGrade: string;
 }
 
 export interface DistrictRef {
@@ -57,6 +64,9 @@ export interface FacilityRanking {
   overrideSignal: TrustSignal | null;
   overrideScore: number | null;
   overrideNote: string | null;
+  /** Layer-2 narration or pipeline heuristic — planner should confirm locally. */
+  reviewRecommended: boolean;
+  reviewReason: string | null;
 }
 
 export interface FacilitySearchResult {
@@ -434,6 +444,50 @@ export function effectiveTrustSignal(item: {
   overrideSignal?: TrustSignal | null;
 }): TrustSignal {
   return item.overrideSignal ?? item.trustSignal;
+}
+
+export interface HumanReviewStatus {
+  recommended: boolean;
+  reason: string | null;
+}
+
+function heuristicHumanReviewReason(
+  contradictingCount: number,
+  trustSignal: TrustSignal,
+): string | null {
+  if (contradictingCount > 0) {
+    return `${contradictingCount} contradicting evidence item${contradictingCount === 1 ? '' : 's'} on record.`;
+  }
+  if (trustSignal === 'weak_suspicious') {
+    return 'Low trust signal — planner should confirm with local ground truth.';
+  }
+  return null;
+}
+
+/** Whether a capability still needs manual planner review (before an override clears the flag). */
+export function humanReviewStatusForCapability(cap: CapabilityDetail): HumanReviewStatus {
+  if (cap.overrideSignal) return { recommended: false, reason: null };
+  if (cap.assessmentJson?.review_recommended) {
+    return {
+      recommended: true,
+      reason: cap.assessmentJson.review_reason ?? 'Manual human review recommended.',
+    };
+  }
+  const reason = heuristicHumanReviewReason(cap.contradictingCount, cap.trustSignal);
+  return { recommended: reason !== null, reason };
+}
+
+/** Whether a ranked facility row still needs manual planner review. */
+export function humanReviewStatusForRanking(rec: FacilityRanking): HumanReviewStatus {
+  if (rec.overrideSignal) return { recommended: false, reason: null };
+  if (rec.reviewRecommended) {
+    return {
+      recommended: true,
+      reason: rec.reviewReason ?? 'Manual human review recommended.',
+    };
+  }
+  const reason = heuristicHumanReviewReason(rec.contradictingCount, rec.trustSignal);
+  return { recommended: reason !== null, reason };
 }
 
 export const STUB_NARRATION_MODEL = 'stub/deterministic-template';

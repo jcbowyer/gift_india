@@ -689,8 +689,8 @@ export function MapPage() {
               >
                 {c.label}
                 <span
-                  className={`inline-flex items-center gap-1 rounded-full px-1.5 text-[10px] font-semibold tabular-nums ${
-                    active ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-emerald-100 text-emerald-700'
+                  className={`inline-flex items-center gap-1 rounded-full px-1.5 text-xs font-bold tabular-nums ${
+                    active ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-emerald-100 text-emerald-800'
                   }`}
                 >
                   <span className={`h-1.5 w-1.5 rounded-full ${active ? 'bg-primary-foreground' : 'bg-emerald-500'}`} />
@@ -992,13 +992,13 @@ export function MapPage() {
                           isSel ? 'border-primary bg-primary/5' : 'border-border bg-card hover:bg-muted/50'
                         }`}
                       >
-                        <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">#{f.rank}</span>
+                        <span className="text-xs font-semibold tabular-nums text-muted-foreground">#{f.rank}</span>
                         <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: SIGNAL_COLORS[sig] }} />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium text-foreground">{f.name}</span>
-                          <span className="block truncate text-[11px] text-muted-foreground">{f.district} · {f.type}</span>
+                          <span className="block truncate text-xs text-muted-foreground">{f.district} · {f.type}</span>
                         </span>
-                        <span className="text-xs font-bold tabular-nums text-foreground">{Math.round(score * 100)}</span>
+                        <span className="min-w-[2rem] text-right text-sm font-bold tabular-nums text-foreground">{Math.round(score * 100)}</span>
                       </button>
                     );
                   })}

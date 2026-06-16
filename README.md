@@ -126,7 +126,7 @@ allocation and referral follow.
 
 ---
 
-## The 5-minute story (demo script)
+## The ~5:30 demo story (presenter script)
 
 The app ships an **interactive version of this script** — click **✨ Demo** in the top
 bar (or press `g` then `d`). Full presenter notes with timings live in
@@ -144,13 +144,53 @@ talk track and live product beats.
 | **2:05** | **Receipts** | Expands a **strong** facility; reads a citation | *"JCI, NABH, PMJAY — each quotes a **real source field**."* |
 | **2:25** | **Human wins** | **Override assessment** → note → **My Reviews** | *"My judgment is on the record."* |
 | **2:55** | **Steer care** | **Navigator** → **Scorecard** | *"Where is trustworthy capacity missing?"* |
-| **4:30** | **Close** | Back to Trust Gauge | *"Stop guessing. Start steering. **GIFT Gauge.**"* |
+| **3:30** | **How we score** | Immersive script | *"45% supporting ratio, 25% breadth, 30% match confidence — SQL, not vibes."* |
+| **3:50** | **AI explains only** | Immersive script | *"Frozen evidence_context + rubric — the LLM never recomputes the dial."* |
+| **4:05** | **Roadmap** | Immersive script | *"JCI cross-ref tightening + anomaly detection for gaming patterns."* |
+| **4:20** | **Lakehouse** | Immersive tech beats | *"MDM, grounded verification, Genie — defy the AI-default."* |
+| **5:08** | **Close** | Back to Trust Gauge | *"Stop guessing. Start steering. **GIFT Gauge.**"* |
 
 ```bash
 databricks auth login --profile gift-india --host https://dbc-0951416d-6d0e.cloud.databricks.com
 ./startup.sh
 # → http://localhost:8000
 ```
+
+---
+
+## How the trust score works (before the tech stack)
+
+The in-app **✨ Demo** walkthrough covers this beat **before** the Lakehouse / tech slides.
+Layer 1 is SQL; Layer 2 is narration only.
+
+### Layer 1 — `evidence_strength_score` (auditable ranking)
+
+Computed in `gold.capability_scored` when `claimed = true`:
+
+| Input | Weight | What it measures |
+|-------|--------|------------------|
+| Supporting ratio | **45%** | `supporting_count / (supporting + contradicting)` |
+| Evidence breadth | **25%** | `min(evidence_count, 5) / 5` independent items |
+| Facility match confidence | **30%** | Entity-resolution confidence on name / website |
+| Contradiction penalty | **×0.8 each** | Every contradicting item multiplies the total |
+
+Unclaimed capabilities score **0.0**. Tiers: **Strong** (≥0.85) · **Moderate** (0.65–0.84) ·
+**Weak** (0.45–0.64) · **Insufficient** (<0.45).
+
+### Layer 2 — narration prompt (explains, never recomputes)
+
+`narrate_evidence.py` passes a frozen `evidence_context` block plus the grading rubric in
+`evidence_prompts.py`. The agent instruction is explicit: **use the numbers exactly as
+provided**. It maps tier → planner verdict (Confirmed / Likely / Needs review / Unsupported)
+and caps at **Needs review** when `contradicting_count > 0` or `trust_signal = weak_suspicious`.
+Swap models — only the prose card changes.
+
+### Where we're improving next
+
+| Opportunity | Today | Next |
+|-------------|-------|------|
+| **JCI cross-referencing** | Tiered entity resolution (`exact_name_state` → `brand_city` → `brand_state`) with `match_confidence` on `gold.facility_jci` | Portal verification, accreditation **scope** per capability, richer *why JCI attached* citations |
+| **Anomaly detection** | Per-facility flags: specialty mismatch, low entity confidence + claimed capability, contradicting registry rows | District-level outlier scoring — facilities fine in isolation but clustering as gaming patterns |
 
 ---
 
@@ -409,7 +449,7 @@ gift_india/
 ├── gift_india_dbt/       # Postgres medallion (Lakebase serving — what the app reads)
 ├── dbt_project/          # Databricks medallion (upstream VF Delta Share)
 ├── gift_india_api/       # Loaders, scrapers, narrate_evidence.py
-├── DEMO.md               # Full 5-minute presenter script
+├── DEMO.md               # Full ~5:30 presenter script
 ├── docs/architecture/    # Medallion + metric-store design
 └── Makefile              # db-up / data / dbt / crawl / jci / narrate-pilot / web
 ```

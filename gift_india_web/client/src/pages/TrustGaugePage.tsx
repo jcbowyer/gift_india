@@ -62,8 +62,9 @@ import {
   type TrustSignal,
   type Stats,
   formatNumber,
+  humanReviewStatusForRanking,
 } from '../lib/api';
-import { SignalBadge, TrustScoreDial, EvidenceTally, CapabilityEvidence, BestSourceBadge } from '../components/trust';
+import { SignalBadge, TrustScoreDial, EvidenceTally, CapabilityEvidence, BestSourceBadge, HumanReviewBadge } from '../components/trust';
 import { GiftSeal } from '../components/GiftSeal';
 import {
   INDIA_STATES,
@@ -89,6 +90,69 @@ const CAP_ICON: Record<string, LucideIcon> = {
   trauma: Bone,
   nicu: Activity,
 };
+
+function CapabilityGuidePanel({ cap }: { cap: Capability }) {
+  const Icon = CAP_ICON[cap.key] ?? ShieldCheck;
+  const guide = cap.guide;
+  return (
+    <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.04] to-card p-4 sm:p-5">
+      <div className="flex items-start gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <Icon className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1 space-y-3">
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">What we verify — {cap.label}</h3>
+            <p className="mt-1 text-sm leading-relaxed text-foreground/85">
+              {guide?.headline ?? cap.description}
+            </p>
+          </div>
+          {guide?.whatCounts?.length ? (
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Evidence we look for
+              </p>
+              <ul className="mt-1.5 space-y-1 text-sm text-foreground/80">
+                {guide.whatCounts.map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary/60" aria-hidden />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {guide?.howWeGrade ? (
+            <div className="rounded-lg border bg-background/70 px-3 py-2.5">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                How grades work
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-foreground/80">{guide.howWeGrade}</p>
+              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  Strong — corroborated
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  Partial — plausible
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                  Suspicious — thin or conflicting
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                  No claim
+                </span>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /** Hero quick-stat — big number with a trust-coloured accent. */
 function HeroStat({ value, label, accent = 'text-foreground' }: { value: string; label: string; accent?: string }) {
@@ -274,6 +338,10 @@ function FacilityRow({
   const cap = detail?.capabilities.find((c) => c.key === capabilityKey);
   const effectiveSignal = override ?? rec.trustSignal;
   const effectiveScore = overrideScore ?? rec.overrideScore ?? rec.trustScore;
+  const humanReview = humanReviewStatusForRanking({
+    ...rec,
+    overrideSignal: override,
+  });
 
   useEffect(() => {
     if (reviewPending && cap) {
@@ -292,8 +360,9 @@ function FacilityRow({
     }
   };
 
-  const overrideBtnClass =
-    'shrink-0 gap-1.5 border-border bg-background font-medium text-foreground shadow-sm hover:border-primary/45 hover:bg-muted/50';
+  const overrideBtnClass = humanReview.recommended
+    ? 'shrink-0 gap-1.5 border-amber-400 bg-amber-50 font-semibold text-amber-950 shadow-sm hover:border-amber-500 hover:bg-amber-100/80'
+    : 'shrink-0 gap-1.5 border-border bg-background font-medium text-foreground shadow-sm hover:border-primary/45 hover:bg-muted/50';
 
   const detailBody = (
     <FacilityDetailBody
@@ -312,14 +381,18 @@ function FacilityRow({
   return (
     <>
       <Card
-        className={`overflow-hidden gift-lift ${open && !isMobile ? 'ring-1 ring-primary/25' : ''}`}
+        className={`overflow-hidden gift-lift ${
+          humanReview.recommended ? 'border-amber-300/80 ring-1 ring-amber-200/60' : ''
+        } ${open && !isMobile ? 'ring-1 ring-primary/25' : ''}`}
         data-demo={open && isMobile ? 'facility-expanded' : undefined}
       >
         <div className="flex items-stretch">
           <button
             type="button"
             onClick={() => void toggle()}
-            className="flex min-w-0 flex-1 items-stretch gap-3 text-left transition-colors hover:bg-muted/40"
+            className={`flex min-w-0 flex-1 items-stretch gap-3 text-left transition-colors hover:bg-muted/40 ${
+              humanReview.recommended ? 'border-l-4 border-l-amber-400' : ''
+            }`}
           >
             <div className="flex items-center pl-3 text-muted-foreground">
               {open && isMobile ? (
@@ -336,7 +409,11 @@ function FacilityRow({
                 <span className="text-xs font-semibold text-muted-foreground">#{rec.rank}</span>
                 <h3 className="truncate font-semibold text-foreground">{rec.name}</h3>
                 <SignalBadge signal={effectiveSignal} />
+                {humanReview.recommended ? <HumanReviewBadge /> : null}
               </div>
+              {humanReview.recommended && humanReview.reason ? (
+                <p className="text-xs font-medium text-amber-900/90">{humanReview.reason}</p>
+              ) : null}
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" /> {rec.district}, {rec.state}
@@ -359,10 +436,16 @@ function FacilityRow({
               size="sm"
               className={overrideBtnClass}
               onClick={queueReview}
-              aria-label={`Override assessment for ${rec.name}`}
+              aria-label={
+                humanReview.recommended
+                  ? `Start human review for ${rec.name}`
+                  : `Override assessment for ${rec.name}`
+              }
             >
               <PencilLine className="h-4 w-4" />
-              <span className="hidden sm:inline">Override</span>
+              <span className="hidden sm:inline">
+                {humanReview.recommended ? 'Review' : 'Override'}
+              </span>
             </Button>
           </div>
         </div>
@@ -393,6 +476,7 @@ function FacilityRow({
                     <div className="space-y-2 text-left">
                       <div className="flex flex-wrap items-center gap-2">
                         <SignalBadge signal={effectiveSignal} size="lg" />
+                        {humanReview.recommended ? <HumanReviewBadge /> : null}
                         <span className="inline-flex items-center gap-1 text-sm">
                           <MapPin className="h-3.5 w-3.5" /> {rec.district}, {rec.state}
                         </span>
@@ -400,6 +484,9 @@ function FacilityRow({
                           <Building2 className="h-3.5 w-3.5" /> {rec.type}
                         </span>
                       </div>
+                      {humanReview.recommended && humanReview.reason ? (
+                        <p className="text-sm font-medium text-amber-900/90">{humanReview.reason}</p>
+                      ) : null}
                       <p className="text-sm text-foreground/80">{rec.summary}</p>
                     </div>
                   </DialogDescription>
@@ -598,7 +685,7 @@ export function TrustGaugePage() {
             );
           })}
         </div>
-        {activeCap && <p className="text-sm text-muted-foreground">{activeCap.description}</p>}
+        {activeCap ? <CapabilityGuidePanel cap={activeCap} /> : null}
       </div>
 
       {/* Region + filters */}

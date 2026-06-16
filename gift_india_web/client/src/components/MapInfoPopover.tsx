@@ -118,6 +118,17 @@ export function MapInfoPopover({
                     {s === 'weak_suspicious' ? 'Weak' : s === 'no_claim' ? 'No claim' : s.charAt(0).toUpperCase() + s.slice(1)}
                   </li>
                 ))}
+                <Bullet>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span
+                      className="inline-block h-2.5 w-2.5 shrink-0 rounded-full border border-dashed border-amber-500"
+                      aria-hidden
+                    />
+                    <span>
+                      <strong>Dashed amber ring</strong> = manual human review recommended.
+                    </span>
+                  </span>
+                </Bullet>
               </Section>
             )}
 

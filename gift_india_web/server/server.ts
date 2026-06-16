@@ -1,4 +1,4 @@
-import { createApp, lakebase, server } from '@databricks/appkit';
+import { createApp, genie, lakebase, server } from '@databricks/appkit';
 import { Pool } from 'pg';
 import compression from 'compression';
 import { setupgift_indiaRoutes } from './routes/gift_india/routes';
@@ -24,8 +24,12 @@ interface DbHandle {
   query(text: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>;
 }
 
+const basePlugins = useLocalDb ? [server()] : [lakebase(), server()];
+// Genie queries governed gold.* via Databricks API — independent of local Postgres vs Lakebase.
+const plugins = process.env.DATABRICKS_GENIE_SPACE_ID ? [...basePlugins, genie()] : basePlugins;
+
 createApp({
-  plugins: useLocalDb ? [server()] : [lakebase(), server()],
+  plugins,
   async onPluginsReady(appkit) {
     // gzip every response (incl. static topo assets under client/public and the
     // /api/map/geography JSON). Registered first so it sits ahead of AppKit's

@@ -11,7 +11,8 @@ in the top bar (or press `g` then `d`) and the app walks you through every beat 
 auto-navigating each screen and pacing you against the clock. Use this doc to rehearse; use the
 in-app guide live.
 
-**Total: ~5:00** (title + grit opener + narrative beats + product walkthrough). Times are budgets, not handcuffs.
+**Total: ~5:30** (title + grit opener + narrative beats + scoring explainer + product walkthrough).
+Times are budgets, not handcuffs — compress the Lakehouse / tech table beats if you need to land at 5:00.
 
 ---
 
@@ -155,7 +156,78 @@ allocation decisions."*
 
 ---
 
-## ⏱️ 3:30 – 3:48 · Built on Lakehouse (18s)
+## ⏱️ 3:30 – 3:50 · How the trust dial works — Layer 1 scoring (20s)
+
+**Screen:** Trust Gauge (`/`) — immersive talk track (no live clicks required).
+
+> *"The number in the dial is not a vibe — it's **`evidence_strength_score`**, computed entirely
+> in SQL in `gold.capability_scored`. Priya can reproduce it in a hearing.*
+>
+> *When a facility **claims** a capability, we blend three auditable inputs:*
+>
+> - **45% supporting ratio** — supporting evidence vs contradicting evidence
+> - **25% evidence breadth** — how many independent items back the claim (capped at five)
+> - **30% facility match confidence** — how sure we are this row is the right hospital
+>
+> *Each contradicting item applies a **0.8× penalty** — one red flag matters. Unclaimed
+> capabilities score zero.*
+>
+> *That rolls into four tiers: **Strong** (≥0.85), **Moderate** (0.65–0.84), **Weak**
+> (0.45–0.64), **Insufficient** (<0.45). Green, amber, and red on the list map to those bands."*
+
+**Do:** Gesture at a trust dial if the list is still visible behind the script; land on
+*"reproduce it in a hearing."*
+
+---
+
+## ⏱️ 3:50 – 4:05 · SQL scores, AI explains — the narration prompt (15s)
+
+**Screen:** Trust Gauge (`/`) — immersive.
+
+> *"Layer 2 is where AI enters — but only as a **translator**, not a judge.*
+>
+> *We build a frozen `evidence_context` block in SQL — facility facts, supporting and
+> contradicting counts, the pre-computed score and tier — and hand it to the narration agent
+> with one hard rule: **use the numbers exactly as provided; do not recompute.***
+>
+> *The prompt embeds the same grading rubric as the SQL. It maps tier → planner verdict —
+> Confirmed, Likely, Needs review, Unsupported — and **caps at Needs review** whenever
+> contradicting evidence or a `weak_suspicious` trust signal is present.*
+>
+> *Swap the model, change the prose card — the dial does not move. SQL supervises the LLM;
+> Priya supervises both."*
+
+**Do:** Optional — expand a facility with a narration card and point at the verdict line
+matching the dial.
+
+---
+
+## ⏱️ 4:05 – 4:20 · Where we're improving next — JCI cross-ref & anomaly detection (15s)
+
+**Screen:** Trust Gauge (`/`) — immersive.
+
+> *"Today's pilot is honest about its edges — and that's where the roadmap gets interesting.*
+>
+> **JCI cross-referencing** — we already resolve JCI Gold Seal organizations onto governed
+> `facility_id`s with tiered matching: exact name + state, then brand + city, then brand +
+> state — each with `match_method` and `match_confidence`. Next: tighten the crosswalk with
+> portal verification, accreditation **scope** (which services the seal actually covers), and
+> surface *why* JCI attached to this row in the citation panel.
+>
+> **Anomaly detection** — the same signals that rank facilities are a ready-made fraud radar:
+> claimed ICU with no specialty corroboration, high bed count but `weak_suspicious` entity
+> match, supporting website copy contradicted by registry rows. We flag them today; tomorrow
+> we batch-score districts for **systematic gaming patterns** — facilities that look fine in
+> isolation but cluster as outliers against their peers.
+>
+> *Trust scoring is the foundation; cross-source validation and anomaly surfacing are how we
+> keep gaming the directory from becoming gaming the patient."*
+
+**Do:** Brief pause on *"fraud radar"* — then advance to the technical stack beats.
+
+---
+
+## ⏱️ 4:20 – 4:35 · Built on Lakehouse (15s)
 
 **Human-in-the-loop · why we defy the AI-default**
 
@@ -173,7 +245,7 @@ allocation decisions."*
 
 ---
 
-## ⏱️ 3:48 – 4:10 · Tech stack: Decisions we made for ourselves (22s)
+## ⏱️ 4:35 – 4:50 · Tech stack: Decisions we made for ourselves (15s)
 
 **Screen:** Immersive title card — decision matrix only.
 
@@ -188,7 +260,7 @@ allocation decisions."*
 
 ---
 
-## ⏱️ 4:10 – 4:22 · The "30 years" problem: Call to Action (12s)
+## ⏱️ 4:50 – 5:00 · The "30 years" problem: Call to Action (10s)
 
 > *"There's a massive difference between 30 years of experience and one year repeated 30 times.
 > Databricks isn't just storage — it's how we turn learning into an ontology of decisions. We
@@ -197,7 +269,7 @@ allocation decisions."*
 
 ---
 
-## ⏱️ 4:22 – 4:30 · Future (8s)
+## ⏱️ 5:00 – 5:08 · Future (8s)
 
 > *"GIFT Gauge is **Track 1 — can this facility do what it claims?** The same governed trust
 > layer feeds the other tracks lightly:*
@@ -211,7 +283,7 @@ allocation decisions."*
 
 ---
 
-## ⏱️ 4:30 – 5:00 · Closing the loop (30s)
+## ⏱️ 5:08 – 5:30 · Closing the loop (22s)
 
 **Screen:** Back to Trust Gauge (`/`).
 
@@ -232,7 +304,7 @@ your team feel relief first?"*
 1. Reset state: delete any test overrides in **My Reviews** so the demo starts clean.
 2. Window the browser to ~1280×800, hide bookmarks bar.
 3. Launch the in-app guide (**✨ Demo**) and let it pace you — narrate the talk track above.
-4. Keep it **under ~5 minutes**; one continuous take beats a perfect edit.
+4. Keep it **under ~5:30**; one continuous take beats a perfect edit.
 5. Title: *"Beyond the Hospital Directory: Grounding Improved Patient Care (GIFT Gauge demo)."*
 
 ## ✅ Pre-flight checklist

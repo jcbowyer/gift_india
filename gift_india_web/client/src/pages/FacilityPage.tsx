@@ -11,8 +11,8 @@ import {
   AlertDescription,
 } from '@databricks/appkit-ui/react';
 import { ArrowLeft, MapPin, Building2, Globe, ChevronDown, ChevronRight, ShieldCheck, ShieldAlert } from 'lucide-react';
-import { api, type FacilityDetail, type TrustSignal } from '../lib/api';
-import { SignalBadge, CapabilityEvidence } from '../components/trust';
+import { api, type FacilityDetail, type TrustSignal, humanReviewStatusForCapability } from '../lib/api';
+import { SignalBadge, CapabilityEvidence, HumanReviewBadge } from '../components/trust';
 
 export function FacilityPage() {
   const { id } = useParams<{ id: string }>();
@@ -67,9 +67,10 @@ export function FacilityPage() {
       if (eff === 'strong') acc.strong += 1;
       else if (eff === 'partial') acc.partial += 1;
       else if (eff === 'weak_suspicious') acc.weak += 1;
+      if (humanReviewStatusForCapability(c).recommended) acc.needsReview += 1;
       return acc;
     },
-    { strong: 0, partial: 0, weak: 0 },
+    { strong: 0, partial: 0, weak: 0, needsReview: 0 },
   );
 
   return (
@@ -120,6 +121,11 @@ export function FacilityPage() {
             <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-2.5 py-0.5 text-xs font-semibold text-white">
               <ShieldAlert className="h-3.5 w-3.5" /> {counts.weak} suspicious
             </span>
+            {counts.needsReview > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-950">
+                {counts.needsReview} need human review
+              </span>
+            )}
             {f.beds !== null && (
               <span className="ml-auto inline-flex items-center gap-1.5 text-xs font-medium text-emerald-800">
                 <Building2 className="h-3.5 w-3.5" /> {f.beds} beds serving {f.district}
@@ -137,12 +143,20 @@ export function FacilityPage() {
           {detail.capabilities.map((cap) => {
             const open = openCap === cap.key;
             const effective = overrides[cap.key] ?? cap.overrideSignal ?? cap.trustSignal;
+            const humanReview = humanReviewStatusForCapability(cap);
             return (
-              <Card key={cap.key} className={`overflow-hidden ${open ? '' : 'gift-lift'}`}>
+              <Card
+                key={cap.key}
+                className={`overflow-hidden ${open ? '' : 'gift-lift'} ${
+                  humanReview.recommended ? 'border-amber-300/70' : ''
+                }`}
+              >
                 <button
                   type="button"
                   onClick={() => setOpenCap(open ? null : cap.key)}
-                  className="flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-muted/40"
+                  className={`flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-muted/40 ${
+                    humanReview.recommended ? 'border-l-4 border-l-amber-400' : ''
+                  }`}
                 >
                   {open ? (
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -153,6 +167,7 @@ export function FacilityPage() {
                   <span className="hidden text-xs text-muted-foreground sm:inline">
                     {cap.evidenceCount} citation{cap.evidenceCount === 1 ? '' : 's'}
                   </span>
+                  {humanReview.recommended ? <HumanReviewBadge compact /> : null}
                   <SignalBadge signal={effective} size="lg" />
                 </button>
                 {open && (

@@ -586,8 +586,7 @@ def _extract_message_content(message: dict[str, Any] | Any) -> str:
     return "\n".join(text_parts).strip()
 
 
-def narrate_via_serving(rows: list[dict[str, Any]], *, profile: str | None, endpoint: str) -> tuple[list[dict], list[dict]]:
-    """Row-by-row fallback using the serving endpoint REST API (no ai_query)."""
+def _serving_request_context(profile: str | None, endpoint: str) -> tuple[str, dict[str, str]]:
     w = WorkspaceClient(profile=profile) if profile else WorkspaceClient()
     host = w.config.host
     if not host:
@@ -595,49 +594,113 @@ def narrate_via_serving(rows: list[dict[str, Any]], *, profile: str | None, endp
             "Databricks host not configured. Run `databricks auth login --profile <name>`."
         )
     headers = {**w.config.authenticate(), "Content-Type": "application/json"}
+    url = f"{host}/serving-endpoints/{endpoint}/invocations"
+    return url, headers
+
+
+def _post_serving(
+    url: str,
+    headers: dict[str, str],
+    body: dict[str, Any],
+    endpoint: str,
+    *,
+    max_attempts: int = 10,
+    base_delay: float = 3.0,
+):
     import requests
 
-    url = f"{host}/serving-endpoints/{endpoint}/invocations"
+    for attempt in range(max_attempts):
+        resp = requests.post(url, headers=headers, json=body, timeout=120)
+        if resp.status_code == 429:
+            delay = min(base_delay * (2**attempt), 120.0)
+            print(f"  rate limited on {endpoint} — retry in {delay:.0f}s…", flush=True)
+            time.sleep(delay)
+            continue
+        if resp.status_code >= 400:
+            _raise_serving_error(resp, endpoint)
+        return resp
+    raise ServingQuotaError(endpoint, "rate limit retries exhausted")
+
+
+def _narrate_single_via_serving(
+    row: dict[str, Any],
+    *,
+    url: str,
+    headers: dict[str, str],
+    endpoint: str,
+    serve_delay: float = 1.0,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    ctx = row["evidence_context"]
+    j_body = {
+        "messages": [{"role": "user", "content": json_prompt(ctx)}],
+        "response_format": json.loads(JSON_RESPONSE_FORMAT),
+    }
+    jr = _post_serving(url, headers, j_body, endpoint)
+    j_payload = jr.json()
+    j_message = j_payload.get("choices", [{}])[0].get("message", {})
+    raw_json = _extract_message_content(j_message) or j_payload
+    if isinstance(raw_json, dict):
+        assessment_json = raw_json
+    else:
+        assessment_json = json.loads(str(raw_json))
+    json_row = {**row, "assessment_json": assessment_json}
+
+    if serve_delay > 0:
+        time.sleep(serve_delay)
+
+    m_body = {
+        "messages": [
+            {
+                "role": "user",
+                "content": markdown_prompt(ctx, row["facility_name"], row["capability_label"]),
+            }
+        ],
+    }
+    mr = _post_serving(url, headers, m_body, endpoint)
+    m_payload = mr.json()
+    m_message = m_payload.get("choices", [{}])[0].get("message", {})
+    assessment_md = _extract_message_content(m_message)
+    md_row = {**row, "assessment_md": assessment_md}
+    if serve_delay > 0:
+        time.sleep(serve_delay)
+    return json_row, md_row
+
+
+def narrate_via_serving(
+    rows: list[dict[str, Any]],
+    *,
+    profile: str | None,
+    endpoint: str,
+    conn=None,
+    upsert_endpoint: str | None = None,
+    progress_every: int = 25,
+    serve_delay: float = 1.0,
+) -> tuple[list[dict], list[dict]]:
+    """Row-by-row serving-endpoint narration; upserts to Postgres after each row when conn is set."""
+    url, headers = _serving_request_context(profile, endpoint)
     json_rows: list[dict] = []
     md_rows: list[dict] = []
+    total = len(rows)
 
-    for row in rows:
-        ctx = row["evidence_context"]
-        # JSON
-        j_body = {
-            "messages": [{"role": "user", "content": json_prompt(ctx)}],
-            "response_format": json.loads(JSON_RESPONSE_FORMAT),
-        }
-        jr = requests.post(url, headers=headers, json=j_body, timeout=120)
-        if jr.status_code >= 400:
-            _raise_serving_error(jr, endpoint)
-        j_payload = jr.json()
-        j_message = j_payload.get("choices", [{}])[0].get("message", {})
-        raw_json = _extract_message_content(j_message) or j_payload
-        if isinstance(raw_json, dict):
-            assessment_json = raw_json
-        else:
-            assessment_json = json.loads(str(raw_json))
-        json_rows.append({**row, "assessment_json": assessment_json})
-
-        # Markdown
-        m_body = {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": markdown_prompt(
-                        ctx, row["facility_name"], row["capability_label"]
-                    ),
-                }
-            ],
-        }
-        mr = requests.post(url, headers=headers, json=m_body, timeout=120)
-        if mr.status_code >= 400:
-            _raise_serving_error(mr, endpoint)
-        m_payload = mr.json()
-        m_message = m_payload.get("choices", [{}])[0].get("message", {})
-        assessment_md = _extract_message_content(m_message)
-        md_rows.append({**row, "assessment_md": assessment_md})
+    for i, row in enumerate(rows, start=1):
+        json_row, md_row = _narrate_single_via_serving(
+            row,
+            url=url,
+            headers=headers,
+            endpoint=endpoint,
+            serve_delay=serve_delay,
+        )
+        json_rows.append(json_row)
+        md_rows.append(md_row)
+        if conn is not None and upsert_endpoint:
+            upsert_narrations(
+                conn,
+                endpoint=upsert_endpoint,
+                json_rows=[json_row],
+                md_rows=[md_row],
+            )
+        if progress_every and (i % progress_every == 0 or i == total):
+            print(f"  … {i:,}/{total:,} narrated", flush=True)
 
     return json_rows, md_rows
 
@@ -677,6 +740,12 @@ def main(argv: list[str] | None = None) -> int:
         default=os.getenv("EVIDENCE_FALLBACK_STUB", "true").lower() not in ("0", "false", "no"),
         help="When serving/ai_query hits Databricks quota limits, use stub templates "
         "(default: on). Pass --no-fallback-stub to fail instead.",
+    )
+    parser.add_argument(
+        "--serve-delay",
+        type=float,
+        default=float(os.getenv("EVIDENCE_SERVE_DELAY", "1.5")),
+        help="Seconds to pause between serving calls (reduces 429 rate limits).",
     )
     parser.add_argument(
         "--skip-existing",
@@ -737,19 +806,29 @@ def main(argv: list[str] | None = None) -> int:
                 warehouse_id=args.warehouse,
                 endpoint=args.agent_endpoint,
             )
+            upsert_narrations(
+                conn,
+                endpoint=endpoint_label,
+                json_rows=json_rows,
+                md_rows=md_rows,
+            )
         elif args.mode == "stub":
             json_rows, md_rows = narrate_via_stub(rows)
+            upsert_narrations(
+                conn,
+                endpoint=endpoint_label,
+                json_rows=json_rows,
+                md_rows=md_rows,
+            )
         else:
             json_rows, md_rows = narrate_via_serving(
-                rows, profile=args.profile, endpoint=args.agent_endpoint
+                rows,
+                profile=args.profile,
+                endpoint=args.agent_endpoint,
+                conn=conn,
+                upsert_endpoint=endpoint_label,
+                serve_delay=args.serve_delay,
             )
-
-        upsert_narrations(
-            conn,
-            endpoint=endpoint_label,
-            json_rows=json_rows,
-            md_rows=md_rows,
-        )
         if args.target == "lakebase":
             with conn.cursor() as cur:
                 cur.execute('ALTER SCHEMA gold OWNER TO "admins"')

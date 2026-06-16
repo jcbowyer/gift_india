@@ -236,13 +236,13 @@ pg-check:
 # See claude.md — system Postgres :5432; no Docker unless you opt in.
 # For Lakebase: export PGHOST/PGUSER/PGPASSWORD/PGDATABASE/PGSSLMODE before running.
 dbt: pg-check
-	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. dbt build
+	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. $(PYTHON) -m dbt build
 
 dbt-test: pg-check
-	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. dbt test
+	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. $(PYTHON) -m dbt test
 
 dbt-docs: pg-check
-	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. dbt docs generate && DBT_PROFILES_DIR=. dbt docs serve
+	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. $(PYTHON) -m dbt docs generate && DBT_PROFILES_DIR=. $(PYTHON) -m dbt docs serve
 
 # Build the upstream Databricks medallion (dbt_project/, adapter: databricks).
 # Runs the dbt SQL on the workspace SQL warehouse — needs the Databricks CLI

@@ -28,15 +28,19 @@ import {
   Quote,
   ArrowRight,
   Sparkles,
+  AlertTriangle,
+  UserCheck,
 } from 'lucide-react';
 import {
   SIGNAL_META,
   DEFAULT_SCORE_FOR_SIGNAL,
   effectiveTrustScore,
   narrationAttribution,
+  humanReviewStatusForCapability,
   type TrustSignal,
   type CapabilityDetail,
   type EvidenceItem,
+  type HumanReviewStatus,
 } from '../lib/api';
 
 /** Per-signal lucide icon + solid colour family for the prominent trust badges. */
@@ -86,6 +90,73 @@ export function SignalBadge({
   );
 }
 
+/** Compact flag for list rows and capability headers. */
+export function HumanReviewBadge({
+  className = '',
+  compact = false,
+}: {
+  className?: string;
+  compact?: boolean;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border border-amber-400/80 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-950 shadow-sm ${className}`}
+      title="Manual human review recommended"
+    >
+      <AlertTriangle className="h-3 w-3 shrink-0 text-amber-600" aria-hidden />
+      {compact ? 'Review' : 'Needs human review'}
+    </span>
+  );
+}
+
+/** Prominent callout when AI or pipeline flags a claim for planner confirmation. */
+export function HumanReviewCallout({
+  status,
+  onReview,
+  className = '',
+}: {
+  status: HumanReviewStatus;
+  onReview?: () => void;
+  className?: string;
+}) {
+  if (!status.recommended) return null;
+  return (
+    <div
+      className={`rounded-lg border border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 px-3.5 py-3 text-sm text-amber-950 shadow-sm ${className}`}
+      role="status"
+      data-demo="human-review-flag"
+    >
+      <div className="flex flex-wrap items-start gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+          <UserCheck className="h-4 w-4" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1 space-y-1">
+          <p className="font-semibold leading-snug">Manual human review recommended</p>
+          {status.reason ? (
+            <p className="text-amber-900/90 leading-relaxed">{status.reason}</p>
+          ) : null}
+          <p className="text-xs text-amber-800/80">
+            Automated evidence can surface conflicts and thin claims — a planner should confirm with local ground
+            truth before relying on this score.
+          </p>
+        </div>
+        {onReview ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0 gap-1.5 border-amber-400 bg-white font-semibold text-amber-950 hover:bg-amber-100/80"
+            onClick={onReview}
+          >
+            <PencilLine className="h-4 w-4" />
+            Start review
+          </Button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function TrustScoreDial({
   score,
   signal,
@@ -105,10 +176,10 @@ export function TrustScoreDial({
         : signal === 'weak_suspicious'
           ? 'text-red-500'
           : 'text-muted-foreground/40';
-  const box = size === 'lg' ? 'h-16 w-16' : 'h-12 w-12';
-  const num = size === 'lg' ? 'text-lg' : 'text-sm';
+  const box = size === 'lg' ? 'h-[4.5rem] w-[4.5rem]' : 'h-14 w-14';
+  const num = size === 'lg' ? 'text-xl' : 'text-base';
   return (
-    <div className={`flex flex-col items-center justify-center ${size === 'lg' ? 'min-w-[84px]' : 'min-w-[72px]'}`}>
+    <div className={`flex flex-col items-center justify-center ${size === 'lg' ? 'min-w-[88px]' : 'min-w-[76px]'}`}>
       <div className={`relative ${box}`}>
         <svg viewBox="0 0 36 36" className={`${box} -rotate-90`}>
           <circle cx="18" cy="18" r="15.5" fill="none" className="stroke-muted" strokeWidth="3" />
@@ -123,11 +194,11 @@ export function TrustScoreDial({
             strokeDasharray={`${(pct / 100) * 97.4} 97.4`}
           />
         </svg>
-        <span className={`absolute inset-0 flex items-center justify-center ${num} font-bold tabular-nums`}>
+        <span className={`absolute inset-0 flex items-center justify-center ${num} font-bold tabular-nums text-foreground`}>
           {pct}
         </span>
       </div>
-      <span className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">{meta.short}</span>
+      <span className="mt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{meta.short}</span>
     </div>
   );
 }
@@ -304,6 +375,7 @@ function OverrideAssessmentDialog({
   };
 
   const systemScorePct = Math.round(systemScore * 100);
+  const humanReview = humanReviewStatusForCapability(cap);
 
   return (
     <Dialog
@@ -329,6 +401,10 @@ function OverrideAssessmentDialog({
         </DialogHeader>
 
         <div className="space-y-5 px-6 py-5">
+          {humanReview.recommended ? (
+            <HumanReviewCallout status={humanReview} />
+          ) : null}
+
           <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-card px-4 py-3 text-sm">
             <span className="text-muted-foreground">Computed</span>
             <SignalBadge signal={systemSignal} />
@@ -519,22 +595,36 @@ export function CapabilityEvidence({
   const assessment = cap.overrideSignal ? null : cap.assessmentJson;
   const showMd = !cap.overrideSignal && cap.assessmentMd;
   const showNarration = Boolean(showMd || assessment);
+  const humanReview = humanReviewStatusForCapability(cap);
 
-  const overrideBtnClass =
-    'gap-1.5 border-border bg-background font-medium text-foreground shadow-sm hover:border-primary/45 hover:bg-muted/50';
+  const overrideBtnClass = humanReview.recommended
+    ? 'gap-1.5 border-amber-400 bg-amber-50 font-semibold text-amber-950 shadow-sm hover:border-amber-500 hover:bg-amber-100/80'
+    : 'gap-1.5 border-border bg-background font-medium text-foreground shadow-sm hover:border-primary/45 hover:bg-muted/50';
 
   return (
     <div className="space-y-3">
+      {humanReview.recommended ? (
+        <HumanReviewCallout status={humanReview} onReview={() => setDialogOpen(true)} />
+      ) : null}
+
       <div
-        className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/80 bg-muted/30 px-3 py-2.5"
+        className={`flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5 ${
+          humanReview.recommended
+            ? 'border-amber-200/80 bg-amber-50/50'
+            : 'border-border/80 bg-muted/30'
+        }`}
         data-demo="override"
       >
         <p className="text-xs text-muted-foreground">
-          {savedSignal ? 'You have a saved review for this claim.' : 'Disagree with the computed signal?'}
+          {savedSignal
+            ? 'You have a saved review for this claim.'
+            : humanReview.recommended
+              ? 'Confirm or correct this assessment with local ground truth.'
+              : 'Disagree with the computed signal?'}
         </p>
         <Button variant="outline" size="sm" className={overrideBtnClass} onClick={() => setDialogOpen(true)}>
           <PencilLine className="h-4 w-4" />
-          {savedSignal ? 'Edit review' : 'Override assessment'}
+          {savedSignal ? 'Edit review' : humanReview.recommended ? 'Start human review' : 'Override assessment'}
         </Button>
       </div>
 
@@ -582,9 +672,6 @@ export function CapabilityEvidence({
                 </li>
               ))}
             </ul>
-          )}
-          {assessment.review_recommended && assessment.review_reason && (
-            <p className="text-xs text-amber-800">⚠️ {assessment.review_reason}</p>
           )}
         </div>
       )}

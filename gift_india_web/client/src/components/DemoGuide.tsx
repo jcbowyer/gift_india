@@ -16,11 +16,11 @@ import { GiftSeal } from './GiftSeal';
 import { cn } from '../lib/utils';
 
 /**
- * Interactive 5-minute demo walkthrough — the in-app twin of DEMO.md.
+ * Interactive ~5:30 demo walkthrough — the in-app twin of DEMO.md.
  *
  * Drives the presenter through the killer-demo script: auto-navigates to the
  * right screen for each beat, narrates the talk track, spotlights the relevant
- * UI (when a `selector` is given and present), and paces against a 5:00 clock.
+ * UI (when a `selector` is given and present), and paces against a 5:30 clock.
  *
  * Launch via the header "✨ Demo" button (window event `gift-demo:start`),
  * the floating pill, or the keyboard chord `g` then `d`. Advance with → / Space,
@@ -227,8 +227,32 @@ const STEPS: Step[] = [
     appGoLabel: 'Back to app',
   },
   {
+    phase: 'Why it matters',
+    clock: '3:30 – 3:50',
+    title: 'How the trust dial works',
+    route: '/',
+    say: 'The number in the dial is not a vibe — it’s **evidence_strength_score**, computed entirely in SQL in `gold.capability_scored`. Priya can reproduce it in a hearing.\n\nWhen a facility **claims** a capability, we blend three auditable inputs: **45% supporting ratio** (supporting vs contradicting evidence), **25% evidence breadth** (independent items backing the claim, capped at five), and **30% facility match confidence** (how sure we are this row is the right hospital). Each contradicting item applies a **0.8× penalty**. Unclaimed capabilities score zero.\n\nThat rolls into four tiers: **Strong** (≥0.85), **Moderate** (0.65–0.84), **Weak** (0.45–0.64), **Insufficient** (<0.45). Green, amber, and red on the list map to those bands.',
+    do: ['Gesture at a trust dial if visible; land on “reproduce it in a hearing.”'],
+  },
+  {
+    phase: 'Why it matters',
+    clock: '3:50 – 4:05',
+    title: 'SQL scores, AI explains',
+    route: '/',
+    say: 'Layer 2 is where AI enters — but only as a **translator**, not a judge.\n\nWe build a frozen **evidence_context** block in SQL — facility facts, supporting and contradicting counts, the pre-computed score and tier — and hand it to the narration agent with one hard rule: **use the numbers exactly as provided; do not recompute.**\n\nThe prompt embeds the same grading rubric as the SQL. It maps tier → planner verdict — Confirmed, Likely, Needs review, Unsupported — and **caps at Needs review** whenever contradicting evidence or a **weak_suspicious** trust signal is present.\n\nSwap the model, change the prose card — the dial does not move. SQL supervises the LLM; Priya supervises both.',
+    do: ['Optional: expand a facility with a narration card; point at the verdict line matching the dial.'],
+  },
+  {
+    phase: 'Future',
+    clock: '4:05 – 4:20',
+    title: 'Where we’re improving next',
+    route: '/',
+    say: 'Today’s pilot is honest about its edges — and that’s where the roadmap gets interesting.\n\n**JCI cross-referencing** — we already resolve JCI Gold Seal organizations onto governed facility IDs with tiered matching (exact name + state → brand + city → brand + state), each with match method and confidence. Next: tighten the crosswalk with portal verification, accreditation **scope** (which services the seal actually covers), and surface *why* JCI attached to this row in the citation panel.\n\n**Anomaly detection** — the same signals that rank facilities are a ready-made fraud radar: claimed ICU with no specialty corroboration, high bed count but weak entity match, website copy contradicted by registry rows. We flag them today; tomorrow we batch-score districts for **systematic gaming patterns** — facilities that look fine in isolation but cluster as outliers against their peers.\n\nTrust scoring is the foundation; cross-source validation and anomaly surfacing are how we keep gaming the directory from becoming gaming the patient.',
+    do: ['Brief pause on “fraud radar,” then advance to the technical stack beats.'],
+  },
+  {
     phase: 'Tech',
-    clock: '3:30 – 3:48',
+    clock: '4:20 – 4:35',
     title: 'Built on Lakehouse',
     subtitle: 'Human-in-the-loop · why we defy the AI-default',
     subtitleLarge: true,
@@ -240,7 +264,7 @@ const STEPS: Step[] = [
   },
   {
     phase: 'Tech',
-    clock: '3:48 – 4:10',
+    clock: '4:35 – 4:50',
     title: 'Tech stack: Decisions we made for ourselves',
     route: '/',
     decisionTable: TECH_DECISION_TABLE,
@@ -248,14 +272,14 @@ const STEPS: Step[] = [
   },
   {
     phase: 'Open',
-    clock: '4:10 – 4:22',
+    clock: '4:50 – 5:00',
     title: 'The “30 years” problem: Call to Action',
     route: '/',
     say: 'There’s a massive difference between 30 years of experience and one year repeated 30 times. Databricks isn’t just storage — it’s how we turn learning into an ontology of decisions. We capture the why behind the what, keep humans in the loop, and scale expertise planners can actually defend.',
   },
   {
     phase: 'Future',
-    clock: '4:22 – 4:30',
+    clock: '5:00 – 5:08',
     title: 'The foundation for the other tracks',
     route: '/',
     say: 'GIFT Gauge is Track 1 — can this facility do what it claims? The same trust layer feeds the rest: Medical Desert Planner (the map already shows the gaps), Referral Copilot (route to capability you trust), Data Readiness (contradicting-evidence flags are a quality signal). Trust is the foundation the other three stand on.',
@@ -263,7 +287,7 @@ const STEPS: Step[] = [
   },
   {
     phase: 'Close',
-    clock: '4:30 – 5:00',
+    clock: '5:08 – 5:30',
     title: 'Closing the loop',
     route: '/',
     say: 'Huge thanks to Databricks and the Virtue Foundation. We aren’t just talking about the future of care — we’re building the plumbing so planners stop guessing and start steering. The best way to change the world isn’t to look for a magic solution — **it’s to try.** **GIFT Gauge** — Governance, Integrity and Facility Trust.',
@@ -272,9 +296,10 @@ const STEPS: Step[] = [
   },
 ];
 
-const TOTAL_BUDGET_SEC = 5 * 60;
+const TOTAL_BUDGET_SEC = 5 * 60 + 30;
+const DEMO_BUDGET_LABEL = '5:30';
 
-/** Parse demo clock windows like `0:45 – 1:05` into seconds on the 5:00 timeline. */
+/** Parse demo clock windows like `0:45 – 1:05` into seconds on the 5:30 timeline. */
 function parseClockRange(clock: string): { startSec: number; endSec: number } {
   const [startRaw, endRaw] = clock.split(/\s*[–—-]\s*/);
   const toSec = (t: string) => {
@@ -837,7 +862,7 @@ export function DemoGuide() {
         <button
           type="button"
           onClick={start}
-          aria-label="Start the 5-minute demo walkthrough"
+          aria-label="Start the demo walkthrough (~5:30)"
           className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-2.5 text-sm font-semibold text-amber-900 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl"
         >
           <Sparkles className="h-4 w-4 text-amber-600" />
@@ -886,7 +911,7 @@ export function DemoGuide() {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-foreground">{step.title}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  Step {idx + 1} / {STEPS.length} · {fmt(elapsed)} / 5:00
+                  Step {idx + 1} / {STEPS.length} · {fmt(elapsed)} / {DEMO_BUDGET_LABEL}
                 </p>
               </div>
               <Button
@@ -989,7 +1014,7 @@ export function DemoGuide() {
                     overBudget ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'
                   }`}
                 >
-                  {fmt(elapsed)} <span className="font-normal opacity-60">/ 5:00</span>
+                  {fmt(elapsed)} <span className="font-normal opacity-60">/ {DEMO_BUDGET_LABEL}</span>
                 </span>
               </div>
 
