@@ -48,6 +48,7 @@ export interface FacilityRanking {
   claimed: boolean;
   trustSignal: TrustSignal;
   trustScore: number;
+  evidenceTier: string | null;
   evidenceCount: number;
   supportingCount: number;
   contradictingCount: number;
@@ -177,6 +178,25 @@ export interface EvidenceItem {
   observedAt: string;
 }
 
+export interface EvidenceCitation {
+  source: string;
+  stance: 'supporting' | 'contradicting' | 'contextual';
+  detail: string;
+}
+
+export interface CapabilityAssessmentJson {
+  facility_id: string;
+  capability: string;
+  verdict: 'Confirmed' | 'Likely' | 'Needs review' | 'Unsupported';
+  evidence_tier: 'Strong' | 'Moderate' | 'Weak' | 'Insufficient';
+  evidence_strength_score: number;
+  rationale: string;
+  specialty_corroboration?: string;
+  citations: EvidenceCitation[];
+  review_recommended: boolean;
+  review_reason?: string;
+}
+
 export interface CapabilityDetail {
   key: string;
   label: string;
@@ -184,11 +204,14 @@ export interface CapabilityDetail {
   claimed: boolean;
   trustSignal: TrustSignal;
   trustScore: number;
+  evidenceTier: string | null;
   evidenceCount: number;
   supportingCount: number;
   contradictingCount: number;
   bestSource: string;
   summary: string;
+  assessmentJson: CapabilityAssessmentJson | null;
+  assessmentMd: string | null;
   overrideSignal: TrustSignal | null;
   overrideNote: string | null;
   evidence: EvidenceItem[];
@@ -220,6 +243,50 @@ export interface OverrideRecord {
   override_signal: string;
   note: string | null;
   created_at: string;
+}
+
+// ── data quality (web address coverage) ──────────────────────────────────────────────────────
+export interface DataQualityStateRow {
+  state: string;
+  stateCode: string;
+  total: number;
+  withUrl: number;
+  missing: number;
+  pct: number;
+  scrapeOk: number;
+  scrapeTotal: number;
+}
+
+export interface DataQualityTypeRow {
+  type: string;
+  total: number;
+  withUrl: number;
+  missing: number;
+  pct: number;
+}
+
+export interface DataQualityReport {
+  summary: {
+    total: number;
+    withUrl: number;
+    pctWithUrl: number;
+    missing: number;
+    scrapeTotal: number;
+    scrapeOk: number;
+    scrapePct: number;
+  };
+  byState: DataQualityStateRow[];
+  byType: DataQualityTypeRow[];
+}
+
+export interface DataQualityMissingFacility {
+  facilityId: string;
+  name: string;
+  type: string | null;
+  district: string;
+  state: string;
+  stateCode: string;
+  beds: number | null;
 }
 
 async function getJSON<T>(url: string): Promise<T> {
@@ -285,6 +352,11 @@ export const api = {
     const res = await fetch(`/api/overrides/${id}`, { method: 'DELETE' });
     if (!res.ok && res.status !== 204) throw new Error(`${res.status} ${res.statusText}`);
   },
+  dataQuality: () => getJSON<DataQualityReport>('/api/data-quality'),
+  dataQualityMissing: (state?: string) =>
+    getJSON<DataQualityMissingFacility[]>(
+      `/api/data-quality/missing${state ? `?state=${encodeURIComponent(state)}` : ''}`,
+    ),
 };
 
 // ── trust-signal presentation helpers ───────────────────────────────────────

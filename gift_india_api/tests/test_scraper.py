@@ -175,6 +175,78 @@ def test_extract_truncates_long_text():
     assert data["text_truncated"] is True
 
 
+def test_extract_captures_specialties_and_treatments():
+    html = """
+    <html><head><title>Sunrise Heart & Cancer Hospital</title>
+      <meta name="description" content="Leading cardiology and oncology care.">
+    </head><body>
+      <h1>Centres of Excellence</h1>
+      <ul>
+        <li>Department of Cardiac Sciences — Angioplasty &amp; Bypass Surgery</li>
+        <li>Nephrology &amp; Dialysis</li>
+        <li>Neonatology (NICU)</li>
+        <li>IVF &amp; Fertility</li>
+      </ul>
+    </body></html>
+    """
+    specialties = scraper.extract(html, "https://x.test")["specialties"]
+    # Canonical labels, de-duped and sorted; covers specialities + treatments,
+    # including ones named only in the <title>/meta (Oncology) and acronyms (NICU).
+    for expected in (
+        "Cardiology", "Angioplasty", "Bypass Surgery", "Oncology",
+        "Nephrology", "Dialysis", "Neonatology", "Fertility / IVF",
+    ):
+        assert expected in specialties, f"missing {expected!r} in {specialties}"
+    assert specialties == sorted(specialties)
+
+
+def test_extract_saves_detailed_capability_claims():
+    html = """
+    <html><head><title>City Care Hospital</title></head><body>
+      <p>Our 18-bed ICU offers 24x7 intensivist-led critical care with ventilator support.</p>
+      <p>The maternity unit has a dedicated labour ward and emergency C-section capability.</p>
+      <p>A Level-III NICU cares for premature newborns around the clock.</p>
+      <p>The 24x7 emergency department provides resuscitation and trauma surgery.</p>
+      <p>We are a friendly neighbourhood pharmacy.</p>
+    </body></html>
+    """
+    claims = scraper.extract(html, "https://x.test")["capability_claims"]
+    by_cap = {}
+    for c in claims:
+        by_cap.setdefault(c["capability"], []).append(c)
+
+    # Each tracked capability mentioned on the page yields a verbatim-sentence claim.
+    for cap in ("icu", "maternity", "nicu", "emergency", "trauma"):
+        assert cap in by_cap, f"no claim mined for {cap}: {claims}"
+    # The claim quotes the page sentence (evidence, not paraphrase) and records the
+    # matched term.
+    icu = by_cap["icu"][0]
+    assert "intensivist-led critical care" in icu["snippet"]
+    assert icu["term"] in {"icu", "intensive care", "critical care", "intensivist", "ventilator"}
+    # The pharmacy line mentions no capability, so no claim is fabricated for it.
+    assert not any("pharmacy" in c["snippet"].lower() for c in claims)
+
+
+def test_capability_claims_window_long_runs_and_cap_count():
+    # A menu dump (one long run, no periods) mentioning ICU many times is windowed
+    # to a bounded snippet and capped per capability.
+    blob = ("home about contact " * 30) + "our intensive care unit is excellent " + ("services " * 30)
+    claims = scraper._capability_claims(blob)
+    icu = [c for c in claims if c["capability"] == "icu"]
+    assert len(icu) <= scraper.MAX_CLAIMS_PER_CAPABILITY
+    assert icu and len(icu[0]["snippet"]) <= scraper.CLAIM_MAX_CHARS + 2  # +ellipses
+    assert "intensive care" in icu[0]["snippet"].lower()
+
+
+def test_specialties_is_whole_word_and_high_precision():
+    # Substrings of vocabulary words must not produce false hits (e.g. "parent"
+    # and "consistent" contain "ent"; nothing here is a whole-word speciality).
+    assert scraper._specialties("a parent stood by a consistent different patient") == []
+    # but a genuine whole-word ENT / stent mention is caught.
+    assert "ENT" in scraper._specialties("Our ENT department")
+    assert "Angioplasty" in scraper._specialties("Coronary stent placement")
+
+
 @pytest.mark.parametrize(
     "text, expect_match",
     [

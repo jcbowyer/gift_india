@@ -1,4 +1,4 @@
-"""Database connectivity for Governance, Integrity, & Facility Trust (GIFT) Desk.
+"""Database connectivity for Governance, Integrity, & Facility Trust (GIFT) Gauge.
 
 One code path serves two targets:
 

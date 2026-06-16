@@ -3,14 +3,14 @@ version: 2
 sources:
   - name: bronze
     description: >-
-      Raw landing tables for Governance, Integrity, & Facility Trust (GIFT) Desk. The Python loader
+      Raw landing tables for Governance, Integrity, & Facility Trust (GIFT) Gauge. The Python loader
       (`gift_india_api/src/load_db.py`) writes the governed / synthetic facility
       and district records here verbatim; dbt promotes them through silver and
       gold. Defaults to the `bronze` schema where the loader writes (override
       with `--vars '{bronze_schema: <schema>}'`).
     schema: "{{ var('bronze_schema', 'bronze') }}"
     tables:
-      - name: facilities
+      - name: facilities_virtue
         description: >-
           Geotagged healthcare facility records (entity-resolved upstream, with a
           `match_confidence` score). One row per facility.
@@ -36,6 +36,20 @@ sources:
               - not_null
           - name: match_confidence
             description: Named-entity-resolution confidence score (0-1).
+
+      - name: facility_capability_assessments_virtue
+        description: >-
+          Real Virtue Foundation per-facility capability trust assessments (one
+          row per facility × capability), exported from
+          `data/virtue/facility_capability_assessments.csv` and landed via
+          `gift_india_api/src/load_bronze_real.py`.
+        columns:
+          - name: facility_id
+            tests:
+              - not_null
+          - name: capability
+            tests:
+              - not_null
 
       - name: districts
         description: >-
@@ -115,5 +129,73 @@ sources:
             description: Relative path to the scraped homepage snapshot (or null).
           - name: data_source
             description: Provenance tag — always `jci`.
+            tests:
+              - not_null
+
+      - name: nabh_accreditations
+        description: >-
+          NABH (National Accreditation Board for Hospitals & Healthcare Providers)
+          accredited / certified / empanelled facilities in India, scraped from the
+          official nabh.co directory by `gift_india_api/src/nabh_scraper.py` and
+          landed by `src/load_nabh.py`. An external accreditation REFERENCE source
+          (`data_source` = 'nabh'), NOT a facility record — resolved to facility_ids
+          downstream (silver -> gold crosswalk) on the shared normalized name, the
+          same way as JCI. Unlike the curated JCI seed this is the full national
+          register (~19k orgs) with geocoordinates. Idempotent on `nabh_org_id`.
+        columns:
+          - name: nabh_org_id
+            description: sha256(match_name + city + state + reference_no)[:16] — stable per org.
+            tests:
+              - not_null
+              - unique
+          - name: nabh_name
+            description: Organization name as published by the NABH directory.
+            tests:
+              - not_null
+          - name: match_name
+            description: Normalized name (entity-resolution key, shared with JCI).
+            tests:
+              - not_null
+          - name: accreditation_status
+            description: NABH status badge — `Accredited`, `Certified`, or `Empaneled`.
+          - name: reference_no
+            description: NABH accreditation / reference number (e.g. `H-2021-0846`).
+          - name: certificate_url
+            description: >-
+              Stable portal URL to the certificate-and-scope PDF (or null when the
+              source only exposes an expiring presigned link).
+          - name: data_source
+            description: Provenance tag — always `nabh`.
+            tests:
+              - not_null
+
+      - name: facilities_pmjay
+        description: >-
+          PMJAY (Ayushman Bharat) empanelled hospitals in India, scraped from the
+          official HEM public search portal by `gift_india_api/src/pmjay_scraper.py`
+          and landed by `src/load_pmjay.py`. An external REFERENCE source
+          (`data_source` = 'pmjay'), NOT a facility record — resolved to
+          facility_ids downstream (silver -> gold crosswalk) on the shared
+          normalized `match_name` / `brand_key`. Idempotent on `pmjay_org_id`.
+        columns:
+          - name: pmjay_org_id
+            description: sha256(match_name + district + state + hecp_id)[:16].
+            tests:
+              - not_null
+              - unique
+          - name: pmjay_name
+            description: Hospital name as published on the PMJAY portal.
+            tests:
+              - not_null
+          - name: match_name
+            description: Normalized name (entity-resolution key, shared with JCI/NABH).
+            tests:
+              - not_null
+          - name: hospital_type
+            description: Public | Private (For Profit) | Private (Not For Profit).
+          - name: specialties
+            description: Pipe-delimited empanelled specialties.
+          - name: data_source
+            description: Provenance tag — always `pmjay`.
             tests:
               - not_null

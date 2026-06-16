@@ -32,36 +32,56 @@ export interface DistrictHit {
 interface Indexed {
   feature: Feature<Geometry, DistrictProps>;
   hit: DistrictHit;
-  // lon/lat bounding box for a cheap reject before the exact ray-cast.
   w: number;
   s: number;
   e: number;
   n: number;
 }
 
+const GRID_CELL = 1; // degrees — buckets ~742 districts for fast lookup
+
+function gridKeys(w: number, s: number, e: number, n: number): string[] {
+  const keys: string[] = [];
+  const x0 = Math.floor(w / GRID_CELL);
+  const x1 = Math.floor(e / GRID_CELL);
+  const y0 = Math.floor(s / GRID_CELL);
+  const y1 = Math.floor(n / GRID_CELL);
+  for (let x = x0; x <= x1; x++) {
+    for (let y = y0; y <= y1; y++) keys.push(`${x},${y}`);
+  }
+  return keys;
+}
+
 /** Composite key `stateNorm|districtNorm` — unique per topology district. */
 export const districtKey = (stateNorm: string, districtNorm: string): string =>
   `${stateNorm}|${districtNorm}`;
 
+const locatorCache = new WeakMap<Topology, DistrictLocator>();
+
 /**
  * Spatial locator over the topology's district polygons. Construct once per
- * topology (memoise on the topology reference) and reuse across renders — the
- * bounding-box pre-filter keeps `locate()` cheap enough to call for thousands of
- * ratings/facilities per drill.
+ * topology (memoise on the topology reference) and reuse across renders.
  */
 export class DistrictLocator {
-  private items: Indexed[];
+  private grid = new Map<string, Indexed[]>();
 
   constructor(topology: Topology) {
+    const cached = locatorCache.get(topology);
+    if (cached) {
+      this.grid = cached.grid;
+      return;
+    }
+
     const dfc = feature(
       topology,
       topology.objects.districts as GeometryCollection,
     ) as FeatureCollection<Geometry, DistrictProps>;
-    this.items = dfc.features.map((f) => {
+
+    for (const f of dfc.features) {
       const [[w, s], [e, n]] = bounds(f.geometry);
       const stateNorm = normName(f.properties.st_nm);
       const districtNorm = normName(f.properties.district);
-      return {
+      const it: Indexed = {
         feature: f,
         hit: { state: f.properties.st_nm, district: f.properties.district, stateNorm, districtNorm },
         w,
@@ -69,15 +89,30 @@ export class DistrictLocator {
         e,
         n,
       };
-    });
+      for (const key of gridKeys(w, s, e, n)) {
+        (this.grid.get(key) ?? this.grid.set(key, []).get(key)!).push(it);
+      }
+    }
+    locatorCache.set(topology, this);
   }
 
   /** Resolve a lon/lat to the district polygon that contains it, or null. */
   locate(lon: number, lat: number): DistrictHit | null {
     if (!Number.isFinite(lon) || !Number.isFinite(lat)) return null;
-    for (const it of this.items) {
-      if (lon < it.w || lon > it.e || lat < it.s || lat > it.n) continue;
-      if (geoContains(it.feature, [lon, lat])) return it.hit;
+    const cx = Math.floor(lon / GRID_CELL);
+    const cy = Math.floor(lat / GRID_CELL);
+    const seen = new Set<Indexed>();
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        const bucket = this.grid.get(`${cx + dx},${cy + dy}`);
+        if (!bucket) continue;
+        for (const it of bucket) {
+          if (seen.has(it)) continue;
+          seen.add(it);
+          if (lon < it.w || lon > it.e || lat < it.s || lat > it.n) continue;
+          if (geoContains(it.feature, [lon, lat])) return it.hit;
+        }
+      }
     }
     return null;
   }

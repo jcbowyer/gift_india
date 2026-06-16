@@ -4,7 +4,11 @@ The scraper reads facility records (from the live database when configured, else
 the synthetic CSV bundle) and visits the ``website_url`` of every facility that
 has one. For each site it stores a raw HTML snapshot plus an extracted JSON of
 the useful fields (title, description, emails, phones, address, visible text),
-and writes a ``manifest.json`` summarising every scrape attempt.
+and writes a ``manifest.json`` summarising every scrape attempt. The extracted
+fields include the clinical ``specialties`` (and signature treatments) advertised
+on the page, plus ``capability_claims`` — the verbatim sentences the site uses to
+assert each tracked capability (ICU, Maternity, Emergency, Oncology, Trauma,
+NICU), saved as evidence — both detected from curated medical vocabularies.
 
 While the project is in pilot the crawl is **scoped to a handful of districts**
 (``CRAWL_REGIONS`` — Mumbai, Delhi, Bengaluru, Lucknow, Jaisalmer); facilities
@@ -74,6 +78,121 @@ _EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
 _PHONE_RE = re.compile(
     r"(?:(?:\+?91[\-\s]?)|0)?(?:\d[\-\s]?){9,14}\d"
 )
+
+# Clinical specialities and signature treatments/procedures a hospital site
+# advertises. Each canonical label maps to the alias fragments that signal it;
+# aliases are matched whole-word, case-insensitively, against the page's visible
+# text (title + heading + description + body), so a site listing "Cardiac
+# Sciences" or "Angioplasty" yields the canonical "Cardiology" / "Angioplasty".
+# Deliberately high-precision — bare words like "heart"/"skin"/"liver" are avoided
+# so the field stays clean for the downstream capability matcher. The capability
+# keys the navigator reasons about (ICU, emergency, trauma, neonatology, maternity,
+# oncology) are mirrored here so a crawl corroborates them.
+SPECIALTY_VOCAB: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("Cardiology", ("cardiology", "cardiac sciences", "cardiac care", "cardiac centre", "cardiac center", "interventional cardiology")),
+    ("Cardiac Surgery", ("cardiac surgery", "cardiothoracic", "ctvs", "heart surgery", "open heart")),
+    ("Angioplasty", ("angioplasty", "angiography", "stenting", "stent")),
+    ("Bypass Surgery", ("bypass surgery", "cabg", "coronary artery bypass")),
+    ("Oncology", ("oncology", "cancer care", "cancer institute", "cancer centre", "cancer center", "oncosurgery")),
+    ("Chemotherapy", ("chemotherapy",)),
+    ("Radiotherapy", ("radiotherapy", "radiation therapy", "radiation oncology")),
+    ("Neurology", ("neurology", "neurosciences", "neuro sciences")),
+    ("Neurosurgery", ("neurosurgery", "neuro surgery", "brain surgery")),
+    ("Orthopedics", ("orthopedics", "orthopaedics", "orthopedic", "orthopaedic", "bone and joint")),
+    ("Joint Replacement", ("joint replacement", "knee replacement", "hip replacement", "arthroplasty")),
+    ("Spine Surgery", ("spine surgery", "spinal surgery", "spine care")),
+    ("Nephrology", ("nephrology", "renal sciences", "kidney care")),
+    ("Dialysis", ("dialysis", "hemodialysis", "haemodialysis")),
+    ("Urology", ("urology", "urologist", "uro surgery")),
+    ("Gastroenterology", ("gastroenterology", "gastro sciences", "gastrointestinal", "digestive diseases")),
+    ("Hepatology", ("hepatology", "liver institute", "liver clinic")),
+    ("Pulmonology", ("pulmonology", "pulmonary medicine", "respiratory medicine", "chest medicine")),
+    ("Endocrinology", ("endocrinology", "diabetology", "diabetes care")),
+    ("Dermatology", ("dermatology", "dermatologist")),
+    ("Ophthalmology", ("ophthalmology", "eye care", "eye hospital", "eye institute", "eye centre", "eye center")),
+    ("Cataract Surgery", ("cataract",)),
+    ("LASIK", ("lasik",)),
+    ("ENT", ("ent", "otolaryngology", "otorhinolaryngology", "ear nose throat", "ear nose and throat")),
+    ("Obstetrics & Gynaecology", ("gynaecology", "gynecology", "obstetrics", "obgyn")),
+    ("Maternity", ("maternity", "childbirth", "birthing", "labour and delivery")),
+    ("Pediatrics", ("pediatrics", "paediatrics", "child care")),
+    ("Neonatology", ("neonatology", "neonatal", "nicu")),
+    ("Fertility / IVF", ("ivf", "fertility", "infertility", "reproductive medicine", "test tube baby", "iui", "icsi")),
+    ("Psychiatry", ("psychiatry", "mental health", "psychiatric", "de-addiction")),
+    ("Rheumatology", ("rheumatology",)),
+    ("Hematology", ("hematology", "haematology")),
+    ("Plastic Surgery", ("plastic surgery", "cosmetic surgery", "aesthetic surgery", "reconstructive surgery")),
+    ("Vascular Surgery", ("vascular surgery",)),
+    ("General Surgery", ("general surgery",)),
+    ("Bariatric Surgery", ("bariatric", "obesity surgery", "weight loss surgery")),
+    ("Transplant", ("transplant",)),
+    ("Dentistry", ("dental", "dentistry", "orthodontics")),
+    ("Radiology", ("radiology", "diagnostic imaging")),
+    ("Pathology", ("pathology", "laboratory medicine")),
+    ("Anesthesiology", ("anesthesiology", "anaesthesiology", "anesthesia", "anaesthesia")),
+    ("Physiotherapy", ("physiotherapy", "physical therapy")),
+    ("Rehabilitation", ("rehabilitation", "rehab")),
+    ("Pain Management", ("pain management", "pain clinic")),
+    ("Critical Care", ("critical care", "intensive care", "icu")),
+    ("Emergency", ("emergency", "casualty")),
+    ("Trauma", ("trauma",)),
+    ("Endoscopy", ("endoscopy", "colonoscopy")),
+    ("Laparoscopy", ("laparoscopy", "laparoscopic", "minimally invasive surgery")),
+    ("Robotic Surgery", ("robotic surgery",)),
+)
+
+
+def _compile_specialty_patterns() -> tuple[tuple[str, re.Pattern[str]], ...]:
+    """Compile one whole-word, case-insensitive matcher per canonical speciality."""
+    compiled: list[tuple[str, re.Pattern[str]]] = []
+    for canonical, aliases in SPECIALTY_VOCAB:
+        # Match aliases whole-word; allow flexible inter-word whitespace so
+        # "ear   nose throat" / line-wrapped phrases still match.
+        alts = "|".join(re.escape(a).replace(r"\ ", r"\s+") for a in aliases)
+        compiled.append((canonical, re.compile(rf"\b(?:{alts})\b", re.IGNORECASE)))
+    return tuple(compiled)
+
+
+_SPECIALTY_PATTERNS = _compile_specialty_patterns()
+
+# The six capabilities the navigator tracks (keys match
+# gift_india_dbt/seeds/capabilities.csv) → the distinctive page-text terms that
+# signal a self-reported claim. A sentence on the official site containing one of
+# these terms is a real "claim" about that capability; we save the sentence
+# verbatim as evidence. Keep this map in lock-step with the `capability_terms`
+# CTE in gift_india_dbt/models/gold/capability_evidence.sql so the scrape and the
+# dbt website-text evidence agree on what counts as a mention.
+CAPABILITY_CLAIM_TERMS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("icu", ("intensive care", "critical care", "icu", "intensivist", "ventilator", "high dependency unit", "hdu")),
+    ("maternity", ("maternity", "obstetric", "gynaec", "labour ward", "labour room", "delivery suite",
+                   "antenatal", "birthing", "c-section", "caesarean", "cesarean")),
+    ("emergency", ("emergency department", "emergency care", "emergency room", "casualty",
+                   "accident and emergency", "resuscitation", "24x7 emergency", "24/7 emergency")),
+    ("oncology", ("oncology", "cancer", "chemotherapy", "radiotherapy", "radiation oncology", "tumour", "tumor")),
+    ("trauma", ("trauma", "trauma surgery", "orthopaedic", "orthopedic", "fracture")),
+    ("nicu", ("nicu", "neonatal", "newborn intensive", "premature baby", "premature newborn")),
+)
+
+
+def _compile_capability_patterns() -> tuple[tuple[str, re.Pattern[str]], ...]:
+    """Compile one whole-word, case-insensitive matcher per tracked capability."""
+    compiled: list[tuple[str, re.Pattern[str]]] = []
+    for capability, terms in CAPABILITY_CLAIM_TERMS:
+        alts = "|".join(re.escape(t).replace(r"\ ", r"\s+") for t in terms)
+        compiled.append((capability, re.compile(rf"\b(?:{alts})\b", re.IGNORECASE)))
+    return tuple(compiled)
+
+
+_CAPABILITY_PATTERNS = _compile_capability_patterns()
+
+# Sentence boundary on the whitespace-collapsed page text. Many hospital pages are
+# menu dumps with few periods, so a "sentence" can be long — claims center a window
+# around the matched term (see _claim_snippet) rather than emit the whole run.
+_SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
+# Bounds for a saved claim snippet (chars). Below the floor it's a bare menu label
+# (kept, but it's a weak claim); above the ceiling we window around the term.
+CLAIM_MAX_CHARS = 240
+MAX_CLAIMS_PER_CAPABILITY = 3
 
 
 # Pilot coverage — the facility crawl is scoped to these districts while the
@@ -152,6 +271,8 @@ class ScrapeRecord:
     title: str | None = None
     n_emails: int = 0
     n_phones: int = 0
+    n_specialties: int = 0
+    n_claims: int = 0
     error: str | None = None
 
 
@@ -373,6 +494,66 @@ def _addresses(soup: BeautifulSoup) -> list[str]:
     return found
 
 
+def _specialties(haystack: str) -> list[str]:
+    """Canonical clinical specialities / treatments advertised in the page text.
+
+    Scans ``haystack`` against :data:`SPECIALTY_VOCAB` and returns the matched
+    canonical labels (e.g. ``["Cardiology", "Dialysis", "Oncology"]``), sorted and
+    de-duped. Empty when the page mentions none.
+    """
+    found = {canonical for canonical, pattern in _SPECIALTY_PATTERNS if pattern.search(haystack)}
+    return sorted(found)
+
+
+def _claim_snippet(sentence: str, match: re.Match[str]) -> str:
+    """A bounded, readable claim snippet from ``sentence`` around ``match``.
+
+    Short sentences are returned whole; long ones (menu/navigation dumps with no
+    punctuation) are reduced to a ~:data:`CLAIM_MAX_CHARS` window centered on the
+    matched term, with ellipses marking the trim.
+    """
+    sentence = sentence.strip()
+    if len(sentence) <= CLAIM_MAX_CHARS:
+        return sentence
+    half = CLAIM_MAX_CHARS // 2
+    start = max(0, match.start() - half)
+    end = min(len(sentence), start + CLAIM_MAX_CHARS)
+    window = sentence[start:end].strip()
+    return f"{'…' if start > 0 else ''}{window}{'…' if end < len(sentence) else ''}"
+
+
+def _capability_claims(haystack: str) -> list[dict]:
+    """Self-reported claims about the tracked capabilities, mined from page text.
+
+    Splits ``haystack`` into sentences and, for each capability in
+    :data:`CAPABILITY_CLAIM_TERMS`, saves up to
+    :data:`MAX_CLAIMS_PER_CAPABILITY` distinct sentences that mention one of its
+    terms. Each claim is ``{"capability", "term", "snippet"}`` — the snippet quoted
+    verbatim from the page so it stands as evidence, never paraphrased.
+    """
+    sentences = [s for s in _SENTENCE_SPLIT_RE.split(haystack) if s.strip()]
+    claims: list[dict] = []
+    for capability, pattern in _CAPABILITY_PATTERNS:
+        seen: set[str] = set()
+        for sentence in sentences:
+            match = pattern.search(sentence)
+            if not match:
+                continue
+            snippet = _claim_snippet(sentence, match)
+            key = snippet.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            claims.append({
+                "capability": capability,
+                "term": match.group(0).lower(),
+                "snippet": snippet,
+            })
+            if len(seen) >= MAX_CLAIMS_PER_CAPABILITY:
+                break
+    return claims
+
+
 def extract(html: str, source_url: str) -> dict:
     """Parse the page into a dict of useful, structured fields."""
     soup = _make_parser_soup(html)
@@ -386,19 +567,31 @@ def extract(html: str, source_url: str) -> dict:
     title = title or _meta(soup, prop="og:title")
 
     h1 = soup.find("h1")
+    heading = _clean(h1.get_text(" ")) if h1 else None
     description = _meta(soup, name="description") or _meta(soup, prop="og:description")
 
     text = soup.get_text(" ", strip=True)
     emails = sorted({m.lower() for m in _EMAIL_RE.findall(text)})
     phones = sorted(set(_valid_phones(text)))
+    # Detect specialities across the headline fields + body so a marquee speciality
+    # named only in the <title>/meta (not the visible body) is still captured.
+    headline = " ".join(filter(None, [title, heading, description]))
+    specialties = _specialties(f"{headline} {text}")
+    # Per-capability claims: the actual sentences the site uses to assert a tracked
+    # capability (ICU / Maternity / Emergency / Oncology / Trauma / NICU), saved
+    # verbatim as evidence. Headline fields are joined with a period so a claim in
+    # the <title>/meta reads as its own sentence rather than merging with the body.
+    capability_claims = _capability_claims(f"{headline}. {text}" if headline else text)
 
     return {
         "source_url": source_url,
         "title": title,
-        "heading": _clean(h1.get_text(" ")) if h1 else None,
+        "heading": heading,
         "description": description,
         "emails": emails,
         "phones": phones,
+        "specialties": specialties,
+        "capability_claims": capability_claims,
         "addresses": _addresses(soup),
         "text": text[:MAX_TEXT_CHARS],
         "text_truncated": len(text) > MAX_TEXT_CHARS,
@@ -444,6 +637,8 @@ def scrape_one(
             record.title = cached.get("title")
             record.n_emails = len(cached.get("emails", []))
             record.n_phones = len(cached.get("phones", []))
+            record.n_specialties = len(cached.get("specialties", []))
+            record.n_claims = len(cached.get("capability_claims", []))
         except Exception:  # noqa: BLE001
             pass
         record.fetched_at = _now_iso()
@@ -490,8 +685,11 @@ def scrape_one(
     record.title = extracted.get("title")
     record.n_emails = len(extracted["emails"])
     record.n_phones = len(extracted["phones"])
+    record.n_specialties = len(extracted["specialties"])
+    record.n_claims = len(extracted["capability_claims"])
     logger.success(
-        "Scraped {} ({} emails, {} phones)", target.url, record.n_emails, record.n_phones
+        "Scraped {} ({} emails, {} phones, {} specialities, {} capability claims)",
+        target.url, record.n_emails, record.n_phones, record.n_specialties, record.n_claims,
     )
     return record
 

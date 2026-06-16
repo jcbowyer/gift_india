@@ -4,21 +4,21 @@ data instead of the synthetic ``src.data`` demo set.
 
 Background — there are two ways real VF data reaches Postgres:
 
-* ``src.load_gold_real`` copies the exported gold CSVs straight into ``gold.*``
+* ``src.load_virtue`` copies the exported gold CSVs straight into ``gold.*``
   (fast path; bypasses bronze + dbt). Good for serving, but the bronze -> silver
   -> gold medallion (and anything that joins against ``silver_facilities``, e.g.
   the JCI entity-resolution crosswalk) then has only the SYNTHETIC bronze to work
   with — so JCI matches nothing.
-* THIS module lands the same real rows in ``bronze.facilities`` /
+* THIS module lands the same real rows in ``bronze.facilities_virtue`` /
   ``bronze.districts`` (the dbt sources), so ``make dbt`` rebuilds silver + gold
   AND ``gold.facility_jci`` / ``jci_accredited`` from real names.
 
-Source: ``data/gold_real/{facilities,geography}.csv`` (produced by
-``data/export_gold_real.py`` from the Databricks Delta Share). Re-export those
+Source: ``data/virtue/{facilities,geography}.csv`` (produced by
+``data/export_virtue.py`` from the Databricks Delta Share). Re-export those
 first if you need fresher data. Targets local Postgres or Lakebase, same flags as
 ``src.load_db``::
 
-    python data/export_gold_real.py        # (optional) refresh the CSVs from Databricks
+    python data/export_virtue.py        # (optional) refresh the CSVs from Databricks
     python -m src.load_bronze_real         # local
     make dbt                               # build silver/gold + JCI on real data
 """
@@ -33,7 +33,7 @@ from loguru import logger
 from . import db
 from .load_db import DEFAULT_OWNER, _DISTRICT_COLS, _FACILITY_COLS, _ensure_schema, _lakebase_dsn
 
-CSV_DIR = Path(__file__).resolve().parents[2] / "data" / "gold_real"
+CSV_DIR = Path(__file__).resolve().parents[2] / "data" / "virtue"
 
 # Databricks CSV export writes SQL NULL as the literal token `null`.
 _NULL_TOKENS = {"", "null", "none", "nan"}
@@ -79,8 +79,24 @@ def district_rows(csv_dir: Path) -> list[tuple]:
     return rows
 
 
+_ASSESSMENT_COLS = [
+    "facility_id",
+    "capability",
+    "capability_label",
+    "capability_description",
+    "claimed",
+    "trust_signal",
+    "trust_score",
+    "evidence_count",
+    "supporting_count",
+    "contradicting_count",
+    "best_source",
+    "summary",
+]
+
+
 def facility_rows(csv_dir: Path, valid_districts: set[tuple]) -> tuple[list[tuple], int]:
-    """Map ``facilities.csv`` -> ``bronze.facilities`` rows, honoring the FK.
+    """Map ``facilities.csv`` -> ``bronze.facilities_virtue`` rows, honoring the FK.
 
     Facilities whose (district, state) is absent from ``bronze.districts`` or whose
     coordinates are missing are skipped (and counted) so the load respects the
@@ -130,18 +146,70 @@ def _copy(cur, table: str, columns: list[str], rows: list[tuple]) -> None:
             copy.write_row(row)
 
 
-def _load(conn, schema: str, csv_dir: Path) -> tuple[int, int, int]:
+def assessment_rows(csv_dir: Path, valid_facilities: set[str]) -> tuple[list[tuple], int]:
+    """Map ``facility_capability_assessments.csv`` -> bronze virtue assessments.
+
+    Skips any rows whose ``facility_id`` is not present in the loaded facilities
+    so the FK to ``bronze.facilities_virtue`` is respected.
+    """
+    path = csv_dir / "facility_capability_assessments.csv"
+    rows: list[tuple] = []
+    skipped = 0
+    seen: set[tuple[str, str]] = set()
+    with path.open(newline="", encoding="utf-8") as fh:
+        for r in csv.DictReader(fh):
+            fid = _clean(r.get("facility_id"))
+            capability = _clean(r.get("capability"))
+            if not fid or fid not in valid_facilities:
+                skipped += 1
+                continue
+            if not capability:
+                skipped += 1
+                continue
+            key = (fid, capability)
+            if key in seen:
+                skipped += 1
+                continue
+            seen.add(key)
+
+            claimed = (_clean(r.get("claimed")) or "false").lower() in {"true", "t", "1"}
+            rows.append((
+                fid,
+                capability,
+                _clean(r.get("capability_label")),
+                _clean(r.get("capability_description")),
+                claimed,
+                _clean(r.get("trust_signal")),
+                _num(r.get("trust_score"), 0),
+                _num(r.get("evidence_count"), 0),
+                _num(r.get("supporting_count"), 0),
+                _num(r.get("contradicting_count"), 0),
+                _clean(r.get("best_source")),
+                _clean(r.get("summary")),
+            ))
+    return rows, skipped
+
+
+def _load(conn, schema: str, csv_dir: Path) -> tuple[int, int, int, int]:
     districts = district_rows(csv_dir)
-    valid = {(d[0], d[1]) for d in districts}
-    facilities, skipped = facility_rows(csv_dir, valid)
+    valid_districts = {(d[0], d[1]) for d in districts}
+    facilities, facilities_skipped = facility_rows(csv_dir, valid_districts)
+    valid_facilities = {f[0] for f in facilities}
+    assessments, assessments_skipped = assessment_rows(csv_dir, valid_facilities)
     with conn.cursor() as cur:
         cur.execute(
-            f"TRUNCATE {schema}.facilities, {schema}.districts RESTART IDENTITY CASCADE"
+            f"TRUNCATE {schema}.facility_capability_assessments_virtue, {schema}.facilities_virtue, {schema}.districts RESTART IDENTITY CASCADE"
         )
         _copy(cur, f"{schema}.districts", _DISTRICT_COLS, districts)
-        _copy(cur, f"{schema}.facilities", _FACILITY_COLS, facilities)
+        _copy(cur, f"{schema}.facilities_virtue", _FACILITY_COLS, facilities)
+        _copy(cur, f"{schema}.facility_capability_assessments_virtue", _ASSESSMENT_COLS, assessments)
     conn.commit()
-    return len(districts), len(facilities), skipped
+    return (
+        len(districts),
+        len(facilities),
+        len(assessments),
+        facilities_skipped + assessments_skipped,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -158,11 +226,19 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     csv_dir = Path(args.csv_dir)
-    missing = [f for f in ("geography.csv", "facilities.csv") if not (csv_dir / f).exists()]
+    missing = [
+        f
+        for f in (
+            "geography.csv",
+            "facilities.csv",
+            "facility_capability_assessments.csv",
+        )
+        if not (csv_dir / f).exists()
+    ]
     if missing:
         parser.error(
             f"missing CSV(s) in {csv_dir}: {missing}. "
-            "Run `python data/export_gold_real.py` first."
+            "Run `python data/export_virtue.py` first."
         )
 
     if args.target == "lakebase":
@@ -177,12 +253,19 @@ def main(argv: list[str] | None = None) -> int:
     logger.info("Connecting to {}…", where)
     with db.connect(dsn) as conn:
         _ensure_schema(conn)
-        n_districts, n_facilities, skipped = _load(conn, args.schema, csv_dir)
+        n_districts, n_facilities, n_assessments, skipped = _load(
+            conn, args.schema, csv_dir
+        )
 
     logger.success(
-        "Landed {} districts and {} REAL facilities into {}.* on {} "
-        "({} facility row(s) skipped: missing coords / unknown district).",
-        n_districts, n_facilities, args.schema, where, skipped,
+        "Landed {} districts, {} REAL facilities, and {} capability assessments "
+        "into {}.* on {} ({} row(s) skipped: missing coords / unknown district / unknown facility_id).",
+        n_districts,
+        n_facilities,
+        n_assessments,
+        args.schema,
+        where,
+        skipped,
     )
     return 0
 

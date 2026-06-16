@@ -116,7 +116,7 @@ export function ReviewsPage() {
                 </span>
                 <EmptyTitle>No reviews yet</EmptyTitle>
                 <EmptyDescription>
-                  Open a facility on the Trust Desk, expand a capability, and “Override assessment”.
+                  Open a facility on the Trust Gauge, expand a capability, and “Override assessment”.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>

@@ -14,6 +14,11 @@
 -- (entity-resolved JCI-accredited orgs) at match confidence >= 0.70, with the
 -- resolved org name + provenance (`jci_source`, `jci_data_source` = 'jci')
 -- carried through so the accreditation is traceable to its source.
+--
+-- `nabh_accredited` is flagged the same way from the gold.facility_nabh crosswalk
+-- (the full NABH national register), with the resolved org name, accreditation
+-- status/programme, and provenance carried through. The two flags are independent:
+-- a facility may be NABH-accredited, JCI-accredited, both, or neither.
 
 with facilities as (
     select * from {{ ref('silver_facilities') }}
@@ -38,6 +43,20 @@ jci as (
         jci_source,
         data_source as jci_data_source
     from {{ ref('facility_jci') }}
+    where match_confidence >= 0.70
+),
+
+nabh as (
+    select
+        facility_id,
+        nabh_organization_name,
+        accreditation_status,
+        accreditation_program,
+        match_method,
+        match_confidence,
+        nabh_source,
+        data_source as nabh_data_source
+    from {{ ref('facility_nabh') }}
     where match_confidence >= 0.70
 )
 
@@ -68,10 +87,20 @@ select
     cast(j.match_method as text)                           as jci_match_method,
     cast(j.match_confidence as numeric)                    as jci_match_confidence,
     cast(j.jci_source as text)                             as jci_source,
-    cast(j.jci_data_source as text)                        as jci_data_source
+    cast(j.jci_data_source as text)                        as jci_data_source,
+    cast(nb.facility_id is not null as boolean)            as nabh_accredited,
+    cast(nb.nabh_organization_name as text)                as nabh_organization_name,
+    cast(nb.accreditation_status as text)                  as nabh_accreditation_status,
+    cast(nb.accreditation_program as text)                 as nabh_accreditation_program,
+    cast(nb.match_method as text)                          as nabh_match_method,
+    cast(nb.match_confidence as numeric)                   as nabh_match_confidence,
+    cast(nb.nabh_source as text)                           as nabh_source,
+    cast(nb.nabh_data_source as text)                      as nabh_data_source
 from facilities f
 left join geography g
     on lower(f.district) = lower(g.district)
    and lower(f.state) = lower(g.state)
 left join jci j
     on f.facility_id = j.facility_id
+left join nabh nb
+    on f.facility_id = nb.facility_id

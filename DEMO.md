@@ -14,7 +14,7 @@ walk you through every beat below, auto-navigating each screen and pacing you ag
 
 ## ⏱️ 0:00 – 0:30 · Problem (30s)
 
-**Screen:** Trust Desk landing (`/`).
+**Screen:** Trust Gauge landing (`/`).
 
 > *“NGO planners trying to save lives shouldn't have to fight ten thousand rows of messy,
 > web-scraped hospital data. Here's the question that stops them cold:*
@@ -129,7 +129,7 @@ allocation decisions.”*
 
 ## ⏱️ 4:30 – 5:00 · Close (30s)
 
-**Screen:** Back to Trust Desk (`/`).
+**Screen:** Back to Trust Gauge (`/`).
 
 > *“NGO planners drown in messy scraped data. We give them a ranked, cited, overridable answer
 > to one question that saves lives: **is this real?***

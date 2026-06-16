@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start Governance, Integrity, & Facility Trust (GIFT) Desk locally — the AppKit web app (React + Express) on live
+# Start Governance, Integrity, & Facility Trust (GIFT) Gauge locally — the AppKit web app (React + Express) on live
 # Lakebase Postgres. Usage:  ./startup.sh
 set -euo pipefail
 
@@ -13,7 +13,7 @@ HOST="https://dbc-0951416d-6d0e.cloud.databricks.com"
 export DATABRICKS_CONFIG_PROFILE="$PROFILE"
 export DATABRICKS_HOST="$HOST"
 
-echo "▶ Governance, Integrity, & Facility Trust (GIFT) Desk — local startup"
+echo "▶ Governance, Integrity, & Facility Trust (GIFT) Gauge — local startup"
 
 # 1. The web app reads live Lakebase via this Databricks CLI profile.
 if ! command -v databricks >/dev/null 2>&1; then

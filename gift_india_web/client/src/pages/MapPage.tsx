@@ -26,16 +26,12 @@ import {
 } from '@databricks/appkit-ui/react';
 import {
   ChevronRight,
-  ChevronDown,
   SlidersHorizontal,
   ArrowLeft,
   MapPin,
   Building2,
   ExternalLink,
   X,
-  Circle,
-  Hexagon,
-  BarChart3,
 } from 'lucide-react';
 import {
   api,
@@ -52,6 +48,9 @@ import {
   formatNumber,
 } from '../lib/api';
 import { DrilldownMap, type HoverInfo, type MapDisplay } from '../components/DrilldownMap';
+import { MapToolRail, type MapFlyoutId } from '../components/MapToolRail';
+import { MapLegend } from '../components/MapLegend';
+import { MapLoadingOverlay } from '../components/MapLoadingOverlay';
 import { SIGNAL_COLORS, rampFor, builtinValue, normName, placeMatch, type BuiltinMetric } from '../lib/mapPalette';
 import { SignalBadge, TrustScoreDial, EvidenceTally, BestSourceBadge } from '../components/trust';
 
@@ -71,6 +70,10 @@ const DEFAULT_METRIC: CatalogMetric = {
 };
 
 const REGION_FILTERS = ['North', 'Central', 'East', 'West', 'South', 'North-East'] as const;
+
+// Shown for a district drilled straight from its boundary that has no surveyed
+// facilities — so the panel still names the place instead of falling back to state.
+const EMPTY_RATING: RegionRating = { facilities: 0, claiming: 0, avgScore: null, strong: 0, partial: 0, weak: 0 };
 
 function regionSignal(score: number | null): TrustSignal {
   if (score === null) return 'no_claim';
@@ -228,7 +231,6 @@ export function MapPage() {
   const [groups, setGroups] = useState<CatalogGroup[]>([]);
   const [activeMetric, setActiveMetric] = useState<CatalogMetric>(DEFAULT_METRIC);
   const [metricValues, setMetricValues] = useState<MetricValues | null>(null);
-  const [openCats, setOpenCats] = useState<Set<string>>(new Set(['Trust & Capacity']));
 
   // filters
   const [regionFilter, setRegionFilter] = useState<string>('all');
@@ -241,6 +243,8 @@ export function MapPage() {
   // map display controls
   const [display, setDisplay] = useState<MapDisplay>('shade');
   const [logScale, setLogScale] = useState(false);
+  const [mapFlyout, setMapFlyout] = useState<MapFlyoutId | null>(null);
+  const [showPins, setShowPins] = useState(true);
 
   // drilldown selection
   const [selectedState, setSelectedState] = useState<string | null>(null);
@@ -248,6 +252,16 @@ export function MapPage() {
   const [selectedFacility, setSelectedFacility] = useState<FacilityRanking | null>(null);
   const [hover, setHover] = useState<HoverInfo | null>(null);
   const [hoveredFacilityId, setHoveredFacilityId] = useState<string | null>(null);
+  const [mapReady, setMapReady] = useState(false);
+
+  const topoLoading = !topology && !topoError;
+  const geoLoading = topology !== null && geo === null;
+  const mapPreparing = topology !== null && geo !== null && !mapReady;
+  const loadingMessage = topoLoading
+    ? 'Loading map geography…'
+    : geoLoading
+      ? 'Loading ratings…'
+      : 'Rendering map…';
 
   // Deep-link drilldown: /navigator?state=…&district=… (e.g. from the landing
   // page's "analysed in depth" list). Captured once at mount — the query carries
@@ -266,15 +280,29 @@ export function MapPage() {
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
       .then((t: Topology) => setTopology(t))
       .catch(() => setTopoError('Could not load the India map topology.'));
-    // World-countries context backdrop (India-corrected boundaries) — optional;
-    // the map degrades gracefully to no backdrop if it fails to load.
-    fetch('/world-context-topo.json')
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
-      .then((t: Topology) => setWorldTopology(t))
-      .catch(() => undefined);
     api.capabilities().then(setCapabilities).catch(() => undefined);
     api.metricCatalog().then((c) => setGroups(c.groups)).catch(() => setGroups([]));
   }, []);
+
+  // World backdrop is optional — defer so the India map can paint first.
+  useEffect(() => {
+    if (!topology) return;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      fetch('/world-context-topo.json')
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
+        .then((t: Topology) => !cancelled && setWorldTopology(t))
+        .catch(() => undefined);
+    }, 1200);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [topology]);
+
+  useEffect(() => {
+    setMapReady(false);
+  }, [topology, geo, capability, regionFilter, selectedState, selectedDistrict]);
 
   useEffect(() => {
     let cancelled = false;
@@ -451,24 +479,23 @@ export function MapPage() {
   const readout = useMemo(() => {
     const hoverRating = hover && (hover.kind === 'state' || hover.kind === 'district') ? hover.rating ?? null : null;
 
-    if ((hover?.kind === 'district' && hoverRating) || level === 'district') {
-      const dr = (hoverRating as DistrictRating) ?? selDistrictRating;
-      if (dr) {
-        const v = valueOfDistrict(dr);
-        return { name: dr.district, scope: `District · ${dr.state}`, value: v };
-      }
+    if (hover?.kind === 'district' || level === 'district') {
+      const dr = (hoverRating as DistrictRating) ?? (hover?.kind === 'district' ? null : selDistrictRating);
+      if (dr) return { name: dr.district, scope: `District · ${dr.state}`, value: valueOfDistrict(dr) };
+      // Data-less district (drilled straight from its boundary): name it, no value.
+      const name = hover?.kind === 'district' ? hover.name : selectedDistrict;
+      if (name) return { name, scope: selectedState ? `District · ${selectedState}` : 'District', value: null };
     }
-    if ((hover?.kind === 'state' && hoverRating) || level === 'state') {
-      const sr = (hoverRating as StateRating) ?? selStateRating;
-      if (sr) {
-        const v = valueOfState(sr);
-        return { name: sr.state, scope: 'State', value: v };
-      }
+    if (hover?.kind === 'state' || level === 'state') {
+      const sr = (hoverRating as StateRating) ?? (hover?.kind === 'state' ? null : selStateRating);
+      if (sr) return { name: sr.state, scope: 'State', value: valueOfState(sr) };
+      const name = hover?.kind === 'state' ? hover.name : selectedState;
+      if (name) return { name, scope: 'State', value: null };
     }
     // nation
     const v = activeMetric.source === 'builtin' ? builtinValue(national, activeMetric.key as BuiltinMetric) : store?.national ?? null;
     return { name: 'India', scope: regionFilter === 'all' ? 'All states' : `${regionFilter} region`, value: v };
-  }, [hover, level, selDistrictRating, selStateRating, valueOfState, valueOfDistrict, activeMetric, national, store, regionFilter]);
+  }, [hover, level, selectedState, selectedDistrict, selDistrictRating, selStateRating, valueOfState, valueOfDistrict, activeMetric, national, store, regionFilter]);
 
   const drillTo = {
     state: (s: string | null) => { setSelectedState(s); setSelectedDistrict(null); setSelectedFacility(null); },
@@ -481,14 +508,6 @@ export function MapPage() {
     else if (selectedDistrict) drillTo.state(selectedState);
     else drillTo.nation();
   };
-  const toggleCat = (c: string) =>
-    setOpenCats((prev) => {
-      const next = new Set(prev);
-      if (next.has(c)) next.delete(c);
-      else next.add(c);
-      return next;
-    });
-
   const activeCap = capabilities.find((c) => c.key === capability);
 
   return (
@@ -565,85 +584,11 @@ export function MapPage() {
         </Alert>
       )}
 
-      {/* LEFT metrics catalog · CENTER map · RIGHT readout */}
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[250px_1fr_330px]">
-        {/* metrics catalog */}
-        <aside className="flex min-h-0 flex-col rounded-xl border bg-card">
-          <div className="flex items-center gap-2 border-b px-3 py-2.5">
-            <BarChart3 className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">Metrics</span>
-          </div>
-          <ScrollArea className="min-h-0 flex-1">
-            <div className="p-2">
-              {groups.length === 0 ? (
-                <div className="space-y-1 p-1">
-                  {Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className="h-7 w-full rounded" />)}
-                </div>
-              ) : (
-                groups.map((g) => {
-                  const open = openCats.has(g.category);
-                  return (
-                    <div key={g.category} className="mb-1">
-                      <button
-                        type="button"
-                        onClick={() => toggleCat(g.category)}
-                        className="flex w-full items-center gap-1 rounded-md px-2 py-1.5 text-left text-[11px] font-semibold uppercase tracking-wide text-muted-foreground hover:bg-muted/50"
-                      >
-                        {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                        <span className="flex-1">{g.category}</span>
-                        <span className="text-[10px] font-normal text-muted-foreground/70">{g.metrics.length}</span>
-                      </button>
-                      {open && (
-                        <div className="mt-0.5 space-y-0.5">
-                          {g.metrics.map((m) => {
-                            const isActive = activeMetric.source === m.source && activeMetric.key === m.key;
-                            return (
-                              <button
-                                key={`${m.source}-${m.key}`}
-                                type="button"
-                                onClick={() => setActiveMetric(m)}
-                                className={`block w-full rounded-md px-2 py-1.5 pl-7 text-left text-[13px] transition-colors ${
-                                  isActive ? 'bg-primary/10 font-medium text-foreground' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                                }`}
-                              >
-                                {m.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </ScrollArea>
-        </aside>
-
+      {/* map · right readout */}
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1fr_330px]">
         {/* map + controls */}
         <div className="flex min-h-0 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border bg-card px-3 py-2">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Display</span>
-              <ToggleGroup type="single" value={display} onValueChange={(v) => v && setDisplay(v as MapDisplay)} variant="outline" size="sm">
-                <ToggleGroupItem value="shade" className="gap-1 text-xs"><Hexagon className="h-3.5 w-3.5" /> Shade</ToggleGroupItem>
-                <ToggleGroupItem value="bubble" className="gap-1 text-xs"><Circle className="h-3.5 w-3.5" /> Bubble</ToggleGroupItem>
-              </ToggleGroup>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Scale</span>
-              <ToggleGroup
-                type="single"
-                value={effectiveLog ? 'log' : 'linear'}
-                onValueChange={(v) => v && setLogScale(v === 'log')}
-                variant="outline"
-                size="sm"
-                disabled={logDisabled}
-              >
-                <ToggleGroupItem value="linear" className="text-xs">Linear</ToggleGroupItem>
-                <ToggleGroupItem value="log" className="text-xs">Log</ToggleGroupItem>
-              </ToggleGroup>
-            </div>
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="ml-auto gap-1.5">
@@ -792,6 +737,7 @@ export function MapPage() {
                 hoveredFacilityId={hoveredFacilityId}
                 selectedFacilityId={selectedFacility?.facilityId ?? null}
                 display={display}
+                showPins={showPins}
                 logScale={effectiveLog}
                 ramp={ramp}
                 isRate={isRate}
@@ -801,41 +747,41 @@ export function MapPage() {
                 onSelectDistrict={drillTo.district}
                 onSelectFacility={setSelectedFacility}
                 onHover={setHover}
+                onReady={() => setMapReady(true)}
               />
             ) : (
               !topoError && <Skeleton className="h-full w-full rounded-xl" />
             )}
-            {/* legend */}
-            <div className="pointer-events-none absolute left-2 top-2 space-y-1 rounded-lg bg-white/85 px-2.5 py-2 text-[10px] shadow-sm">
-              <div className="font-semibold text-slate-600">
-                {level === 'district' ? 'Facility trust' : `${activeMetric.label}${effectiveLog ? ' · log' : ''}`}
-              </div>
-              {level === 'district' ? (
-                <div className="flex flex-col gap-0.5">
-                  {(['strong', 'partial', 'weak_suspicious'] as TrustSignal[]).map((s) => (
-                    <span key={s} className="flex items-center gap-1.5 text-slate-600">
-                      <span className="inline-block h-2 w-2 rounded-full" style={{ background: SIGNAL_COLORS[s] }} />
-                      {s === 'weak_suspicious' ? 'suspicious' : s}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  <span className="min-w-[1.5rem] text-right tabular-nums font-medium text-slate-600">
-                    {legendDomain ? formatMetric(legendDomain[0], activeMetric.unit) : 'low'}
-                  </span>
-                  <span className="h-2 w-20 rounded-full" style={{ background: `linear-gradient(to right, ${ramp.join(', ')})` }} />
-                  <span className="min-w-[1.5rem] tabular-nums font-medium text-slate-600">
-                    {legendDomain ? formatMetric(legendDomain[1], activeMetric.unit) : 'high'}
-                  </span>
-                </div>
-              )}
-              {level !== 'district' && (
-                <div className="text-slate-400">
-                  {display === 'bubble' ? 'size = facility count' : 'colour by region'}
-                  {activeMetric.unit !== 'score' && activeMetric.unit !== 'count' && ` · ${activeMetric.unit}`}
-                </div>
-              )}
+            {(topoLoading || geoLoading || mapPreparing) && !topoError && (
+              <MapLoadingOverlay message={loadingMessage} />
+            )}
+            <MapToolRail
+              flyout={mapFlyout}
+              onFlyoutChange={setMapFlyout}
+              showPins={showPins}
+              onShowPinsChange={setShowPins}
+              canHome={!!(selectedState || selectedDistrict)}
+              onHome={drillTo.nation}
+              display={display}
+              onDisplayChange={setDisplay}
+              logScale={effectiveLog}
+              logDisabled={logDisabled}
+              onLogScaleChange={setLogScale}
+              groups={groups}
+              activeMetric={activeMetric}
+              onMetricChange={setActiveMetric}
+            />
+
+            {/* legend (kept separate so it always fits) */}
+            <div className="pointer-events-none absolute bottom-3 left-3 z-10">
+              <MapLegend
+                level={level}
+                activeMetric={activeMetric}
+                effectiveLog={effectiveLog}
+                display={display}
+                ramp={ramp}
+                domain={legendDomain}
+              />
             </div>
           </div>
         </div>
@@ -850,8 +796,16 @@ export function MapPage() {
                 <FacilityCard f={selectedFacility} onClose={() => setSelectedFacility(null)} />
               ) : hover?.kind === 'facility' && hover.facility ? (
                 <FacilityCard f={hover.facility} onClose={() => setHover(null)} />
-              ) : level === 'district' && selDistrictRating ? (
-                <RegionCard title={selectedDistrict!} sub={`District · ${selectedState}`} rating={selDistrictRating} />
+              ) : hover?.kind === 'district' && hover.rating ? (
+                <RegionCard
+                  title={hover.name}
+                  sub={`District · ${(hover.rating as DistrictRating).state}`}
+                  rating={hover.rating}
+                />
+              ) : hover?.kind === 'state' && hover.rating ? (
+                <RegionCard title={hover.name} sub="State" rating={hover.rating} />
+              ) : level === 'district' ? (
+                <RegionCard title={selectedDistrict!} sub={`District · ${selectedState}`} rating={selDistrictRating ?? EMPTY_RATING} />
               ) : level === 'state' && selStateRating ? (
                 <RegionCard title={selectedState!} sub="State" rating={selStateRating} />
               ) : (

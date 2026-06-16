@@ -1,4 +1,4 @@
-# Governance, Integrity, & Facility Trust (GIFT) Desk
+# Governance, Integrity, & Facility Trust (GIFT) Gauge
 
 > A Virtue Foundation hackathon project (**Track 1**) that
 > answers one question: **can this facility actually do what it claims?**
@@ -9,7 +9,7 @@ maternity, emergency, oncology, trauma, NICU — is not the same as that capabil
 being **real**. The hard problem: **separate trustworthy capability claims from
 unverified or contradicted ones**, with the evidence attached.
 
-The Governance, Integrity, & Facility Trust (GIFT) Desk does exactly that. A planner picks a
+The Governance, Integrity, & Facility Trust (GIFT) Gauge does exactly that. A planner picks a
 **capability** and a **region**, and sees facilities ranked by how strongly their
 claim is backed by evidence. Every facility carries a **trust signal** —
 `strong`, `partial`, `weak / suspicious`, or `no claim` — *computed from the
@@ -18,32 +18,10 @@ empanelment, the facility's own website, directories, news, patient reports,
 inspections). The planner can expand any facility to read those citations and **override the
 assessment with a reviewer note**.
 
-## Evidence focus — JCI as the global gold standard
-
-This repo focuses on **one authoritative accreditation signal** as the backbone of
-the trust taxonomy:
-
-### 1. The global "Gold Standard": JCI accreditation
-
-The [Joint Commission International (JCI)](https://www.jointcommissioninternational.org/)
-provides the most widely recognized international scoring system for hospital
-capabilities.
-
-- **Taxonomy use:** A facility holding the **Gold Seal of Approval** maps directly to
-  the **`strong` evidence** signal for specific audited services — trauma, emergency
-  care, ICU, and other capabilities covered by the accreditation scope.
-- **Structure:** JCI's **8th Edition** standards are divided into five main sections,
-  including **Patient-Centered Care** and **Healthcare Organization Management** —
-  giving a structured, auditable basis for capability claims rather than self-reported
-  website copy alone.
-
-Other citations (state registries, PMJAY empanelment, facility websites, directories,
-news, patient reports, inspections) still feed the trust engine; **JCI accreditation
-is the primary authoritative corroboration** we optimize the desk around.
 
 ## What G.I.F.T. stands for
 
-**Governance, Integrity, & Facility Trust** — the **Desk** is the planner-facing
+**Governance, Integrity, & Facility Trust** — the **Gauge** is the planner-facing
 surface that ranks facility capability claims by evidence.
 
 **Why it works:** The name states the mission plainly and maps cleanly to the
@@ -52,7 +30,7 @@ Virtue Foundation hackathon brief.
 **How to pitch it:**
 
 > "NGO planners shouldn't have to fight 10,000 messy rows of web-scraped data to
-> save lives. We built the Governance, Integrity, & Facility Trust (GIFT) Desk — a
+> save lives. We built the Governance, Integrity, & Facility Trust (GIFT) Gauge — a
 > Databricks app that separates trustworthy capability claims from unverified ones,
 > with the citations attached."
 
@@ -69,14 +47,14 @@ app at http://localhost:8000 (live Lakebase data). For manual steps see
 
 ## The four hackathon tracks — we built Track 1
 
-This repo focuses on **Track 1 — the Governance, Integrity, & Facility Trust (GIFT) Desk**.
+This repo focuses on **Track 1 — the Governance, Integrity, & Facility Trust (GIFT) Gauge**.
 
 | Track | Question | Status here |
 |-------|----------|-------------|
-| **1 · Governance, Integrity, & Facility Trust (GIFT) Desk** | Can this facility actually do what it claims? | ✅ **Built (this repo)** |
+| **1 · Governance, Integrity, & Facility Trust (GIFT) Gauge** | Can this facility actually do what it claims? | ✅ **Built (this repo)** |
 | 2 · Medical Desert Planner | Where are the highest-risk gaps in care? | — not built |
 | 3 · Referral Copilot | Where should a patient or coordinator actually go? | — not built |
-| 4 · Data Readiness Desk | What needs fixing before this dataset is trusted? | — not built |
+| 4 · Data Readiness Gauge | What needs fixing before this dataset is trusted? | — not built |
 
 **Track 1 minimum workflow — implemented end to end:** a planner selects a
 **capability** and **region** → sees **ranked facilities** (by evidence strength)
@@ -101,7 +79,7 @@ resolution).
 ## Levels of the Indian government
 
 India is a federal union, and its administrative geography nests as a hierarchy.
-The Trust Desk's region picker and `gold.geography` table key on **states** and
+The Trust Gauge's region picker and `gold.geography` table key on **states** and
 **districts** — the two levels NGO planners actually allocate against — but the
 full hierarchy is below for context:
 
@@ -360,7 +338,7 @@ service principal must be a member of the `admins` group to read the catalog.
    signal** and score from on-record evidence; low entity-match confidence flags
    weak/suspicious claims.
 3. **Web app** (`gift_india_web`) — reads **`gold.*` only** (plus
-   `app.capability_overrides` for human reviews). The Trust Desk ranks facilities,
+   `app.capability_overrides` for human reviews). The Trust Gauge ranks facilities,
    expands to show citations, and saves planner overrides.
 
 ## Two dbt projects (different warehouses, not duplicates)
@@ -391,11 +369,11 @@ make pipeline        # both of the above
 ```
 gift_india/
 ├── gift_india_web/         # Databricks AppKit app (React client + Express server)
-│   ├── client/             # React frontend (Trust Desk, Facility detail, My Reviews)
+│   ├── client/             # React frontend (Trust Gauge, Facility detail, My Reviews)
 │   ├── server/
 │   │   ├── server.ts       # Express entry (AppKit + Lakebase plugins)
 │   │   └── routes/gift_india/
-│   │       ├── routes.ts       # /api/* Trust Desk routes (reads gold.* only)
+│   │       ├── routes.ts       # /api/* Trust Gauge routes (reads gold.* only)
 │   │       └── capabilities.ts # capability catalog constants (matches dbt seed)
 │   ├── databricks.yml      # bundle: deploys the app + Lakebase resource
 │   ├── app.yaml            # Databricks App run command (npm run start)
@@ -426,3 +404,25 @@ gift_india/
 ├── docs/architecture/      # medallion + metric-store design
 └── data/                   # generated CSVs (gitignored)
 ```
+## Evidence focus — JCI as the global gold standard
+
+This repo focuses on **one authoritative accreditation signal** as the backbone of
+the trust taxonomy:
+
+### The global "Gold Standard": JCI accreditation
+
+The [Joint Commission International (JCI)](https://www.jointcommissioninternational.org/)
+provides the most widely recognized international scoring system for hospital
+capabilities.
+
+- **Taxonomy use:** A facility holding the **Gold Seal of Approval** maps directly to
+  the **`strong` evidence** signal for specific audited services — trauma, emergency
+  care, ICU, and other capabilities covered by the accreditation scope.
+- **Structure:** JCI's **8th Edition** standards are divided into five main sections,
+  including **Patient-Centered Care** and **Healthcare Organization Management** —
+  giving a structured, auditable basis for capability claims rather than self-reported
+  website copy alone.
+
+Other citations (state registries, PMJAY empanelment, facility websites, directories,
+news, patient reports, inspections) still feed the trust engine; **JCI accreditation
+is the primary authoritative corroboration** we optimize the desk around.

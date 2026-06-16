@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { Application, Request } from 'express';
 import { CAPABILITIES, type TrustSignal } from './capabilities';
 import { regionOf, statesInRegion, REGION_VALUES, type Region } from './regions';
+import { setupIngestRoutes } from './ingest';
 
 interface LakebaseQuery {
   query(text: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>;
@@ -17,6 +18,22 @@ interface AppKitWithLakebase {
 const SIGNALS: TrustSignal[] = ['strong', 'partial', 'weak_suspicious', 'no_claim'];
 const CAP_KEYS = CAPABILITIES.map((c) => c.key);
 
+function tierToSignal(tier: string | null | undefined): TrustSignal {
+  switch (tier) {
+    case 'Strong':
+      return 'strong';
+    case 'Moderate':
+      return 'partial';
+    case 'Weak':
+      return 'weak_suspicious';
+    case 'Insufficient':
+    case null:
+    case undefined:
+    default:
+      return 'no_claim';
+  }
+}
+
 // Synthetic "All" capability: aggregates every capability into one per-facility
 // view. Selectable in the navigator alongside the real capabilities, but never a
 // valid override target (overrides are always per real capability).
@@ -24,26 +41,29 @@ const ALL_CAPABILITY = 'all';
 const CAP_KEYS_WITH_ALL = [ALL_CAPABILITY, ...CAP_KEYS];
 
 // Collapse a facility's per-capability assessments into one row: claimed if it
-// claims any capability, score = mean across claimed capabilities, signal binned
-// from that mean on the same 0.45 / 0.7 thresholds the UI uses elsewhere, and
-// evidence tallied across all capabilities. Drives the "All" capability view.
+// claims any capability, score = mean evidence_strength_score (fallback trust_score),
+// signal binned from that mean, evidence tallied across capabilities.
 const FACILITY_CAP_ROLLUP = `
-  SELECT facility_id,
-         bool_or(claimed)                                            AS claimed,
-         AVG(trust_score) FILTER (WHERE claimed)                     AS trust_score,
-         COALESCE(SUM(evidence_count), 0)::int                       AS evidence_count,
-         COALESCE(SUM(supporting_count), 0)::int                     AS supporting_count,
-         COALESCE(SUM(contradicting_count), 0)::int                  AS contradicting_count,
-         (array_agg(best_source ORDER BY trust_score DESC NULLS LAST))[1] AS best_source,
-         (array_agg(summary ORDER BY trust_score DESC NULLS LAST))[1]     AS summary,
+  SELECT a.facility_id,
+         bool_or(a.claimed)                                            AS claimed,
+         AVG(COALESCE(s.evidence_strength_score, a.trust_score))
+             FILTER (WHERE a.claimed)                                  AS trust_score,
+         COALESCE(SUM(a.evidence_count), 0)::int                         AS evidence_count,
+         COALESCE(SUM(a.supporting_count), 0)::int                     AS supporting_count,
+         COALESCE(SUM(a.contradicting_count), 0)::int                  AS contradicting_count,
+         (array_agg(a.best_source ORDER BY COALESCE(s.evidence_strength_score, a.trust_score) DESC NULLS LAST))[1] AS best_source,
+         (array_agg(a.summary ORDER BY COALESCE(s.evidence_strength_score, a.trust_score) DESC NULLS LAST))[1]     AS summary,
          CASE
-           WHEN NOT bool_or(claimed)                            THEN 'no_claim'
-           WHEN AVG(trust_score) FILTER (WHERE claimed) >= 0.7  THEN 'strong'
-           WHEN AVG(trust_score) FILTER (WHERE claimed) >= 0.45 THEN 'partial'
+           WHEN NOT bool_or(a.claimed) THEN 'no_claim'
+           WHEN AVG(COALESCE(s.evidence_strength_score, a.trust_score)) FILTER (WHERE a.claimed) >= 0.85 THEN 'strong'
+           WHEN AVG(COALESCE(s.evidence_strength_score, a.trust_score)) FILTER (WHERE a.claimed) >= 0.65 THEN 'partial'
+           WHEN AVG(COALESCE(s.evidence_strength_score, a.trust_score)) FILTER (WHERE a.claimed) >= 0.45 THEN 'weak_suspicious'
            ELSE 'weak_suspicious'
-         END                                                         AS trust_signal
-  FROM gold.facility_capability_assessments
-  GROUP BY facility_id`;
+         END                                                           AS trust_signal
+  FROM gold.facility_capability_assessments a
+  LEFT JOIN gold.capability_scored s
+    ON s.facility_id = a.facility_id AND s.capability = a.capability
+  GROUP BY a.facility_id`;
 
 // Planner overrides only — all facility/capability/evidence data is served from
 // gold.* (built by gift_india_dbt: `make dbt`). Never seed synthetic rows here.
@@ -288,6 +308,8 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
     console.warn('[trust-desk] gold serving check failed:', (err as Error).message);
   }
 
+  await setupIngestRoutes(appkit);
+
   appkit.server.extend((app) => {
     app.get('/api/whoami', (req, res) => {
       res.json({ email: currentUser(req) });
@@ -455,7 +477,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             params,
           ),
         ]);
-        const region = (r: Record<string, unknown>) => ({
+        const toRating = (r: Record<string, unknown>) => ({
           facilities: Number(r.facilities ?? 0),
           claiming: Number(r.claiming ?? 0),
           avgScore: r.avg_score === null || r.avg_score === undefined ? null : Number(r.avg_score),
@@ -466,7 +488,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
         res.json({
           capability,
           region,
-          states: states.map((r) => ({ state: txt(r.state), stateCode: txt(r.state_code), ...region(r) })),
+          states: states.map((r) => ({ state: txt(r.state), stateCode: txt(r.state_code), ...toRating(r) })),
           districts: districts.map((r) => ({
             state: txt(r.state),
             district: txt(r.district),
@@ -474,7 +496,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             lat: r.lat === null ? null : Number(r.lat),
             lon: r.lon === null ? null : Number(r.lon),
             population: r.population === null ? null : Number(r.population),
-            ...region(r),
+            ...toRating(r),
           })),
         });
       } catch (err) {
@@ -698,30 +720,67 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
                  AND (a.trust_signal = $4 OR ($4::text IS NULL AND a.trust_signal <> 'no_claim'))
                  AND ($5::text IS NULL OR f.name ILIKE '%' || $5 || '%')
                ORDER BY a.trust_score DESC NULLS LAST, a.evidence_count DESC, f.name
-               LIMIT $6`,
+               LIMIT $6::int`,
               [state ?? null, regionStates, district ?? null, signal ?? null, q ?? null, limit],
             )
           : await appkit.lakebase.query(
               `SELECT f.facility_id, f.name, f.type, f.district, f.state, f.state_code, f.beds,
                       f.lat, f.lon, f.website_url, f.match_confidence,
-                      a.claimed, a.trust_signal, a.trust_score, a.evidence_count,
+                      a.claimed,
+                      COALESCE(
+                        CASE s.evidence_tier
+                          WHEN 'Strong' THEN 'strong'
+                          WHEN 'Moderate' THEN 'partial'
+                          WHEN 'Weak' THEN 'weak_suspicious'
+                          WHEN 'Insufficient' THEN 'no_claim'
+                        END,
+                        a.trust_signal
+                      ) AS trust_signal,
+                      COALESCE(s.evidence_strength_score, a.trust_score) AS trust_score,
+                      s.evidence_tier,
+                      a.evidence_count,
                       a.supporting_count, a.contradicting_count, a.best_source, a.summary,
                       ov.override_signal, ov.note AS override_note
                FROM gold.facility_capability_assessments a
                JOIN gold.facilities f USING (facility_id)
+               LEFT JOIN gold.capability_scored s
+                 ON s.facility_id = a.facility_id AND s.capability = a.capability
                LEFT JOIN LATERAL (
                  SELECT override_signal, note FROM app.capability_overrides o
-                 WHERE o.facility_id = f.facility_id AND o.capability = a.capability AND o.created_by = $7
+                 WHERE o.facility_id = f.facility_id AND o.capability = a.capability AND o.created_by = $8
                  ORDER BY o.created_at DESC LIMIT 1
                ) ov ON TRUE
                WHERE a.capability = $1
                  AND ($2::text IS NULL OR f.state = $2)
                  AND ($3::text[] IS NULL OR f.state = ANY($3))
                  AND ($4::text IS NULL OR f.district = $4)
-                 AND (a.trust_signal = $5 OR ($5::text IS NULL AND a.trust_signal <> 'no_claim'))
+                 AND (
+                   COALESCE(
+                     CASE s.evidence_tier
+                       WHEN 'Strong' THEN 'strong'
+                       WHEN 'Moderate' THEN 'partial'
+                       WHEN 'Weak' THEN 'weak_suspicious'
+                       WHEN 'Insufficient' THEN 'no_claim'
+                     END,
+                     a.trust_signal
+                   ) = $5
+                   OR (
+                     $5::text IS NULL
+                     AND COALESCE(
+                       CASE s.evidence_tier
+                         WHEN 'Strong' THEN 'strong'
+                         WHEN 'Moderate' THEN 'partial'
+                         WHEN 'Weak' THEN 'weak_suspicious'
+                         WHEN 'Insufficient' THEN 'no_claim'
+                       END,
+                       a.trust_signal
+                     ) <> 'no_claim'
+                   )
+                 )
                  AND ($6::text IS NULL OR f.name ILIKE '%' || $6 || '%')
-               ORDER BY a.trust_score DESC, a.evidence_count DESC, f.name
-               LIMIT $7`,
+               ORDER BY COALESCE(s.evidence_strength_score, a.trust_score) DESC,
+                        a.evidence_count DESC, f.name
+               LIMIT $7::int`,
               [capability, state ?? null, regionStates, district ?? null, signal ?? null, q ?? null, limit, currentUser(req)],
             );
         const results = rows.map((r, i) => ({
@@ -740,6 +799,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           claimed: Boolean(r.claimed),
           trustSignal: txt(r.trust_signal) as TrustSignal,
           trustScore: Number(r.trust_score),
+          evidenceTier: r.evidence_tier ? txt(r.evidence_tier) : null,
           evidenceCount: Number(r.evidence_count),
           supportingCount: Number(r.supporting_count),
           contradictingCount: Number(r.contradicting_count),
@@ -789,7 +849,8 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
     app.get('/api/facilities/:id', async (req, res) => {
       const id = req.params.id;
       try {
-        const [{ rows: fac }, { rows: caps }, { rows: ev }, { rows: ovr }] = await Promise.all([
+        const [{ rows: fac }, { rows: caps }, { rows: ev }, { rows: ovr }, { rows: scored }, { rows: narrJson }, { rows: narrMd }] =
+          await Promise.all([
           appkit.lakebase.query('SELECT * FROM gold.facilities WHERE facility_id = $1', [id]),
           appkit.lakebase.query('SELECT * FROM gold.facility_capability_assessments WHERE facility_id = $1', [id]),
           appkit.lakebase.query(
@@ -802,6 +863,18 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
              ORDER BY capability, created_at DESC`,
             [id, currentUser(req)],
           ),
+          appkit.lakebase.query(
+            'SELECT capability, evidence_strength_score, evidence_tier FROM gold.capability_scored WHERE facility_id = $1',
+            [id],
+          ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
+          appkit.lakebase.query(
+            'SELECT capability, assessment_json FROM gold.capability_evidence_json WHERE facility_id = $1',
+            [id],
+          ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
+          appkit.lakebase.query(
+            'SELECT capability, assessment_md FROM gold.capability_evidence_md WHERE facility_id = $1',
+            [id],
+          ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
         ]);
         if (fac.length === 0) {
           res.status(404).json({ error: 'Facility not found' });
@@ -809,11 +882,18 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
         }
         const f = fac[0];
         const overrideByCap = new Map(ovr.map((o) => [txt(o.capability), o]));
+        const scoredByCap = new Map(scored.map((s) => [txt(s.capability), s]));
+        const jsonByCap = new Map(narrJson.map((j) => [txt(j.capability), j]));
+        const mdByCap = new Map(narrMd.map((m) => [txt(m.capability), m]));
         const capByLabel = new Map(CAPABILITIES.map((c) => [c.key, c]));
         const capabilities = CAP_KEYS.map((key) => {
           const c = caps.find((x) => txt(x.capability) === key);
           const meta = capByLabel.get(key)!;
           const o = overrideByCap.get(key);
+          const sc = scoredByCap.get(key);
+          const nj = jsonByCap.get(key);
+          const nm = mdByCap.get(key);
+          const assessmentJson = nj?.assessment_json ?? null;
           const evidence = ev
             .filter((e) => txt(e.capability) === key)
             .map((e) => ({
@@ -831,13 +911,31 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             label: meta.label,
             description: meta.description,
             claimed: c ? Boolean(c.claimed) : false,
-            trustSignal: (c ? txt(c.trust_signal) : 'no_claim') as TrustSignal,
-            trustScore: c ? Number(c.trust_score) : 0,
+            trustScore: sc
+              ? Number(sc.evidence_strength_score)
+              : c
+                ? Number(c.trust_score)
+                : 0,
+            trustSignal: sc
+              ? tierToSignal(txt(sc.evidence_tier))
+              : (c ? (txt(c.trust_signal) as TrustSignal) : 'no_claim'),
+            evidenceTier: sc ? txt(sc.evidence_tier) : null,
             evidenceCount: c ? Number(c.evidence_count) : 0,
             supportingCount: c ? Number(c.supporting_count) : 0,
             contradictingCount: c ? Number(c.contradicting_count) : 0,
             bestSource: c ? txt(c.best_source) : '',
             summary: c ? txt(c.summary) : `No ${meta.label} claim found for this facility.`,
+            assessmentJson:
+              assessmentJson && typeof assessmentJson === 'object'
+                ? (assessmentJson as Record<string, unknown>)
+                : (() => {
+                    try {
+                      return assessmentJson ? JSON.parse(txt(assessmentJson)) : null;
+                    } catch {
+                      return null;
+                    }
+                  })(),
+            assessmentMd: nm?.assessment_md ? txt(nm.assessment_md) : null,
             overrideSignal: o ? (txt(o.override_signal) as TrustSignal) : null,
             overrideNote: o?.note ? txt(o.note) : null,
             evidence,
@@ -943,6 +1041,133 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
       } catch (err) {
         console.error('delete override failed:', err);
         res.status(500).json({ error: 'Failed to delete review' });
+      }
+    });
+
+    // ── data quality (web address coverage) ────────────────────────────────────────────────────
+    const DataQualityStateQuery = z.object({ state: z.string().optional() });
+
+    app.get('/api/data-quality', async (_req, res) => {
+      try {
+        const crawlSubquery = `
+          SELECT facility_id,
+                 COUNT(*)::int                                        AS crawl_count,
+                 COUNT(*) FILTER (WHERE status = 'ok')::int          AS scrape_ok
+          FROM bronze.facility_web_crawl
+          GROUP BY facility_id`;
+
+        const { rows: sumRows } = await appkit.lakebase.query(`
+          SELECT
+            COUNT(*)::int                                                                    AS total,
+            COUNT(*) FILTER (WHERE f.website_url IS NOT NULL AND f.website_url != '')::int  AS with_url,
+            COUNT(*) FILTER (WHERE f.website_url IS NULL  OR  f.website_url = '')::int      AS missing,
+            COALESCE(SUM(c.crawl_count), 0)::int                                            AS scrape_total,
+            COALESCE(SUM(c.scrape_ok),   0)::int                                            AS scrape_ok
+          FROM gold.facilities f
+          LEFT JOIN (${crawlSubquery}) c ON c.facility_id = f.facility_id
+        `);
+
+        const { rows: stateRows } = await appkit.lakebase.query(`
+          SELECT
+            f.state,
+            f.state_code,
+            COUNT(*)::int                                                                    AS total,
+            COUNT(*) FILTER (WHERE f.website_url IS NOT NULL AND f.website_url != '')::int  AS with_url,
+            COUNT(*) FILTER (WHERE f.website_url IS NULL  OR  f.website_url = '')::int      AS missing,
+            COALESCE(SUM(c.scrape_ok),   0)::int                                            AS scrape_ok,
+            COALESCE(SUM(c.crawl_count), 0)::int                                            AS scrape_total
+          FROM gold.facilities f
+          LEFT JOIN (${crawlSubquery}) c ON c.facility_id = f.facility_id
+          GROUP BY f.state, f.state_code
+          ORDER BY COUNT(*) DESC
+        `);
+
+        const { rows: typeRows } = await appkit.lakebase.query(`
+          SELECT
+            COALESCE(NULLIF(TRIM(f.type), ''), 'Unknown')                                   AS type,
+            COUNT(*)::int                                                                    AS total,
+            COUNT(*) FILTER (WHERE f.website_url IS NOT NULL AND f.website_url != '')::int  AS with_url,
+            COUNT(*) FILTER (WHERE f.website_url IS NULL  OR  f.website_url = '')::int      AS missing
+          FROM gold.facilities f
+          GROUP BY COALESCE(NULLIF(TRIM(f.type), ''), 'Unknown')
+          ORDER BY COUNT(*) DESC
+        `);
+
+        const s = sumRows[0] ?? {};
+        const total       = Number(s.total       ?? 0);
+        const withUrl     = Number(s.with_url    ?? 0);
+        const scrapeTotal = Number(s.scrape_total ?? 0);
+        const scrapeOk    = Number(s.scrape_ok    ?? 0);
+
+        res.json({
+          summary: {
+            total,
+            withUrl,
+            pctWithUrl:  total       > 0 ? Math.round((withUrl   / total)       * 1000) / 10 : 0,
+            missing:     Number(s.missing ?? 0),
+            scrapeTotal,
+            scrapeOk,
+            scrapePct:   scrapeTotal > 0 ? Math.round((scrapeOk  / scrapeTotal) * 1000) / 10 : 0,
+          },
+          byState: stateRows.map((r) => {
+            const t = Number(r.total);
+            const w = Number(r.with_url);
+            return {
+              state:       txt(r.state),
+              stateCode:   txt(r.state_code),
+              total:       t,
+              withUrl:     w,
+              missing:     Number(r.missing),
+              pct:         t > 0 ? Math.round((w / t) * 1000) / 10 : 0,
+              scrapeOk:    Number(r.scrape_ok),
+              scrapeTotal: Number(r.scrape_total),
+            };
+          }),
+          byType: typeRows.map((r) => {
+            const t = Number(r.total);
+            const w = Number(r.with_url);
+            return {
+              type:    txt(r.type),
+              total:   t,
+              withUrl: w,
+              missing: Number(r.missing),
+              pct:     t > 0 ? Math.round((w / t) * 1000) / 10 : 0,
+            };
+          }),
+        });
+      } catch (err) {
+        console.error('data-quality failed:', err);
+        res.status(500).json({ error: 'Failed to load data quality data' });
+      }
+    });
+
+    app.get('/api/data-quality/missing', async (req, res) => {
+      const parsed = DataQualityStateQuery.safeParse(req.query);
+      const state = parsed.success ? (parsed.data.state ?? null) : null;
+      try {
+        const { rows } = await appkit.lakebase.query(
+          `SELECT facility_id, name, type, district, state, state_code, beds
+           FROM gold.facilities
+           WHERE (website_url IS NULL OR website_url = '')
+           ${state ? 'AND state = $1' : ''}
+           ORDER BY state, district, name
+           LIMIT 500`,
+          state ? [state] : [],
+        );
+        res.json(
+          rows.map((r) => ({
+            facilityId: txt(r.facility_id),
+            name:       txt(r.name),
+            type:       txt(r.type),
+            district:   txt(r.district),
+            state:      txt(r.state),
+            stateCode:  txt(r.state_code),
+            beds:       r.beds === null ? null : Number(r.beds),
+          })),
+        );
+      } catch (err) {
+        console.error('data-quality/missing failed:', err);
+        res.status(500).json({ error: 'Failed to load missing facilities' });
       }
     });
   });

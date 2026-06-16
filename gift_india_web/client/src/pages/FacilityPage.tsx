@@ -49,7 +49,7 @@ export function FacilityPage() {
     return (
       <div className="mx-auto max-w-4xl space-y-4">
         <Link to="/" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
-          <ArrowLeft className="h-4 w-4" /> Back to Trust Desk
+          <ArrowLeft className="h-4 w-4" /> Back to Trust Gauge
         </Link>
         <Alert variant="destructive">
           <AlertTitle>Facility not available</AlertTitle>
@@ -75,7 +75,7 @@ export function FacilityPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-5 gift-fade-in">
       <Link to="/" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
-        <ArrowLeft className="h-4 w-4" /> Back to Trust Desk
+        <ArrowLeft className="h-4 w-4" /> Back to Trust Gauge
       </Link>
 
       <Card className="overflow-hidden gift-elevate">
@@ -160,6 +160,7 @@ export function FacilityPage() {
                     <CapabilityEvidence
                       cap={cap}
                       facilityId={f.facilityId}
+                      facilityName={f.name}
                       onSaved={(sig) => setOverrides((prev) => ({ ...prev, [cap.key]: sig }))}
                     />
                   </CardContent>

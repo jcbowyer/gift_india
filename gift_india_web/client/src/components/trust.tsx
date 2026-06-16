@@ -1,11 +1,16 @@
 import { useState, type ComponentType } from 'react';
+import { Link } from 'react-router';
 import {
   Badge,
   Button,
   Textarea,
-  ToggleGroup,
-  ToggleGroupItem,
   Label,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@databricks/appkit-ui/react';
 import {
   CheckCircle2,
@@ -21,6 +26,7 @@ import {
   Link2,
   BadgeCheck,
   Quote,
+  ArrowRight,
 } from 'lucide-react';
 import {
   SIGNAL_META,
@@ -193,35 +199,72 @@ function EvidenceRow({ e }: { e: EvidenceItem }) {
 
 const SIGNAL_OPTIONS: TrustSignal[] = ['strong', 'partial', 'weak_suspicious', 'no_claim'];
 
-/**
- * Citations + human override control for a single (facility, capability).
- * Used both inline in the ranked list and on the facility detail page.
- */
-export function CapabilityEvidence({
+const SIGNAL_PICKER: Record<
+  TrustSignal,
+  { ring: string; selected: string; hover: string }
+> = {
+  strong: {
+    ring: 'ring-emerald-500',
+    selected: 'border-emerald-600 bg-emerald-600 text-white shadow-md shadow-emerald-600/25',
+    hover: 'hover:border-emerald-500 hover:bg-emerald-50',
+  },
+  partial: {
+    ring: 'ring-amber-500',
+    selected: 'border-amber-500 bg-amber-500 text-white shadow-md shadow-amber-500/25',
+    hover: 'hover:border-amber-400 hover:bg-amber-50',
+  },
+  weak_suspicious: {
+    ring: 'ring-red-500',
+    selected: 'border-red-600 bg-red-600 text-white shadow-md shadow-red-600/25',
+    hover: 'hover:border-red-500 hover:bg-red-50',
+  },
+  no_claim: {
+    ring: 'ring-slate-400',
+    selected: 'border-slate-500 bg-slate-500 text-white shadow-md shadow-slate-500/25',
+    hover: 'hover:border-slate-400 hover:bg-slate-50',
+  },
+};
+
+function OverrideAssessmentDialog({
+  open,
+  onOpenChange,
   cap,
   facilityId,
+  facilityName,
   onSaved,
 }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   cap: CapabilityDetail;
   facilityId: string;
+  facilityName?: string;
   onSaved?: (signal: TrustSignal, note: string) => void;
 }) {
-  const [editing, setEditing] = useState(false);
+  const systemSignal = cap.trustSignal;
   const [signal, setSignal] = useState<TrustSignal>(cap.overrideSignal ?? cap.trustSignal);
   const [note, setNote] = useState(cap.overrideNote ?? '');
   const [saving, setSaving] = useState(false);
-  const [savedSignal, setSavedSignal] = useState<TrustSignal | null>(cap.overrideSignal);
   const [error, setError] = useState<string | null>(null);
 
+  const resetForm = () => {
+    setSignal(cap.overrideSignal ?? cap.trustSignal);
+    setNote(cap.overrideNote ?? '');
+    setError(null);
+  };
+
   const save = async () => {
+    const trimmed = note.trim();
+    if (!trimmed) {
+      setError('Add a qualitative reviewer note — e.g. phone confirmation, inspection, registry update.');
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
       const { api } = await import('../lib/api');
-      await api.saveOverride({ facilityId, capability: cap.key, overrideSignal: signal, note: note.trim() || undefined });
-      setSavedSignal(signal);
-      setEditing(false);
-      onSaved?.(signal, note.trim());
+      await api.saveOverride({ facilityId, capability: cap.key, overrideSignal: signal, note: trimmed });
+      onSaved?.(signal, trimmed);
+      onOpenChange(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save review');
     } finally {
@@ -229,19 +272,197 @@ export function CapabilityEvidence({
     }
   };
 
+  const scorePct = Math.round(cap.trustScore * 100);
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) resetForm();
+        onOpenChange(next);
+      }}
+    >
+      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-lg" data-demo="override-dialog">
+        <DialogHeader className="border-b bg-muted/30 px-6 py-5">
+          <DialogTitle className="text-xl">Override assessment</DialogTitle>
+          <DialogDescription className="text-sm leading-relaxed">
+            {facilityName ? (
+              <>
+                <span className="font-medium text-foreground">{facilityName}</span>
+                {' · '}
+              </>
+            ) : null}
+            {cap.label} — your judgement layers on top of the computed evidence and saves to{' '}
+            <span className="font-medium text-foreground">My Reviews</span>.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-5 px-6 py-5">
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-card px-4 py-3 text-sm">
+            <span className="text-muted-foreground">Computed</span>
+            <SignalBadge signal={systemSignal} />
+            <span className="text-muted-foreground">· score {scorePct}</span>
+            {cap.evidenceTier && <span className="text-muted-foreground">· {cap.evidenceTier}</span>}
+            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+            <span className="font-medium text-foreground">Your override</span>
+            <SignalBadge signal={signal} size="lg" />
+          </div>
+
+          {cap.assessmentJson && !cap.overrideSignal && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-950">
+              <span className="font-semibold">Agent assessment:</span> {cap.assessmentJson.verdict}
+              {cap.assessmentJson.rationale && (
+                <p className="mt-1 text-amber-900/90">{cap.assessmentJson.rationale}</p>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold">Set trust signal</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {SIGNAL_OPTIONS.map((s) => {
+                const meta = SIGNAL_META[s];
+                const Icon = SIGNAL_ICON[s];
+                const active = signal === s;
+                const tone = SIGNAL_PICKER[s];
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setSignal(s)}
+                    className={`flex items-center gap-2 rounded-xl border-2 px-3 py-3 text-left text-sm font-semibold transition-all ${
+                      active ? `${tone.selected} ring-2 ${tone.ring}` : `border-border bg-background ${tone.hover}`
+                    }`}
+                  >
+                    <Icon className="h-5 w-5 shrink-0" />
+                    <span>{meta.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor={`override-note-${cap.key}`} className="text-sm font-semibold">
+              Qualitative reviewer note <span className="text-destructive">*</span>
+            </Label>
+            <Textarea
+              id={`override-note-${cap.key}`}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Why are you overriding? e.g. Confirmed by phone with the district health officer — 2 ICU beds operational; site visit 12 Jun; registry updated."
+              rows={4}
+              className="min-h-[110px] resize-y text-sm"
+            />
+            <p className="text-xs text-muted-foreground">
+              Ground truth from a call, inspection, or local knowledge. Stored in My Reviews for audit.
+            </p>
+          </div>
+
+          {error && <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
+        </div>
+
+        <DialogFooter className="flex-col gap-2 border-t bg-muted/20 px-6 py-4 sm:flex-row sm:justify-end">
+          <Button variant="outline" size="lg" onClick={() => onOpenChange(false)} disabled={saving} className="sm:min-w-[120px]">
+            Cancel
+          </Button>
+          <Button size="lg" onClick={() => void save()} disabled={saving || !note.trim()} className="sm:min-w-[200px]">
+            <Check className="h-5 w-5" />
+            {saving ? 'Saving…' : 'Save to My Reviews'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
+ * Citations + human override control for a single (facility, capability).
+ * Used both inline in the ranked list and on the facility detail page.
+ */
+export function CapabilityEvidence({
+  cap,
+  facilityId,
+  facilityName,
+  onSaved,
+}: {
+  cap: CapabilityDetail;
+  facilityId: string;
+  facilityName?: string;
+  onSaved?: (signal: TrustSignal, note: string) => void;
+}) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [savedSignal, setSavedSignal] = useState<TrustSignal | null>(cap.overrideSignal);
+  const [savedNote, setSavedNote] = useState(cap.overrideNote ?? '');
+  const [justSaved, setJustSaved] = useState(false);
+
+  const handleSaved = (signal: TrustSignal, note: string) => {
+    setSavedSignal(signal);
+    setSavedNote(note);
+    setJustSaved(true);
+    onSaved?.(signal, note);
+  };
+
   const support = cap.evidence.filter((e) => e.stance === 'supports');
   const contra = cap.evidence.filter((e) => e.stance === 'contradicts');
+  const assessment = cap.overrideSignal ? null : cap.assessmentJson;
+  const showMd = !cap.overrideSignal && cap.assessmentMd;
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">{cap.summary}</p>
+      {showMd ? (
+        <div className="rounded-md border bg-card px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap font-sans">
+          {cap.assessmentMd}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">{cap.summary}</p>
+      )}
+
+      {assessment && (
+        <div className="space-y-2 rounded-md border border-muted bg-muted/20 px-3 py-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold">Agent assessment:</span>
+            <span>{assessment.verdict}</span>
+            {cap.evidenceTier && (
+              <span className="text-muted-foreground">
+                · {cap.evidenceTier} ({Math.round(assessment.evidence_strength_score * 100) / 100})
+              </span>
+            )}
+          </div>
+          <p className="text-muted-foreground">{assessment.rationale}</p>
+          {assessment.citations?.length > 0 && (
+            <ul className="space-y-1.5">
+              {assessment.citations.map((c, i) => (
+                <li key={i} className="flex gap-2 text-xs">
+                  <Quote className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <span>
+                    <span className="font-medium">{c.source}</span>
+                    <span className="text-muted-foreground"> ({c.stance})</span> — {c.detail}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {assessment.review_recommended && assessment.review_reason && (
+            <p className="text-xs text-amber-800">⚠️ {assessment.review_reason}</p>
+          )}
+        </div>
+      )}
 
       {savedSignal && (
-        <div className="flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
-          <PencilLine className="h-4 w-4 text-primary" />
-          <span>
-            Planner override: <SignalBadge signal={savedSignal} className="ml-1 align-middle" />
-          </span>
+        <div className="space-y-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <PencilLine className="h-4 w-4 text-primary" />
+            <span>
+              Planner override: <SignalBadge signal={savedSignal} className="ml-1 align-middle" />
+            </span>
+            {justSaved && (
+              <Link to="/reviews" className="ml-auto text-xs font-medium text-primary hover:underline">
+                View in My Reviews →
+              </Link>
+            )}
+          </div>
+          {savedNote && <p className="text-muted-foreground">&ldquo;{savedNote}&rdquo;</p>}
         </div>
       )}
 
@@ -276,51 +497,28 @@ export function CapabilityEvidence({
         </div>
       )}
 
-      <div className="pt-1">
-        {!editing ? (
-          <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-            <PencilLine className="h-4 w-4" /> {savedSignal ? 'Edit review' : 'Override assessment'}
-          </Button>
-        ) : (
-          <div className="space-y-3 rounded-md border bg-muted/30 p-3">
-            <div className="space-y-1.5">
-              <Label>Set trust signal</Label>
-              <ToggleGroup
-                type="single"
-                value={signal}
-                onValueChange={(v) => v && setSignal(v as TrustSignal)}
-                variant="outline"
-                className="flex-wrap justify-start"
-              >
-                {SIGNAL_OPTIONS.map((s) => (
-                  <ToggleGroupItem key={s} value={s} className="text-xs">
-                    {SIGNAL_META[s].short}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor={`note-${cap.key}`}>Reviewer note</Label>
-              <Textarea
-                id={`note-${cap.key}`}
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Why are you overriding? e.g. confirmed by phone, registry updated, inspection pending…"
-                rows={2}
-              />
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="flex gap-2">
-              <Button size="sm" onClick={() => void save()} disabled={saving}>
-                <Check className="h-4 w-4" /> {saving ? 'Saving…' : 'Save review'}
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setEditing(false)} disabled={saving}>
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
+      <div className="border-t bg-gradient-to-r from-primary/5 to-amber-50/50 px-1 pt-4" data-demo="override">
+        <Button
+          size="lg"
+          className="h-12 w-full gap-2 text-base font-semibold shadow-md"
+          onClick={() => setDialogOpen(true)}
+        >
+          <PencilLine className="h-5 w-5" />
+          {savedSignal ? 'Edit planner review' : 'Override assessment'}
+        </Button>
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          Opens a review dialog — pick a trust signal and add qualitative notes for My Reviews.
+        </p>
       </div>
+
+      <OverrideAssessmentDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        cap={cap}
+        facilityId={facilityId}
+        facilityName={facilityName}
+        onSaved={handleSaved}
+      />
     </div>
   );
 }

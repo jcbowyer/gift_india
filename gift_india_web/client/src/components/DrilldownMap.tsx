@@ -8,7 +8,7 @@ import { feature, mesh } from 'topojson-client';
 import type { Topology, GeometryCollection } from 'topojson-specification';
 import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import type { FacilityRanking, StateRating, DistrictRating } from '../lib/api';
-import { SIGNAL_COLORS, normName } from '../lib/mapPalette';
+import { SIGNAL_COLORS, normName, titleCase } from '../lib/mapPalette';
 import { DistrictLocator, districtKey } from '../lib/geoAssign';
 
 export type MapLevel = 'nation' | 'state' | 'district';
@@ -33,6 +33,7 @@ interface DrilldownMapProps {
   hoveredFacilityId: string | null;
   selectedFacilityId: string | null;
   display: MapDisplay;
+  showPins?: boolean;
   logScale: boolean;
   ramp: string[]; // low → high colour stops for the active metric
   isRate: boolean; // 0–1 metric (fixed domain) vs data-extent metric
@@ -42,6 +43,7 @@ interface DrilldownMapProps {
   onSelectDistrict: (dataDistrict: string | null) => void;
   onSelectFacility: (f: FacilityRanking | null) => void;
   onHover: (h: HoverInfo | null) => void;
+  onReady?: () => void;
 }
 
 interface StateProps { st_nm: string }
@@ -73,6 +75,7 @@ export function DrilldownMap({
   hoveredFacilityId,
   selectedFacilityId,
   display,
+  showPins = true,
   logScale,
   ramp,
   isRate,
@@ -82,6 +85,7 @@ export function DrilldownMap({
   onSelectDistrict,
   onSelectFacility,
   onHover,
+  onReady,
 }: DrilldownMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -97,33 +101,55 @@ export function DrilldownMap({
   const level: MapLevel = selectedDistrict ? 'district' : selectedState ? 'state' : 'nation';
   const selectedStateNorm = selectedState ? normName(selectedState) : null;
 
-  // ── topo features ──────────────────────────────────────────────────────────
-  const { statesFC, statesMesh, districtsByState } = useMemo(() => {
+  // ── hover events coalesced to one re-render per frame ───────────────────────
+  // Hover bubbles up to the page (drives the readout panel), so a fast sweep
+  // across many small districts/pins would otherwise re-render the whole page
+  // per element crossed. rAF-coalescing caps that at the frame rate.
+  const hoverRaf = useRef<number | null>(null);
+  const pendingHover = useRef<HoverInfo | null>(null);
+  const emitHover = useCallback((h: HoverInfo | null) => {
+    pendingHover.current = h;
+    if (hoverRaf.current != null) return;
+    hoverRaf.current = requestAnimationFrame(() => {
+      hoverRaf.current = null;
+      onHover(pendingHover.current);
+    });
+  }, [onHover]);
+  useEffect(() => () => { if (hoverRaf.current != null) cancelAnimationFrame(hoverRaf.current); }, []);
+
+  // ── topo features (states always; districts deferred until a state is selected) ─
+  const { statesFC, statesMesh } = useMemo(() => {
     const sfc = feature(topology, topology.objects.states as GeometryCollection) as FeatureCollection<Geometry, StateProps>;
     const smesh = mesh(topology, topology.objects.states as GeometryCollection, (a, b) => a !== b);
+    return { statesFC: sfc, statesMesh: smesh };
+  }, [topology]);
+
+  const districtsByState = useMemo(() => {
+    if (!selectedStateNorm) return new Map<string, Feature<Geometry, DistrictProps>[]>();
     const dfc = feature(topology, topology.objects.districts as GeometryCollection) as FeatureCollection<Geometry, DistrictProps>;
     const byState = new Map<string, Feature<Geometry, DistrictProps>[]>();
     for (const f of dfc.features) {
       const k = normName(f.properties.st_nm);
       (byState.get(k) ?? byState.set(k, []).get(k)!).push(f);
     }
-    return { statesFC: sfc, statesMesh: smesh, districtsByState: byState };
-  }, [topology]);
+    return byState;
+  }, [topology, selectedStateNorm]);
 
-  // ── point-in-polygon locator (built once per topology) ──────────────────────
-  const locator = useMemo(() => new DistrictLocator(topology), [topology]);
+  // Locator + district reconciliation are expensive — skip at nation level.
+  const locator = useMemo(
+    () => (selectedStateNorm ? new DistrictLocator(topology) : null),
+    [topology, selectedStateNorm],
+  );
 
-  // ── reconcile district ratings to topology districts by geometry ────────────
-  // Scraped district names rarely match the SoI boundaries, so we assign each
-  // rating to the polygon that CONTAINS its centroid and key everything off the
-  // topology's own names. This is what makes the third (district) level reachable
-  // — and recovers ratings whose `state` text was mislabelled.
   const topoDistrictsByState = useMemo(() => {
+    const empty = { byKey: new Map<string, TopoDistrict>(), byState: new Map<string, TopoDistrict[]>() };
+    if (!locator || !selectedStateNorm) return empty;
+
     const byKey = new Map<string, TopoDistrict>();
     for (const r of districtRatings) {
       if (r.lat == null || r.lon == null) continue;
       const hit = locator.locate(r.lon, r.lat);
-      if (!hit) continue;
+      if (!hit || hit.stateNorm !== selectedStateNorm) continue;
       const key = districtKey(hit.stateNorm, hit.districtNorm);
       const cur = byKey.get(key);
       if (!cur) {
@@ -136,7 +162,7 @@ export function DrilldownMap({
     const byState = new Map<string, TopoDistrict[]>();
     for (const td of byKey.values()) (byState.get(td.stateNorm) ?? byState.set(td.stateNorm, []).get(td.stateNorm)!).push(td);
     return { byKey, byState };
-  }, [districtRatings, locator]);
+  }, [districtRatings, locator, selectedStateNorm]);
 
   // ── nation outline (SoI India boundary) for the floating-landmass look ───────
   const nationFC = useMemo(() => {
@@ -179,7 +205,14 @@ export function DrilldownMap({
   // polygon (stable) rather than the async facility point-cloud (jittery).
   const selectedDistrictFeature = useMemo(() => {
     if (!selectedDistrict) return null;
-    return districtsHere.find((f) => dataForFeature(f)?.primary.district === selectedDistrict) ?? null;
+    const sel = normName(selectedDistrict);
+    // Match either the reconciled rating's district name (data districts) or the
+    // boundary's own name (data-less districts drilled straight from the polygon).
+    return (
+      districtsHere.find(
+        (f) => dataForFeature(f)?.primary.district === selectedDistrict || normName(f.properties.district) === sel,
+      ) ?? null
+    );
   }, [selectedDistrict, districtsHere, dataForFeature]);
 
   // ── projection fitted to India ─────────────────────────────────────────────
@@ -264,7 +297,13 @@ export function DrilldownMap({
       .scaleExtent([1, MAX_K])
       .clickDistance(6)
       .on('zoom', (e: D3ZoomEvent<SVGSVGElement, unknown>) => {
-        if (gRef.current) gRef.current.setAttribute('transform', e.transform.toString());
+        // Write pan/zoom as a CSS transform (not the SVG `transform` attribute)
+        // so the browser can scale a cached raster of the heavy ~270k-point
+        // basemap during the gesture instead of re-rasterising every vector
+        // point per frame. transform-origin 0 0 (set on the <g>) matches d3's
+        // matrix convention: translate, then scale about the top-left.
+        const t = e.transform;
+        if (gRef.current) gRef.current.style.transform = `translate(${t.x}px, ${t.y}px) scale(${t.k})`;
         const k = e.transform.k;
         // Coarse-step the React-visible scale: re-cluster/re-size pins only when
         // the zoom changes by >8%, so a smooth wheel doesn't re-render per frame.
@@ -287,6 +326,27 @@ export function DrilldownMap({
     sel.transition().duration(duration).call(z.transform, target);
   }, []);
 
+  // Observable "zoom to bounding box" helper.
+  // Computes a zoom transform that fits the provided bounds into the viewport,
+  // with padding, then animates via the configured d3-zoom behavior.
+  const zoomToBounds = useCallback(
+    (b: [[number, number], [number, number]], pad = 0.9, duration = 750) => {
+      if (!size.width || !size.height) return;
+      const [[x0, y0], [x1, y1]] = b;
+      const dx = x1 - x0;
+      const dy = y1 - y0;
+      if (!Number.isFinite(dx) || !Number.isFinite(dy) || dx <= 0 || dy <= 0) return;
+
+      const k = Math.min(MAX_K, pad / Math.max(dx / size.width, dy / size.height));
+      const kk = Math.max(1, k);
+      const cx = (x0 + x1) / 2;
+      const cy = (y0 + y1) / 2;
+
+      animateZoomTo(zoomIdentity.translate(size.width / 2, size.height / 2).scale(kk).translate(-cx, -cy), duration);
+    },
+    [animateZoomTo, size.height, size.width],
+  );
+
   // ── smooth zoom-to-bounds on drill ──────────────────────────────────────────
   useEffect(() => {
     const svg = svgRef.current;
@@ -295,11 +355,6 @@ export function DrilldownMap({
 
     const apply = (k: number, cx: number, cy: number) =>
       animateZoomTo(zoomIdentity.translate(size.width / 2, size.height / 2).scale(k).translate(-cx, -cy));
-    const fitBounds = (b: [[number, number], [number, number]], pad = 0.9) => {
-      const [[x0, y0], [x1, y1]] = b;
-      const k = Math.min(MAX_K, pad / Math.max((x1 - x0) / size.width, (y1 - y0) / size.height));
-      apply(k, (x0 + x1) / 2, (y0 + y1) / 2);
-    };
 
     if (selectedFacilityId) {
       const f = facilities.find((x) => x.facilityId === selectedFacilityId);
@@ -316,12 +371,12 @@ export function DrilldownMap({
     }
     if (level === 'state' && selectedState) {
       const f = statesFC.features.find((x) => normName(x.properties.st_nm) === normName(selectedState));
-      if (f) fitBounds(path.bounds(f));
+      if (f) zoomToBounds(path.bounds(f), 0.9);
       return;
     }
     if (level === 'district' && selectedDistrict) {
       if (selectedDistrictFeature) {
-        fitBounds(path.bounds(selectedDistrictFeature), 0.8);
+        zoomToBounds(path.bounds(selectedDistrictFeature), 0.8);
       } else {
         const dr = districtRatings.find((d) => d.district === selectedDistrict && d.state === selectedState);
         if (dr && dr.lat != null && dr.lon != null) {
@@ -331,7 +386,7 @@ export function DrilldownMap({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [level, selectedState, selectedDistrict, selectedFacilityId, selectedDistrictFeature, facilities, path, projection, size.width, size.height, animateZoomTo]);
+  }, [level, selectedState, selectedDistrict, selectedFacilityId, selectedDistrictFeature, facilities, path, projection, size.width, size.height, animateZoomTo, zoomToBounds]);
 
   // ── manual zoom controls (in / out / reset) ────────────────────────────────
   const zoomBy = (factor: number) => {
@@ -496,13 +551,13 @@ export function DrilldownMap({
               vectorEffect="non-scaling-stroke"
               style={{ cursor: level === 'nation' && r ? 'pointer' : 'default', transition: 'fill-opacity 200ms' }}
               onMouseEnter={() =>
-                onHover(
+                emitHover(
                   r
                     ? { kind: 'state', name: r.state, sub: `${r.facilities} facilities`, rating: r }
                     : { kind: 'state', name: f.properties.st_nm, sub: 'No surveyed facilities' },
                 )
               }
-              onMouseLeave={() => onHover(null)}
+              onMouseLeave={() => emitHover(null)}
               onClick={() => level === 'nation' && r && onSelectState(r.state)}
             />
           );
@@ -515,7 +570,12 @@ export function DrilldownMap({
           <g key={`dl-${selectedStateNorm}`} className="dd-fade">
             {districtsHere.map((f) => {
               const td = dataForFeature(f);
-              const isSelDist = td ? td.primary.district === selectedDistrict : false;
+              // Every district boundary is drillable — data districts select by
+              // their reconciled rating name, data-less ones by the boundary name.
+              const boundaryName = titleCase(f.properties.district);
+              const isSelDist = td
+                ? td.primary.district === selectedDistrict
+                : selectedDistrict != null && normName(f.properties.district) === normName(selectedDistrict);
               const shaded = display === 'shade';
               return (
                 <path
@@ -527,19 +587,22 @@ export function DrilldownMap({
                   strokeWidth={isSelDist ? 1.2 : 0.5}
                   strokeDasharray={shaded ? undefined : '2 2'}
                   vectorEffect="non-scaling-stroke"
-                  style={{ cursor: td ? 'pointer' : 'default' }}
+                  style={{ cursor: 'pointer' }}
                   onMouseEnter={() =>
-                    td &&
-                    onHover({
-                      kind: 'district',
-                      name: td.primary.district,
-                      sub: `${td.primary.state} · ${td.facilities} facilities`,
-                      rating: td.primary,
-                    })
+                    emitHover(
+                      td
+                        ? {
+                            kind: 'district',
+                            name: td.primary.district,
+                            sub: `${td.primary.state} · ${td.facilities} facilities`,
+                            rating: td.primary,
+                          }
+                        : { kind: 'district', name: boundaryName, sub: 'No surveyed facilities' },
+                    )
                   }
-                  onMouseLeave={() => onHover(null)}
-                  onClick={() => td && onSelectDistrict(td.primary.district)}
-                  pointerEvents={shaded || td ? 'auto' : 'none'}
+                  onMouseLeave={() => emitHover(null)}
+                  onClick={() => onSelectDistrict(td ? td.primary.district : boundaryName)}
+                  pointerEvents="auto"
                 />
               );
             })}
@@ -563,10 +626,19 @@ export function DrilldownMap({
     valueOfState,
     valueOfDistrict,
     dataForFeature,
-    onHover,
+    emitHover,
     onSelectState,
     onSelectDistrict,
   ]);
+
+  // Signal parent once the first paintable frame is ready.
+  useEffect(() => {
+    if (!path) return;
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => onReady?.());
+    });
+    return () => cancelAnimationFrame(id);
+  }, [path, level, selectedState, selectedDistrict, onReady]);
 
   const k = zoomK;
   if (!path || !projection) return <div ref={containerRef} className="h-full w-full" />;
@@ -588,7 +660,7 @@ export function DrilldownMap({
     <div ref={containerRef} className="relative h-full w-full overflow-hidden rounded-xl border bg-[#eef4fb]">
       <style>{`@keyframes ddFadeIn{from{opacity:0}to{opacity:1}}.dd-fade{animation:ddFadeIn 450ms ease-out both}@keyframes ddPing{0%{transform:scale(0.72);opacity:.42}70%{opacity:.12}100%{transform:scale(1.32);opacity:0}}.dd-ping{animation:ddPing 1.9s ease-out infinite;transform-origin:center;}`}</style>
       <svg ref={svgRef} width={size.width} height={size.height} className="block touch-none">
-        <g ref={gRef}>
+        <g ref={gRef} style={{ transformOrigin: '0 0', willChange: 'transform' }}>
           {staticLayers}
 
           {/* ── clustered geography pings (state/district centroids) ── */}
@@ -606,15 +678,58 @@ export function DrilldownMap({
               <g
                 key={`geo-cl-${i}`}
                 style={{ cursor: 'pointer' }}
-                onMouseEnter={() => onHover({ kind: level === 'nation' ? 'state' : 'district', name: label, sub: n > 1 ? 'Zoom in to split clusters' : undefined })}
-                onMouseLeave={() => onHover(null)}
+                onMouseEnter={() =>
+                  emitHover(
+                    n > 1
+                      ? { kind: level === 'nation' ? 'state' : 'district', name: label, sub: 'Zoom in to split clusters' }
+                      : first.state
+                        ? { kind: 'state', name: first.state.state, sub: `${first.state.facilities} facilities`, rating: first.state }
+                        : first.district
+                          ? {
+                              kind: 'district',
+                              name: first.district.primary.district,
+                              sub: `${first.district.primary.state} · ${first.district.facilities} facilities`,
+                              rating: first.district.primary,
+                            }
+                          : { kind: level === 'nation' ? 'state' : 'district', name: label },
+                  )
+                }
+                onMouseLeave={() => emitHover(null)}
                 onClick={() => {
                   if (n > 1) {
-                    const next = Math.min(MAX_K, k * 1.9);
-                    animateZoomTo(
-                      zoomIdentity.translate(size.width / 2, size.height / 2).scale(next).translate(-c.x, -c.y),
-                      500,
-                    );
+                    // When the ping represents multiple geographies, zoom to the
+                    // extent of the member centroids (observable-style bounds fit)
+                    // instead of an arbitrary scale factor.
+                    const memberPoints: [number, number][] =
+                      level === 'nation'
+                        ? c.items
+                            .map((it) =>
+                              it.state ? stateCentroids.get(normName(it.state.state)) : null,
+                            )
+                            .filter((p): p is [number, number] => p != null)
+                        : c.items
+                            .map((it) => {
+                              if (!it.district?.primary || it.district.primary.lat == null || it.district.primary.lon == null) return null;
+                              return projection([it.district.primary.lon, it.district.primary.lat]) as [number, number];
+                            })
+                            .filter((p): p is [number, number] => p != null);
+
+                    if (memberPoints.length >= 2) {
+                      const minX = Math.min(...memberPoints.map((p) => p[0]));
+                      const maxX = Math.max(...memberPoints.map((p) => p[0]));
+                      const minY = Math.min(...memberPoints.map((p) => p[1]));
+                      const maxY = Math.max(...memberPoints.map((p) => p[1]));
+                      zoomToBounds([[minX, minY], [maxX, maxY]], 0.9, 500);
+                    } else {
+                      const next = Math.min(MAX_K, k * 1.9);
+                      animateZoomTo(
+                        zoomIdentity
+                          .translate(size.width / 2, size.height / 2)
+                          .scale(next)
+                          .translate(-c.x, -c.y),
+                        500,
+                      );
+                    }
                     return;
                   }
                   if (first.state) onSelectState(first.state.state);
@@ -635,6 +750,21 @@ export function DrilldownMap({
                     pointerEvents="none"
                   >
                     {n}
+                  </text>
+                )}
+                {n === 1 && (
+                  <text
+                    x={c.x + (baseR + 6) / k}
+                    y={c.y}
+                    textAnchor="start"
+                    dominantBaseline="central"
+                    fontSize={11 / k}
+                    fontWeight={700}
+                    fill="#0f172a"
+                    pointerEvents="none"
+                    style={{ paintOrder: 'stroke', stroke: 'rgba(255,255,255,0.9)', strokeWidth: 3 / k }}
+                  >
+                    {label}
                   </text>
                 )}
               </g>
@@ -658,8 +788,8 @@ export function DrilldownMap({
                   stroke="#1e293b"
                   strokeWidth={0.8 / k}
                   style={{ cursor: 'pointer' }}
-                  onMouseEnter={() => onHover({ kind: 'state', name: s.state, sub: `${s.facilities} facilities`, rating: s })}
-                  onMouseLeave={() => onHover(null)}
+                  onMouseEnter={() => emitHover({ kind: 'state', name: s.state, sub: `${s.facilities} facilities`, rating: s })}
+                  onMouseLeave={() => emitHover(null)}
                   onClick={() => onSelectState(s.state)}
                 />
               );
@@ -682,15 +812,15 @@ export function DrilldownMap({
                   stroke={isSel ? '#0f172a' : '#1e293b'}
                   strokeWidth={(isSel ? 2 : 0.8) / k}
                   style={{ cursor: 'pointer' }}
-                  onMouseEnter={() => onHover({ kind: 'district', name: d.primary.district, sub: `${d.primary.state} · ${d.facilities} facilities`, rating: d.primary })}
-                  onMouseLeave={() => onHover(null)}
+                  onMouseEnter={() => emitHover({ kind: 'district', name: d.primary.district, sub: `${d.primary.state} · ${d.facilities} facilities`, rating: d.primary })}
+                  onMouseLeave={() => emitHover(null)}
                   onClick={() => onSelectDistrict(d.primary.district)}
                 />
               );
             })}
 
           {/* ── facility pins, clustered (state & district levels; fade in on drill) ── */}
-          {level !== 'nation' && display === 'shade' && (
+          {showPins && level !== 'nation' && display === 'shade' && (
             <g key={`fl-${selectedState}-${selectedDistrict}`} className="dd-fade">
               {clusters.map((c, i) => {
                 // Singleton → individual pin (with full hover/select behaviour).
@@ -700,21 +830,39 @@ export function DrilldownMap({
                   const isSel = f.facilityId === selectedFacilityId;
                   const sig = f.overrideSignal ?? f.trustSignal;
                   const r = (isSel ? 7 : isHover ? 6 : 4.5) / k;
+                  const showLabel = k >= 3 || level === 'district';
+                  const label = f.name.length > 22 ? `${f.name.slice(0, 20)}…` : f.name;
                   return (
-                    <circle
-                      key={`fp-${f.facilityId}`}
-                      cx={x}
-                      cy={y}
-                      r={r}
-                      fill={SIGNAL_COLORS[sig]}
-                      fillOpacity={0.9}
-                      stroke={isSel ? '#0f172a' : '#ffffff'}
-                      strokeWidth={(isSel ? 2 : 1) / k}
-                      style={{ cursor: 'pointer' }}
-                      onMouseEnter={() => onHover({ kind: 'facility', name: f.name, sub: `${f.district}, ${f.state}`, facility: f })}
-                      onMouseLeave={() => onHover(null)}
-                      onClick={() => onSelectFacility(f)}
-                    />
+                    <g key={`fp-${f.facilityId}`}>
+                      <circle
+                        cx={x}
+                        cy={y}
+                        r={r}
+                        fill={SIGNAL_COLORS[sig]}
+                        fillOpacity={0.9}
+                        stroke={isSel ? '#0f172a' : '#ffffff'}
+                        strokeWidth={(isSel ? 2 : 1) / k}
+                        style={{ cursor: 'pointer' }}
+                        onMouseEnter={() => emitHover({ kind: 'facility', name: f.name, sub: `${f.district}, ${f.state}`, facility: f })}
+                        onMouseLeave={() => emitHover(null)}
+                        onClick={() => onSelectFacility(f)}
+                      />
+                      {showLabel && (
+                        <text
+                          x={x + (r + 5) / k}
+                          y={y}
+                          textAnchor="start"
+                          dominantBaseline="central"
+                          fontSize={10 / k}
+                          fontWeight={600}
+                          fill="#0f172a"
+                          pointerEvents="none"
+                          style={{ paintOrder: 'stroke', stroke: 'rgba(255,255,255,0.92)', strokeWidth: 3 / k }}
+                        >
+                          {label}
+                        </text>
+                      )}
+                    </g>
                   );
                 }
                 // Cluster bubble → count + dominant signal; click zooms in to split it.
@@ -726,15 +874,23 @@ export function DrilldownMap({
                     key={`cl-${i}`}
                     style={{ cursor: 'pointer' }}
                     onMouseEnter={() =>
-                      onHover({ kind: 'facility', name: `${n} facilities`, sub: 'Zoom in to separate', facility: c.items[0].f })
+                      emitHover({ kind: 'facility', name: `${n} facilities`, sub: 'Zoom in to separate', facility: c.items[0].f })
                     }
-                    onMouseLeave={() => onHover(null)}
+                    onMouseLeave={() => emitHover(null)}
                     onClick={() => {
+                      const memberPoints = c.items
+                        .map(({ x, y }) => [x, y] as [number, number])
+                        .filter((p) => Number.isFinite(p[0]) && Number.isFinite(p[1]));
+                      if (memberPoints.length >= 2) {
+                        const minX = Math.min(...memberPoints.map((p) => p[0]));
+                        const maxX = Math.max(...memberPoints.map((p) => p[0]));
+                        const minY = Math.min(...memberPoints.map((p) => p[1]));
+                        const maxY = Math.max(...memberPoints.map((p) => p[1]));
+                        zoomToBounds([[minX, minY], [maxX, maxY]], 0.86, 500);
+                        return;
+                      }
                       const next = Math.min(MAX_K, k * 2.4);
-                      animateZoomTo(
-                        zoomIdentity.translate(size.width / 2, size.height / 2).scale(next).translate(-c.x, -c.y),
-                        500,
-                      );
+                      animateZoomTo(zoomIdentity.translate(size.width / 2, size.height / 2).scale(next).translate(-c.x, -c.y), 500);
                     }}
                   >
                     <circle cx={c.x} cy={c.y} r={rr * 1.55} fill={SIGNAL_COLORS[sig]} fillOpacity={0.2} />

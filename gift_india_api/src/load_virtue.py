@@ -1,5 +1,5 @@
 """Load the REAL governed Virtue Foundation gold tables (exported to
-``data/gold_real/*.csv`` by ``data/export_gold_real.py``) straight into the
+``data/virtue/*.csv`` by ``data/export_virtue.py``) straight into the
 ``gold.*`` serving schema the web app reads.
 
 This is the fast path to put 100% real, governed VF data in front of the app
@@ -9,8 +9,8 @@ without a bronze -> dbt rebuild: the CSVs already are the gold contract
 
 Targets local Postgres or Databricks Lakebase, same as ``load_db.py``::
 
-    python -m src.load_gold_real                         # local (GIFT_INDIA_DB_URL / .env)
-    python -m src.load_gold_real --target lakebase \\
+    python -m src.load_virtue                         # local (GIFT_INDIA_DB_URL / .env)
+    python -m src.load_virtue --target lakebase \\
         --endpoint projects/gift_india/branches/production/endpoints/primary \\
         --profile <profile>
 """
@@ -23,7 +23,7 @@ from urllib.parse import quote
 from . import db
 
 DEFAULT_OWNER = "admins"
-CSV_DIR = Path(__file__).resolve().parents[2] / "data" / "gold_real"
+CSV_DIR = Path(__file__).resolve().parents[2] / "data" / "virtue"
 
 # DDL for the four serving tables. Column names/types match the exported CSVs and
 # the queries in gift_india_web/server/routes/gift_india/routes.ts.
@@ -164,7 +164,7 @@ def main(argv: list[str] | None = None) -> int:
     if missing:
         parser.error(
             f"missing CSV(s) in {csv_dir}: {missing}. "
-            "Run `python data/export_gold_real.py` first."
+            "Run `python data/export_virtue.py` first."
         )
 
     if args.target == "lakebase":

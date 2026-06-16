@@ -1,4 +1,4 @@
-# Local Postgres for Governance, Integrity, & Facility Trust (GIFT) Desk development.
+# Local Postgres for Governance, Integrity, & Facility Trust (GIFT) Gauge development.
 #
 #   docker compose up -d        # start (creates the bronze schema on first run)
 #   python -m src.load_db       # land the raw dataset in bronze
@@ -6,24 +6,24 @@
 #   docker compose down         # stop (add -v to also wipe the data volume)
 #
 # Connection string (also in .env.example):
-#   GIFT_INDIA_DB_URL=postgresql://gift_india:gift_india@localhost:5432/gift_india
+#   GIFT_INDIA_DB_URL=postgresql://postgres:password@localhost:5433/gift_india
 
 services:
   postgres:
     image: postgres:17
     container_name: gift_india-pg
     environment:
-      POSTGRES_USER: gift_india
-      POSTGRES_PASSWORD: gift_india
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: gift_india
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - gift_india_pgdata:/var/lib/postgresql/data
       # Runs once, only when the data volume is first initialized.
       - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U gift_india -d gift_india"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gift_india"]
       interval: 5s
       timeout: 3s
       retries: 10

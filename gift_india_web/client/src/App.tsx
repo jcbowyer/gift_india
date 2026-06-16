@@ -7,16 +7,23 @@ import {
   SheetHeader,
   SheetTitle,
   Badge,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
   useIsMobile,
 } from '@databricks/appkit-ui/react';
-import { Menu } from 'lucide-react';
+import { Menu, ChevronDown } from 'lucide-react';
 import { GiftSeal } from './components/GiftSeal';
 import { DemoGuide, DemoLaunchButton } from './components/DemoGuide';
-import { TrustDeskPage } from './pages/TrustDeskPage';
+import { TrustGaugePage } from './pages/TrustGaugePage';
 import { MapPage } from './pages/MapPage';
 import { ScorecardPage } from './pages/ScorecardPage';
 import { FacilityPage } from './pages/FacilityPage';
 import { ReviewsPage } from './pages/ReviewsPage';
+import { DataQualityPage } from './pages/DataQualityPage';
 import { api } from './lib/api';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -35,21 +42,33 @@ const mobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
 
 type NavLinkClassFn = (props: { isActive: boolean }) => string;
 
-function NavLinks({ className, linkClass, onClick }: { className?: string; linkClass: NavLinkClassFn; onClick?: () => void }) {
+function NavLinks({
+  className,
+  linkClass,
+  onClick,
+  showDataQuality = true,
+}: {
+  className?: string;
+  linkClass: NavLinkClassFn;
+  onClick?: () => void;
+  showDataQuality?: boolean;
+}) {
   return (
     <nav className={className}>
       <NavLink to="/" end className={linkClass} onClick={onClick}>
-        Trust Desk
+        Trust Gauge
       </NavLink>
       <NavLink to="/navigator" className={linkClass} onClick={onClick}>
         Navigator
       </NavLink>
-      <NavLink to="/open-navigator" className={linkClass} onClick={onClick}>
-        Open Navigator
-      </NavLink>
       <NavLink to="/scorecard" className={linkClass} onClick={onClick}>
         Scorecard
       </NavLink>
+      {showDataQuality && (
+        <NavLink to="/data-quality" className={linkClass} onClick={onClick}>
+          Data Quality
+        </NavLink>
+      )}
       <NavLink to="/reviews" className={linkClass} onClick={onClick}>
         My Reviews
       </NavLink>
@@ -78,10 +97,29 @@ function Layout() {
             </span>
           </div>
         </div>
-        <NavLinks className="hidden md:flex gap-1 ml-4" linkClass={navLinkClass} />
+        <NavLinks className="hidden md:flex gap-1 ml-4" linkClass={navLinkClass} showDataQuality={false} />
         <div className="ml-auto flex items-center gap-3">
           <DemoLaunchButton />
-          {email && <Badge variant="outline" className="hidden sm:inline-flex">{email}</Badge>}
+          {email && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className="hidden sm:inline-flex items-center gap-1 cursor-pointer hover:bg-muted"
+                >
+                  {email}
+                  <ChevronDown className="h-3 w-3" />
+                </Badge>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>{email}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <NavLink to="/data-quality">Data Quality</NavLink>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <div className="md:hidden">
             <Sheet open={mobileNavOpen && isMobile} onOpenChange={setMobileNavOpen}>
               <Button variant="ghost" size="icon" onClick={() => setMobileNavOpen(true)}>
@@ -116,12 +154,12 @@ const router = createBrowserRouter([
   {
     element: <Layout />,
     children: [
-      { path: '/', element: <TrustDeskPage /> },
+      { path: '/', element: <TrustGaugePage /> },
       { path: '/navigator', element: <MapPage /> },
-      { path: '/open-navigator', element: <MapPage /> },
       { path: '/scorecard', element: <ScorecardPage /> },
       { path: '/facility/:id', element: <FacilityPage /> },
       { path: '/reviews', element: <ReviewsPage /> },
+      { path: '/data-quality', element: <DataQualityPage /> },
     ],
   },
 ]);

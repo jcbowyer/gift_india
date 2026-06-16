@@ -13,7 +13,7 @@ resources:
   apps:
     app:
       name: "gift-india-web"
-      description: "Governance, Integrity, & Facility Trust (GIFT) Desk — evidence-backed facility capability trust signals on Lakebase"
+      description: "Governance, Integrity, & Facility Trust (GIFT) Gauge — evidence-backed facility capability trust signals on Lakebase"
       source_code_path: ./
       # Uncomment to enable on behalf of user API scopes. Available scopes: sql, dashboards.genie, files.files, serving.serving-endpoints
       # user_api_scopes:

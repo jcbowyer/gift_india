@@ -83,7 +83,7 @@ const STEPS: Step[] = [
     title: 'Human-in-the-loop override',
     route: '/',
     say: 'The machine isn’t the final word. A planner with ground truth — a phone call, an inspection — overrides the assessment and leaves a note. It saves to Lakebase and layers on top of the computed signal.',
-    do: ['Click “Override assessment”.', 'Pick a signal; type a note (“Confirmed by phone with district health officer”).', 'Save.'],
+    do: ['Click the large “Override assessment” button.', 'Pick a trust signal; add a qualitative note (“Confirmed by phone with district health officer”).', 'Save to My Reviews.'],
     selector: '[data-demo="results"]',
   },
   {

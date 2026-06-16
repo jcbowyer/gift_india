@@ -72,6 +72,35 @@ models:
           - accepted_values:
               values: ['jci']
 
+  - name: silver_nabh_accreditations
+    description: >-
+      Cleaned, typed, deduped NABH-accredited / -certified / -empanelled facilities
+      in India, with the canonical entity-resolution keys (`match_name`, `brand_key`)
+      re-derived via the shared `jci_normalize` macro and a `state_code` attached.
+      One row per `nabh_org_id`. Feeds the gold.facility_nabh crosswalk.
+    columns:
+      - name: nabh_org_id
+        tests:
+          - not_null
+          - unique
+      - name: nabh_name
+        tests: [not_null]
+      - name: match_name
+        description: Normalized name used to entity-resolve to a facility_id.
+        tests: [not_null]
+      - name: accreditation_status
+        description: NABH status badge — Accredited, Certified, or Empaneled.
+        tests:
+          - accepted_values:
+              values: ['Accredited', 'Certified', 'Empaneled']
+              config:
+                severity: warn
+      - name: data_source
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['nabh']
+
   - name: silver_facility_web_crawl
     description: >-
       Cleaned, typed, deduped facility website crawls — one row per facility (or

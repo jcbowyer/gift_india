@@ -151,6 +151,33 @@ models:
       - name: jci_data_source
         description: Provenance tag of the accreditation signal ('jci').
         data_type: text
+      - name: nabh_accredited
+        description: >-
+          True when this facility entity-resolves (confidence >= 0.70) to a NABH
+          accredited / certified / empanelled organization in gold.facility_nabh.
+        data_type: boolean
+        constraints: [{type: not_null}]
+      - name: nabh_organization_name
+        description: Resolved NABH organization name (null when not matched).
+        data_type: text
+      - name: nabh_accreditation_status
+        description: "Resolved NABH status: Accredited | Certified | Empaneled (null when not matched)."
+        data_type: text
+      - name: nabh_accreditation_program
+        description: "Resolved NABH programme (e.g. Hospitals, SHCO, AYUSH Hospitals)."
+        data_type: text
+      - name: nabh_match_method
+        description: "Entity-resolution tier: exact_name_state | brand_city | brand_state."
+        data_type: text
+      - name: nabh_match_confidence
+        description: Confidence (0-1) of the NABH entity-resolution match.
+        data_type: numeric
+      - name: nabh_source
+        description: Source the NABH accreditation row came from ('nabh_directory').
+        data_type: text
+      - name: nabh_data_source
+        description: Provenance tag of the accreditation signal ('nabh').
+        data_type: text
 
   - name: facility_jci
     description: >-
@@ -185,6 +212,46 @@ models:
           - accepted_values:
               values: ['jci']
 
+  - name: facility_nabh
+    description: >-
+      Entity-resolution crosswalk: governed facilities resolved (inner join on
+      normalized name / brand key + state) to NABH accredited / certified /
+      empanelled organizations. One row per matched facility_id, carrying the match
+      tier + confidence, the NABH status/programme/reference, and provenance.
+      gold.facilities reads this to flag `nabh_accredited`.
+    columns:
+      - name: facility_id
+        description: Resolved facility primary key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('facilities')
+                field: facility_id
+      - name: nabh_org_id
+        tests: [not_null]
+      - name: nabh_organization_name
+        tests: [not_null]
+      - name: accreditation_status
+        tests:
+          - accepted_values:
+              values: ['Accredited', 'Certified', 'Empaneled']
+              config:
+                severity: warn
+      - name: match_method
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['exact_name_state', 'brand_city', 'brand_state']
+      - name: match_confidence
+        tests: [not_null]
+      - name: data_source
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['nabh']
+
   - name: facility_capability_assessments
     description: >-
       Track 1 serving table: one row per (facility, capability) with a trust
@@ -213,3 +280,24 @@ models:
       - name: capability
         tests:
           - not_null
+
+  - name: capability_scored
+    description: >-
+      Deterministic evidence_strength_score per (facility, capability) plus a
+      shared evidence_context block for Agent Bricks narration. Ranking uses
+      this score; LLM output in capability_evidence_json/md only narrates it.
+    columns:
+      - name: facility_id
+        tests:
+          - not_null
+      - name: capability
+        tests:
+          - not_null
+      - name: evidence_strength_score
+        tests:
+          - not_null
+      - name: evidence_tier
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Strong', 'Moderate', 'Weak', 'Insufficient']

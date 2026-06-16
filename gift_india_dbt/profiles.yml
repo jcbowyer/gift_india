@@ -1,4 +1,4 @@
-# dbt connection profile for Governance, Integrity, & Facility Trust (GIFT) Desk.
+# dbt connection profile for Governance, Integrity, & Facility Trust (GIFT) Gauge.
 #
 # Run dbt from this directory with this profile:
 #   cd gift_india_dbt && DBT_PROFILES_DIR=. dbt build
@@ -12,9 +12,11 @@ gift_india_postgres:
     dev:
       type: postgres
       host: "{{ env_var('GIFT_INDIA_PGHOST', 'localhost') }}"
-      port: "{{ env_var('GIFT_INDIA_PGPORT', '5432') | as_number }}"
-      user: "{{ env_var('GIFT_INDIA_PGUSER', 'gift_india') }}"
-      password: "{{ env_var('GIFT_INDIA_PGPASSWORD', 'gift_india') }}"
+      # Local docker-compose Postgres binds container 5432 -> host 5433.
+      # See ../docker-compose.yml and ../.env.example.
+      port: "{{ env_var('GIFT_INDIA_PGPORT', '5433') | as_number }}"
+      user: "{{ env_var('GIFT_INDIA_PGUSER', 'postgres') }}"
+      password: "{{ env_var('GIFT_INDIA_PGPASSWORD', 'password') }}"
       dbname: "{{ env_var('GIFT_INDIA_PGDATABASE', 'gift_india') }}"
       schema: "{{ env_var('GIFT_INDIA_DBT_SCHEMA', 'bronze') }}"
       sslmode: "{{ env_var('GIFT_INDIA_PGSSLMODE', 'prefer') }}"

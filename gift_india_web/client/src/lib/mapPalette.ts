@@ -24,6 +24,11 @@ export function normName(s: string): string {
   return s.toLowerCase().replace('&', 'and').replace(/[^a-z0-9]/g, '');
 }
 
+/** Display-case an ALL-CAPS SoI boundary name (e.g. "MORBI" → "Morbi"). */
+export function titleCase(s: string): string {
+  return s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 /** Spelling variants between the SoI boundaries and the data's district names. */
 const NAME_ALIASES: Record<string, string> = {
   ahmadabad: 'ahmedabad', // SoI: AHMADABAD

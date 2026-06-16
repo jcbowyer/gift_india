@@ -200,7 +200,7 @@ function FacilityRow({
   const effectiveSignal = override ?? rec.trustSignal;
 
   return (
-    <Card className={`overflow-hidden ${open ? '' : 'gift-lift'}`}>
+    <Card className={`overflow-hidden ${open ? '' : 'gift-lift'}`} data-demo={open ? 'facility-expanded' : undefined}>
       <button
         type="button"
         onClick={() => void toggle()}
@@ -264,6 +264,7 @@ function FacilityRow({
               <CapabilityEvidence
                 cap={cap}
                 facilityId={rec.facilityId}
+                facilityName={rec.name}
                 onSaved={(sig) => setOverride(sig)}
               />
             </div>
@@ -277,7 +278,7 @@ function FacilityRow({
   );
 }
 
-export function TrustDeskPage() {
+export function TrustGaugePage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [capabilities, setCapabilities] = useState<Capability[]>([]);
   const [regions, setRegions] = useState<RegionState[]>([]);
@@ -346,14 +347,14 @@ export function TrustDeskPage() {
           <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-700">
             <ShieldCheck className="h-4 w-4" />
-            The GIFT Gauge · Governance, Integrity &amp; Facility Trust
+            The GIFT Gauge · A Trust Gauge for Hospitals
           </div>
           <h1 className="mt-3 max-w-2xl text-2xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
-            We built the GIFT Gauge so planners can finally trust facility capability data instead of guessing.
+            Governance, Integrity, &amp; Facility Trust (GIFT) Gauge
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
-            GIFT — Governance, Integrity &amp; Facility Trust — ranks every capability by how well each claim is backed by
-            citations you can actually read. Real evidence, real trust, no guesswork.
+            Finally, a trust gauge that tells you which hospitals can actually deliver. Every capability claim is backed
+            by citations you can read — and you can override the assessment with a reviewer note.
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4">

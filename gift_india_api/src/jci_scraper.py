@@ -56,8 +56,8 @@ from pathlib import Path
 import requests
 from loguru import logger
 
-# Repo-root data/ (where gold_real/, simplygis/, … live — same convention as
-# load_gold_real.py), NOT the api package's data/.
+# Repo-root data/ (where virtue/, simplygis/, … live — same convention as
+# load_virtue.py), NOT the api package's data/.
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 DEFAULT_SEED = DATA_DIR / "jci_india_seed.csv"
 DEFAULT_OUT_DIR = DATA_DIR / "jci"
