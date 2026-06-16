@@ -149,7 +149,7 @@ function SignalGroup({ signal, caps }: { signal: TrustSignal; caps: CapabilityDe
   const claimed = signal !== 'no_claim';
   const avg = claimed && caps.length ? caps.reduce((a, c) => a + c.trustScore, 0) / caps.length : null;
   return (
-    <Card>
+    <Card className="gift-lift">
       <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-3">
         <div className="flex items-center gap-2">
           <span className={`h-2.5 w-2.5 rounded-full ${meta.dot}`} />
@@ -344,7 +344,7 @@ export function ScorecardPage() {
       ) : f && detail ? (
         <>
           {/* facility header + overall grade */}
-          <Card>
+          <Card className="gift-elevate gift-fade-in">
             <CardContent className="space-y-3 p-4 md:p-5">
               <div className="flex items-start gap-4">
                 <TrustScoreDial score={summary.avg ?? 0} signal={summary.strong > 0 ? 'strong' : 'partial'} />

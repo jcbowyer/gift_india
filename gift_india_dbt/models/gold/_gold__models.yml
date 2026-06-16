@@ -130,6 +130,60 @@ models:
       - name: distance_from_centroid_km
         description: Great-circle km from the facility to its geography centroid.
         data_type: numeric
+      - name: jci_accredited
+        description: >-
+          True when this facility entity-resolves (confidence >= 0.70) to a
+          JCI-accredited organization in gold.facility_jci.
+        data_type: boolean
+        constraints: [{type: not_null}]
+      - name: jci_organization_name
+        description: Resolved JCI organization name (null when not accredited).
+        data_type: text
+      - name: jci_match_method
+        description: "Entity-resolution tier: exact_name_state | brand_city | brand_state."
+        data_type: text
+      - name: jci_match_confidence
+        description: Confidence (0-1) of the JCI entity-resolution match.
+        data_type: numeric
+      - name: jci_source
+        description: Aggregator/source the JCI accreditation row came from.
+        data_type: text
+      - name: jci_data_source
+        description: Provenance tag of the accreditation signal ('jci').
+        data_type: text
+
+  - name: facility_jci
+    description: >-
+      Entity-resolution crosswalk: governed facilities resolved (inner join on
+      normalized name / brand key + state) to JCI-accredited organizations. One
+      row per matched facility_id, carrying the match tier + confidence and the
+      JCI provenance. gold.facilities reads this to flag `jci_accredited`.
+    columns:
+      - name: facility_id
+        description: Resolved facility primary key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('facilities')
+                field: facility_id
+      - name: jci_org_id
+        tests: [not_null]
+      - name: jci_organization_name
+        tests: [not_null]
+      - name: match_method
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['exact_name_state', 'brand_city', 'brand_state']
+      - name: match_confidence
+        tests: [not_null]
+      - name: data_source
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['jci']
 
   - name: facility_capability_assessments
     description: >-

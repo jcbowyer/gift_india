@@ -6,6 +6,10 @@ has one. For each site it stores a raw HTML snapshot plus an extracted JSON of
 the useful fields (title, description, emails, phones, address, visible text),
 and writes a ``manifest.json`` summarising every scrape attempt.
 
+While the project is in pilot the crawl is **scoped to a handful of districts**
+(``CRAWL_REGIONS`` — Mumbai, Delhi, Bengaluru, Lucknow, Jaisalmer); facilities
+outside them are skipped. Pass ``--all-districts`` to crawl the whole dataset.
+
 Synthetic demo facilities have an empty ``website_url`` and are skipped — there
 are no real sites to fetch. Populate ``website_url`` (from the governed Virtue
 Foundation dataset or via ``--input``) to actually scrape.
@@ -72,6 +76,52 @@ _PHONE_RE = re.compile(
 )
 
 
+# Pilot coverage — the facility crawl is scoped to these districts while the
+# project is in pilot (see README "Coverage" notice). The real entity-resolved
+# data has noisy and sometimes swapped district/state values, so each region
+# matches when ANY of its tokens appears in EITHER the district or state field.
+CRAWL_REGIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("Mumbai City / Suburban (Maharashtra)", ("mumbai",)),
+    ("New Delhi / Central Delhi (Delhi NCT)", ("delhi",)),
+    ("Bengaluru Urban (Karnataka)", ("bengaluru", "bangalore")),
+    ("Lucknow (Uttar Pradesh)", ("lucknow",)),
+    ("Jaisalmer (Rajasthan)", ("jaisalmer",)),
+)
+CRAWL_SCOPE_LABEL = "; ".join(name for name, _ in CRAWL_REGIONS)
+
+
+# Facility types excluded from the deep crawl + downstream analysis. These are the
+# small, high-volume primary-care / clinic records in the governed VF dataset that
+# rarely carry an informative official website and aren't the surgical, hospital-
+# grade facilities the navigator reasons about. Excluding them focuses the crawl on
+# the ~6.5K hospital-grade rows. Counts in the real dataset (≈10K facilities):
+# "Clinic / Centre" (3,481), "Primary Health Centre" (12), "Community Health
+# Centre" (7). Matched case-insensitively against the facility ``type`` field.
+EXCLUDED_TYPES: frozenset[str] = frozenset(
+    {
+        "clinic / centre",
+        "primary health centre",
+        "community health centre",
+    }
+)
+
+
+def _is_excluded_type(ftype: str | None) -> bool:
+    """True when a facility's ``type`` is excluded from the deep crawl/analysis."""
+    return (ftype or "").strip().lower() in EXCLUDED_TYPES
+
+
+def _in_crawl_scope(district: str | None, state: str | None) -> bool:
+    """True when a facility falls within the pilot crawl districts.
+
+    Region tokens are matched against both fields (lower-cased) because the
+    source data sometimes carries the city in ``state`` and the locality in
+    ``district``.
+    """
+    hay = f"{district or ''} {state or ''}".lower()
+    return any(tok in hay for _, tokens in CRAWL_REGIONS for tok in tokens)
+
+
 @dataclass
 class ScrapeTarget:
     """A single thing to scrape."""
@@ -133,19 +183,29 @@ def _make_parser_soup(html: str) -> BeautifulSoup:
 def _normalise_url(url: str | None) -> str | None:
     if not url:
         return None
-    url = str(url).strip()
+    # Real data carries stray wrapping quotes/whitespace (e.g. '"esic.nic.in"').
+    url = str(url).strip().strip("\"'").strip()
     if not url or url.lower() in {"nan", "none", "null"}:
         return None
-    if not urlparse(url).scheme:
-        url = "https://" + url
-    parsed = urlparse(url)
+    # urlparse raises ValueError on some malformed hosts (bad IPv6 brackets,
+    # control chars, …); a single bad row must not abort the whole crawl.
+    try:
+        if not urlparse(url).scheme:
+            url = "https://" + url
+        parsed = urlparse(url)
+    except ValueError:
+        return None
     if not parsed.netloc:
         return None
     return url
 
 
-def targets_from_facilities() -> list[ScrapeTarget]:
-    """Build scrape targets from the configured data source (DB or CSV)."""
+def targets_from_facilities(*, all_districts: bool = False) -> list[ScrapeTarget]:
+    """Build scrape targets from the configured data source (DB or CSV).
+
+    By default the crawl is scoped to the pilot districts (``CRAWL_REGIONS``);
+    pass ``all_districts=True`` to crawl every facility that has a website.
+    """
     from .data import load_bundle
 
     facilities = load_bundle().facilities
@@ -157,18 +217,45 @@ def targets_from_facilities() -> list[ScrapeTarget]:
         return []
 
     targets: list[ScrapeTarget] = []
+    out_of_scope = 0
+    excluded_type = 0
     for row in facilities.itertuples(index=False):
         url = _normalise_url(getattr(row, "website_url", None))
-        if url:
-            targets.append(
-                ScrapeTarget(
-                    facility_id=str(getattr(row, "facility_id", "")) or url,
-                    name=str(getattr(row, "name", "")),
-                    url=url,
-                    state=str(getattr(row, "state", "") or ""),
-                    district=str(getattr(row, "district", "") or ""),
-                )
+        if not url:
+            continue
+        # Skip small primary-care / clinic types regardless of district scope —
+        # they aren't part of the deep crawl + analysis (see EXCLUDED_TYPES).
+        if _is_excluded_type(str(getattr(row, "type", "") or "")):
+            excluded_type += 1
+            continue
+        state = str(getattr(row, "state", "") or "")
+        district = str(getattr(row, "district", "") or "")
+        if not all_districts and not _in_crawl_scope(district, state):
+            out_of_scope += 1
+            continue
+        targets.append(
+            ScrapeTarget(
+                facility_id=str(getattr(row, "facility_id", "")) or url,
+                name=str(getattr(row, "name", "")),
+                url=url,
+                state=state,
+                district=district,
             )
+        )
+
+    if all_districts:
+        logger.info(
+            "Crawl scope: all districts — {} facility URL(s); skipped {} "
+            "excluded type(s) ({}).",
+            len(targets), excluded_type, ", ".join(sorted(EXCLUDED_TYPES)),
+        )
+    else:
+        logger.info(
+            "Crawl scope: {} facility URL(s) within the pilot districts "
+            "({}); skipped {} out-of-scope and {} excluded type(s). Pass "
+            "--all-districts to crawl everywhere.",
+            len(targets), CRAWL_SCOPE_LABEL, out_of_scope, excluded_type,
+        )
     return targets
 
 
@@ -211,11 +298,11 @@ def targets_from_input(path: Path) -> list[ScrapeTarget]:
 
 
 # --------------------------------------------------------------- fetching
-def _build_session() -> requests.Session:
+def _build_session(user_agent: str | None = None) -> requests.Session:
     session = requests.Session()
     session.headers.update(
         {
-            "User-Agent": USER_AGENT,
+            "User-Agent": user_agent or USER_AGENT,
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "en-IN,en;q=0.9",
         }
@@ -454,14 +541,19 @@ def scrape(
     retries: int = DEFAULT_RETRIES,
     limit: int | None = None,
     force: bool = False,
+    user_agent: str | None = None,
 ) -> ScrapeSummary:
-    """Scrape every target, writing snapshots + a manifest to ``out_dir``."""
+    """Scrape every target, writing snapshots + a manifest to ``out_dir``.
+
+    ``user_agent`` overrides the default research-bot UA — pass a browser UA for
+    sites that 403 automated agents (many large hospital chains do).
+    """
     if limit is not None:
         targets = targets[:limit]
 
     out_dir.mkdir(parents=True, exist_ok=True)
     started_at = _now_iso()
-    session = _build_session()
+    session = _build_session(user_agent)
 
     records: list[ScrapeRecord] = []
     logger.info("Scraping {} facility website(s) → {}", len(targets), out_dir)
@@ -539,6 +631,11 @@ def main(argv: list[str] | None = None) -> int:
         "--force", action="store_true",
         help="Re-scrape even if a cached extraction already exists.",
     )
+    parser.add_argument(
+        "--all-districts", action="store_true",
+        help="Crawl every facility URL, ignoring the pilot district scope "
+        f"({CRAWL_SCOPE_LABEL}).",
+    )
     args = parser.parse_args(argv)
 
     if args.input:
@@ -546,7 +643,7 @@ def main(argv: list[str] | None = None) -> int:
             parser.error(f"--input file not found: {args.input}")
         targets = targets_from_input(args.input)
     else:
-        targets = targets_from_facilities()
+        targets = targets_from_facilities(all_districts=args.all_districts)
 
     if not targets:
         logger.warning(

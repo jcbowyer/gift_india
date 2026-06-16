@@ -1,0 +1,604 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>MM Dental</title>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="description" content="MM Dental" />
+	<meta name="keywords" content="MM Dental" />
+	<meta http-equiv="Content-Script-Type" content="text/javascript" />
+	<meta http-equiv="Content-Style-Type" content="text/css" />
+	<link rel="shortcut icon" href="https://www.mmdental.com/favicon.ico" />
+
+	<link href="https://www.mmdental.com/templates/Computers/Styles/purple.css" type="text/css" rel="stylesheet" />
+	<link href="https://www.mmdental.com/templates/Computers/Styles/styles.css" type="text/css" rel="stylesheet" />
+	<link href="https://www.mmdental.com/templates/Computers/Styles/iselector.css" type="text/css" rel="stylesheet" />
+
+	<!--[if IE]>
+	  <link rel="stylesheet" type="text/css" href="https://www.mmdental.com/templates/Computers/Styles/ie.css" />
+	<![endif]-->
+
+	<!-- Tell the browsers about our RSS feeds -->
+	<link rel="alternate" type="application/rss+xml" title="Latest News (RSS 2.0)" href="http://www.mmdental.com/rss.php?action=newblogs&amp;type=rss" />
+<link rel="alternate" type="application/atom+xml" title="Latest News (Atom 0.3)" href="http://www.mmdental.com/rss.php?action=newblogs&amp;type=atom" />
+<link rel="alternate" type="application/rss+xml" title="New Products (RSS 2.0)" href="http://www.mmdental.com/rss.php?type=rss" />
+<link rel="alternate" type="application/atom+xml" title="New Products (Atom 0.3)" href="http://www.mmdental.com/rss.php?type=atom" />
+<link rel="alternate" type="application/rss+xml" title="Popular Products (RSS 2.0)" href="http://www.mmdental.com/rss.php?action=popularproducts&amp;type=rss" />
+<link rel="alternate" type="application/atom+xml" title="Popular Products (Atom 0.3)" href="http://www.mmdental.com/rss.php?action=popularproducts&amp;type=atom" />
+
+
+	<!-- Include visitor tracking code (if any) -->
+	<script type="text/javascript" src="https://www.mmdental.com/index.php?action=tracking_script"></script>
+
+	
+
+	
+
+	<script type="text/javascript" src="https://www.mmdental.com/javascript/jquery.js"></script>
+	<script type="text/javascript" src="https://www.mmdental.com/javascript/menudrop.js"></script>
+	<script type="text/javascript" src="https://www.mmdental.com/javascript/common.js"></script>
+	<script type="text/javascript" src="https://www.mmdental.com/javascript/iselector.js"></script>
+
+	<script type="text/javascript">
+	//<![CDATA[
+	config.ShopPath = 'https://www.mmdental.com';
+	config.AppPath = '';
+
+	// Ensure that all product lists are the same height
+	$(document).ready(function() {
+		if(typeof(DesignMode) != 'undefined') {
+			return;
+		}
+		var maxHeight = 0;
+			$('.Content .ProductList li .ProductDetails').each(function() {
+				if($(this).height() > maxHeight) {
+					maxHeight = $(this).height();
+				}
+		});
+		$('.Content .ProductList li .ProductDetails').css('height', maxHeight);
+	});
+	//]]>
+	</script>
+
+	<script type="text/javascript" src="/javascript/quicksearch.js"></script>
+
+	
+
+</head>
+
+<body>
+<div id="Container">
+					<div id="TopMenu">
+			<ul style="display:">
+				<li style="display:" class="First"><a href="http://www.mmdental.com/account.php">My Account</a></li>
+				<li style="display:"><a href="http://www.mmdental.com/orderstatus.php">Order Status</a></li>
+				<li style="display:"><a href="http://www.mmdental.com/wishlist.php">Wish Lists</a></li>
+				<li><a href="http://www.mmdental.com/giftcertificates.php">Gift Certificates</a></li>
+				<li style="display:" class="CartLink"><a href="http://www.mmdental.com/cart.php">View Cart <span></span></a></li>
+				<li style="display:">
+					<div>
+						<a href='https://www.mmdental.com/login.php'>Sign in</a> or <a href='https://www.mmdental.com/login.php?action=create_account'>Create an account</a>
+					</div>
+				</li>
+				<li class="HeaderLiveChat">
+					
+				</li>
+			</ul>
+			<br class="Clear" />
+		</div>
+		<div id="Outer">
+			<div id="Header">
+				<div id="Logo">
+					<a href="http://www.mmdental.com/"><img src="https://www.mmdental.com/product_images/mm_logo_terran.png" border="0" id="LogoImage" alt="MM Dental" /></a>
+
+				</div>
+							<div id="SearchForm">
+				<form action="http://www.mmdental.com/search.php" method="get" onsubmit="return check_small_search_form()">
+					<label for="search_query">Search</label>
+					<input type="text" name="search_query" id="search_query" class="Textbox" value="" />
+					<input type="image" src="https://www.mmdental.com/templates/Computers/images/purple/Search.gif" class="Button" />
+				</form>
+				<p>
+					<a href="http://www.mmdental.com/search.php?mode=advanced"><strong>Advanced Search</strong></a> |
+					<a href="http://www.mmdental.com/search.php?action=Tips">Search Tips</a>
+				</p>
+			</div>
+
+			<script type="text/javascript">
+				var QuickSearchAlignment = 'left';
+				var QuickSearchWidth = '232px';
+				lang.EmptySmallSearch = "You forgot to enter some search keywords.";
+			</script>
+
+				<br class="Clear" />
+			</div>
+			<div id="Menu">
+		<ul>
+			<li class="First ActivePage"><a href="http://www.mmdental.com/"><span>Home</span></a></li>
+				<li class=" ">
+		<a href="http://www.mmdental.com/pages/About-Us.html"><span>About Us</span></a>
+		
+	</li>	<li class=" ">
+		<a href="http://www.mmdental.com/pages/CDE-%26-Trade-Shows.html"><span>CDE &amp; Trade Shows</span></a>
+		
+	</li>	<li class=" ">
+		<a href="http://www.mmdental.com/pages/Shipping-%26-Returns.html"><span>Shipping &amp; Returns</span></a>
+		
+	</li>	<li class=" ">
+		<a href="http://www.mmdental.com/pages/India-Network.html"><span>India Network</span></a>
+		
+	</li>	<li class=" ">
+		<a href="http://www.mmdental.com/pages/Scientifics-.html"><span>Scientifics </span></a>
+		
+	</li>	<li class=" ">
+		<a href="http://www.mmdental.com/pages/Testimonial.html"><span>Testimonial</span></a>
+		
+	</li>	<li class=" ">
+		<a href="http://www.mmdental.com/pages/Photos-%26-Videos.html"><span>Photos &amp; Videos</span></a>
+		
+	</li>	<li class=" ">
+		<a href="http://www.mmdental.com/pages/Contact-Us.html"><span>Contact Us</span></a>
+		
+	</li>	<li class=" ">
+		<a href="https://eazypay.icicibank.com/eazypayLink?P1=qQQoGT6QtsrQR5wCd4DK5Q=="><span>PAY HERE</span></a>
+		
+	</li>
+		</ul>
+	</div>
+
+	<div id="Wrapper">
+		<div id="WrapperBanner">
+	<p></p>
+</div>
+
+		<div class="Left" id="LayoutColumn1">
+							<div class="Block CategoryList Moveable" id="SideCategoryList">
+					<h2>Product Categories</h2>
+					<div class="BlockContent">
+						<ul>
+								<li class=""><a href="http://www.mmdental.com/categories/Ad-Dent-Advancing-Dental-Excellence-/">Ad Dent Advancing Dental Excellence </a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/EMS-/">EMS </a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Hot-Deals/">Hot Deals</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Whitening/">Whitening</a>
+	<ul>	<li class="LastChild"><a href="http://www.mmdental.com/categories/Whitening/Philips-Zoom-Whitespeed/">Philips Zoom Whitespeed</a>
+	<ul>	<li class=""><a href="http://www.mmdental.com/categories/Whitening/Philips-Zoom-Whitespeed/Chairside-Bleach/">Chairside Bleach</a>
+	
+	</li>	<li class="LastChild"><a href="http://www.mmdental.com/categories/Whitening/Philips-Zoom-Whitespeed/Home-Bleach/">Home Bleach</a>
+	
+	</li></ul>
+	</li></ul>
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Oral-Health-Care/">Oral Health Care</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Activa-Bio-ACTIVE/">Activa Bio ACTIVE</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Protective-Wear/">Protective Wear</a>
+	<ul>	<li class=""><a href="http://www.mmdental.com/categories/Protective-Wear/FACE-PROTECTION/">FACE PROTECTION</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Protective-Wear/Hygiene-and-Prevention-Accessories-/">Hygiene and Prevention Accessories </a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Protective-Wear/PPE%27s/">PPE&#039;s</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Protective-Wear/Surgical-Gowns/">Surgical Gowns</a>
+	
+	</li>	<li class="LastChild"><a href="http://www.mmdental.com/categories/Protective-Wear/Scrubs/">Scrubs</a>
+	
+	</li></ul>
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Pulp-Endodontics/">Pulp Endodontics</a>
+	<ul>	<li class=""><a href="http://www.mmdental.com/categories/Pulp-Endodontics/EDTA-/">EDTA </a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Pulp-Endodontics/Calcium-Hydroxide-/">Calcium Hydroxide </a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Pulp-Endodontics/Root-Canal-Sealer/">Root Canal Sealer</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Pulp-Endodontics/Pressure-Syringe/">Pressure Syringe</a>
+	
+	</li>	<li class="LastChild"><a href="http://www.mmdental.com/categories/Pulp-Endodontics/Wonder-Orange-Solvent/">Wonder Orange Solvent</a>
+	
+	</li></ul>
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Restoratives/">Restoratives</a>
+	<ul>	<li class=""><a href="http://www.mmdental.com/categories/Restoratives/Etchants/">Etchants</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Restoratives/Core-Build%252dUp-Material/">Core Build-Up Material</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Restoratives/Cavity-Liner/">Cavity Liner</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Restoratives/Flowable-Composites/">Flowable Composites</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Restoratives/Porcelain-Prep-Kit/">Porcelain Prep Kit</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Restoratives/Opaquer/">Opaquer</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Restoratives/Resin-Cement/">Resin Cement</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Restoratives/Embrace-WetBond-/">Embrace WetBond </a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Restoratives/T%252dBands-/">T-Bands </a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Restoratives/Fintrec-Matrix-Strips/">Fintrec Matrix Strips</a>
+	
+	</li>	<li class="LastChild"><a href="http://www.mmdental.com/categories/Restoratives/Polishing/">Polishing</a>
+	
+	</li></ul>
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Periodontics/">Periodontics</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Pedodontics/">Pedodontics</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/General/">General</a>
+	<ul>	<li class=""><a href="http://www.mmdental.com/categories/General/Acessories/">Acessories</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/General/Rainbow-wedges/">Rainbow wedges</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/General/Coderings/">Coderings</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/General/Prophycups/">Prophycups</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/General/Flecta-Disposable-Mirrors/">Flecta Disposable Mirrors</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/General/Mixing-Bowl/">Mixing Bowl</a>
+	
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/General/Mouth-Probe/">Mouth Probe</a>
+	
+	</li>	<li class="LastChild"><a href="http://www.mmdental.com/categories/General/Pic%252dn%252dStic/">Pic-n-Stic</a>
+	
+	</li></ul>
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Esthetic-Dentistry/">Esthetic Dentistry</a>
+	<ul>	<li class="LastChild"><a href="http://www.mmdental.com/categories/Esthetic-Dentistry/Cosmedent/">Cosmedent</a>
+	<ul>	<li class=""><a href="http://www.mmdental.com/categories/Esthetic-Dentistry/Cosmedent/Polishing-/">Polishing </a>
+	
+	</li>	<li class="LastChild"><a href="http://www.mmdental.com/categories/Esthetic-Dentistry/Cosmedent/Accessories-/">Accessories </a>
+	
+	</li></ul>
+	</li></ul>
+	</li>	<li class=""><a href="http://www.mmdental.com/categories/Quick-Enquiry-Form/">Quick Enquiry Form</a>
+	
+	</li>
+						</ul>
+					</div>
+				</div>
+			<div class="Block BrandList Moveable" id="SideShopByBrand" style="display: ">
+	<h2>Browse by Company</h2>
+	<div class="BlockContent">
+		<ul>
+				<li><a href="http://www.mmdental.com/brands/PHILIPS-ZOOM%21.html">PHILIPS ZOOM!</a></li>
+		</ul>
+		
+	</div>
+</div>
+							<div class="Block NewsletterSubscription Moveable" id="SideNewsletterBox">
+					<h2>Newsletter</h2>
+					<div class="BlockContent">
+						<form action="https://www.mmdental.com/subscribe.php" method="post" id="subscribe_form" name="subscribe_form">
+							<input type="hidden" name="action" value="subscribe" />
+							<label for="nl_first_name">Your First Name:</label>
+							<input type="text" class="Textbox" id="nl_first_name" name="nl_first_name" />
+							<label for="nl_email">Your Email Address:</label>
+							<input type="text" class="Textbox" id="nl_email" name="nl_email" /><br />
+							<input type="image" src="https://www.mmdental.com/templates/Computers/images/purple/NewsletterSubscribe.gif" value="Subscribe" class="Button" />
+						</form>
+					</div>
+				</div>
+				<script type="text/javascript">
+// <!--
+	$('#subscribe_form').submit(function() {
+		if($('#nl_first_name').val() == '') {
+			alert('You forgot to type in your first name.');
+			$('#nl_first_name').focus();
+			return false;
+		}
+
+		if($('#nl_email').val() == '') {
+			alert('You forgot to type in your email address.');
+			$('#nl_email').focus();
+			return false;
+		}
+
+		if($('#nl_email').val().indexOf('@') == -1 || $('#nl_email').val().indexOf('.') == -1) {
+			alert('Please enter a valid email address, such as john@example.com.');
+			$('#nl_email').focus();
+			$('#nl_email').select();
+			return false;
+		}
+
+		// Set the action of the form to stop spammers
+		$('#subscribe_form').append("<input type=\"hidden\" name=\"check\" value=\"1\" \/>");
+		return true;
+
+	});
+// -->
+</script>
+
+			
+			
+		</div>
+		<div class="Content" id="LayoutColumn2">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>MM Dental</title>
+<script language="javascript">AC_FL_RunContent = 0;</script>
+<script src="AC_RunActiveContent.js" language="javascript"></script>
+</head>
+<body bgcolor="#ffffff">
+<img src="promotion_images/mmdental-homepage.png" alt="MM Dental">
+</body>
+</html>
+
+
+						<div class="Block FeaturedProducts Moveable"  id="HomeFeaturedProducts" style="display:">
+					<h2>Top 20 Products</h2>
+					<div class="BlockContent">
+						<ul class="ProductList">
+														<li class="Odd">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/NiteWhite-ACP--Deluxe-kit-22-%25-Carbamide-peroxide.html" ><img src="https://www.mmdental.com/product_images/p/philips_zoom_nw_cmyk_23693__43162.jpg" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/NiteWhite-ACP--Deluxe-kit-22-%25-Carbamide-peroxide.html">NiteWhite ACP  Deluxe kit 22 % Carbamide peroxide</a></strong>
+								</div>
+								<div class="ProductPriceRating">
+									<em>Rs.6,000.00</em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+								</div>
+								<div class="ProductActionAdd" style="display:;">
+									<a href="http://www.mmdental.com/cart.php?action=add&amp;product_id=69">Add To Cart</a>
+								</div>
+							</li>							<li class="Even">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/Philips-Zoom-WhiteSpeed-Light%252dActivated-Whitening-System.html" ><img src="https://www.mmdental.com/product_images/f/1__25901.jpg" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/Philips-Zoom-WhiteSpeed-Light%252dActivated-Whitening-System.html">Philips Zoom WhiteSpeed Light-Activated Whitening System</a></strong>
+								</div>
+								<div class="ProductPriceRating">
+									<em></em>
+									<span class="Rating Rating5"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating5.gif" alt="" style="" /></span>
+								</div>
+								<div class="ProductActionAdd" style="display:none;">
+									<a href="http://www.mmdental.com/cart.php?action=add&amp;product_id=78">Add To Cart</a>
+								</div>
+							</li>							<li class="Odd">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/Philips-Zoom-WhiteSpeed-Lamphead.html" ><img src="https://www.mmdental.com/product_images/k/2__66960.jpg" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/Philips-Zoom-WhiteSpeed-Lamphead.html">Philips Zoom WhiteSpeed Lamphead</a></strong>
+								</div>
+								<div class="ProductPriceRating">
+									<em></em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+								</div>
+								<div class="ProductActionAdd" style="display:none;">
+									<a href="http://www.mmdental.com/cart.php?action=add&amp;product_id=98">Add To Cart</a>
+								</div>
+							</li>							<li class="Even">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/ACTIVA%E2%84%A2-KIDS-BioACTIVE-%E2%80%93-RESTORATIVE%E2%84%A2.html" ><img src="https://www.mmdental.com/product_images/h/activa_bioactive_kids_restorative_1__99932_thumb.jpg" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/ACTIVA%E2%84%A2-KIDS-BioACTIVE-%E2%80%93-RESTORATIVE%E2%84%A2.html">ACTIVA™ KIDS BioACTIVE – RESTORATIVE™</a></strong>
+								</div>
+								<div class="ProductPriceRating">
+									<em>Rs.0.00</em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+								</div>
+								<div class="ProductActionAdd" style="display:;">
+									<a href="http://www.mmdental.com/products/ACTIVA%E2%84%A2-KIDS-BioACTIVE-%E2%80%93-RESTORATIVE%E2%84%A2.html">Choose Options</a>
+								</div>
+							</li>							<li class="Odd">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/ACTIVA%E2%84%A2-KIDS-BioACTIVE-%E2%80%93-RESTORATIVE%E2%84%A2-Syringe.html" ><img src="https://www.mmdental.com/product_images/r/activa_bioactive_kids_restorative_vk1p__32437_thumb.jpg" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/ACTIVA%E2%84%A2-KIDS-BioACTIVE-%E2%80%93-RESTORATIVE%E2%84%A2-Syringe.html">ACTIVA™ KIDS BioACTIVE – RESTORATIVE™ Syringe</a></strong>
+								</div>
+								<div class="ProductPriceRating">
+									<em>Rs.11,250.00</em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+								</div>
+								<div class="ProductActionAdd" style="display:;">
+									<a href="http://www.mmdental.com/products/ACTIVA%E2%84%A2-KIDS-BioACTIVE-%E2%80%93-RESTORATIVE%E2%84%A2-Syringe.html">Choose Options</a>
+								</div>
+							</li>							<li class="Even">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/Activa%E2%84%A2-BioACTIVE-Restorative-Starter-Kit.html" ><img src="https://www.mmdental.com/product_images/y/activa_bioactive_restorative_1__64783_thumb.jpg" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/Activa%E2%84%A2-BioACTIVE-Restorative-Starter-Kit.html">Activa™ BioACTIVE Restorative Starter Kit</a></strong>
+								</div>
+								<div class="ProductPriceRating">
+									<em>Rs.25,500.00</em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+								</div>
+								<div class="ProductActionAdd" style="display:;">
+									<a href="http://www.mmdental.com/products/Activa%E2%84%A2-BioACTIVE-Restorative-Starter-Kit.html">Choose Options</a>
+								</div>
+							</li>							<li class="Odd">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/Philips-Zoom-Dual-Procedure-Kit.html" ><img src="https://www.mmdental.com/product_images/x/t_zoom_2_dual_procedure_kit__07388.jpg" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/Philips-Zoom-Dual-Procedure-Kit.html">Philips Zoom Dual Procedure Kit</a></strong>
+								</div>
+								<div class="ProductPriceRating">
+									<em>Rs.22,000.00</em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+								</div>
+								<div class="ProductActionAdd" style="display:;">
+									<a href="http://www.mmdental.com/cart.php?action=add&amp;product_id=81">Add To Cart</a>
+								</div>
+							</li>							<li class="Even">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/Pulpdent%252d-Activa-BioActive-Syringe-A2%7B47%7DA3-Shade-.html" ><img src="https://www.mmdental.com/product_images/k/activa_bioactive_restorative_3__60090_thumb.jpg" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/Pulpdent%252d-Activa-BioActive-Syringe-A2%7B47%7DA3-Shade-.html">Pulpdent- Activa BioActive Syringe A2/A3 Shade </a></strong>
+								</div>
+								<div class="ProductPriceRating">
+									<em>Rs.11,250.00</em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+								</div>
+								<div class="ProductActionAdd" style="display:;">
+									<a href="http://www.mmdental.com/products/Pulpdent%252d-Activa-BioActive-Syringe-A2%7B47%7DA3-Shade-.html">Choose Options</a>
+								</div>
+							</li>							<li class="Odd">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/-Day-White--ACP-deluxe-Kit-14%25-Hydrogen-Peroxide.html" ><img src="https://www.mmdental.com/product_images/n/dw_t__40120.jpg" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/-Day-White--ACP-deluxe-Kit-14%25-Hydrogen-Peroxide.html"> Day White  ACP deluxe Kit 14% Hydrogen Peroxide</a></strong>
+								</div>
+								<div class="ProductPriceRating">
+									<em>Rs.6,000.00</em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+								</div>
+								<div class="ProductActionAdd" style="display:;">
+									<a href="http://www.mmdental.com/cart.php?action=add&amp;product_id=218">Add To Cart</a>
+								</div>
+							</li>							<li class="Even">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/EMS-AIRFLOW%C2%AE-PROPHYLAXIS-MASTER.html" ><img src="https://www.mmdental.com/product_images/b/ems2__68651_thumb.png" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/EMS-AIRFLOW%C2%AE-PROPHYLAXIS-MASTER.html">EMS AIRFLOW® PROPHYLAXIS MASTER</a></strong>
+								</div>
+								<div class="ProductPriceRating">
+									<em>Rs.0.00</em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+								</div>
+								<div class="ProductActionAdd" style="display:;">
+									<a href="http://www.mmdental.com/cart.php?action=add&amp;product_id=279">Add To Cart</a>
+								</div>
+							</li>
+						</ul>
+					</div>
+					<br class="Clear" />
+				</div>
+
+			
+			
+			<div class='Block BlockContent banner_home_page_bottom'><p><a title="M&amp;M Facebook" href="https://www.facebook.com/maala.mmdental" target="_parent"><img class="__mce_add_custom__" title="facebook_logo.jpg" src="/product_images/uploaded_images/facebook_logo.jpg" alt="facebook_logo.jpg" width="88" height="87" /></a><a href="https://www.instagram.com/maalammdental/" target="_top"><img class="__mce_add_custom__" title="instagram_logo.jpg" src="/product_images/uploaded_images/instagram_logo.jpg" alt="instagram_logo.jpg" width="88" height="89" /></a><a href="https://twitter.com/MMDental3" target="_parent"><img class="__mce_add_custom__" title="Twitter_logo.jpg" src="/product_images/uploaded_images/Twitter_logo.jpg" alt="Twitter_logo.jpg" width="95" height="87" /></a><span style="font-size: x-large;"><a href="https://www.linkedin.com/in/m-m-dental-associates-076315a0/"><img class="__mce_add_custom__" title="linked_in_logo.jpg" src="/product_images/uploaded_images/linked_in_logo.jpg" alt="linked_in_logo.jpg" width="85" height="77" /></a></span><a href="https://www.youtube.com/channel/UC1gxQ2YRkRn-pCHPrRGX1RQ"><img class="__mce_add_custom__" title="youtube_logo.jpg" src="/product_images/uploaded_images/youtube_logo.jpg" alt="youtube_logo.jpg" width="95" height="87" /></a></p></div>
+<iframe height="848" allowTransparency="true" frameborder="0" scrolling="no" style="width:50%;border:none" src="http://www.mmdental.com/phpform/embed.php?id=1" title="Quick Enquiry Form"><a href="http://www.mmdental.com/phpform/view.php?id=1" title="Quick Enquiry Form">Quick Enquiry Form</a></iframe>
+		</div>
+		<div class="Right" id="LayoutColumn3">
+
+				<div class="Block NewProducts Moveable" id="SideNewProducts" style="display:">
+					<h2><span class="FeedLink FloatRight">
+	<a href="https://www.mmdental.com/rss.php?type=rss">
+		<img src="https://www.mmdental.com/templates/Computers/images/RSS.gif" title="New Products RSS Feed" alt="RSS" />
+	</a>
+</span> New Products</h2>
+					<div class="BlockContent">
+						<ul class="ProductList">
+														<li class="Odd">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/--Trimax--Composite-Contact-Instrument.html" ><img src="https://www.mmdental.com/product_images/v/screenshot_2024_07_06_131904__54080_thumb.png" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/--Trimax--Composite-Contact-Instrument.html">  Trimax  Composite Contact Instrument</a></strong>
+									<em>Rs.0.00</em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+									<div class="ProductActionAdd" style="display:;">
+										<strong><a href="http://www.mmdental.com/cart.php?action=add&amp;product_id=284">Add To Cart</a></strong>
+									</div>
+								</div>
+							</li>							<li class="Even">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/--Compex-HD--Heated-Composite-Dispencer.html" ><img src="https://www.mmdental.com/product_images/g/screenshot_2024_07_06_131708__40416_thumb.png" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/--Compex-HD--Heated-Composite-Dispencer.html">  Compex HD  Heated Composite Dispencer</a></strong>
+									<em>Rs.0.00</em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+									<div class="ProductActionAdd" style="display:;">
+										<strong><a href="http://www.mmdental.com/cart.php?action=add&amp;product_id=283">Add To Cart</a></strong>
+									</div>
+								</div>
+							</li>							<li class="Odd">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/--CoMax--Composite-Dispenser.html" ><img src="https://www.mmdental.com/product_images/t/screenshot_2024_07_06_at_13_14_59_idssalesflyer_single_comax_hires.pdf__45817_thumb.png" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/--CoMax--Composite-Dispenser.html">  CoMax  Composite Dispenser</a></strong>
+									<em>Rs.0.00</em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+									<div class="ProductActionAdd" style="display:;">
+										<strong><a href="http://www.mmdental.com/cart.php?action=add&amp;product_id=282">Add To Cart</a></strong>
+									</div>
+								</div>
+							</li>							<li class="Even">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/--Microlux-DW--Advanced-Diagnostic-System.html" ><img src="https://www.mmdental.com/product_images/d/screenshot_2024_07_06_131047__90960_thumb.png" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/--Microlux-DW--Advanced-Diagnostic-System.html">  Microlux DW  Advanced Diagnostic System</a></strong>
+									<em>Rs.75,000.00</em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+									<div class="ProductActionAdd" style="display:;">
+										<strong><a href="http://www.mmdental.com/cart.php?action=add&amp;product_id=281">Add To Cart</a></strong>
+									</div>
+								</div>
+							</li>							<li class="Odd">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/EMS-AIRFLOW%C2%AE-PROPHYLAXIS-MASTER.html" ><img src="https://www.mmdental.com/product_images/b/ems2__68651_thumb.png" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/EMS-AIRFLOW%C2%AE-PROPHYLAXIS-MASTER.html">EMS AIRFLOW® PROPHYLAXIS MASTER</a></strong>
+									<em>Rs.0.00</em>
+									<span class="Rating Rating0"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating0.gif" alt="" style="" /></span>
+									<div class="ProductActionAdd" style="display:;">
+										<strong><a href="http://www.mmdental.com/cart.php?action=add&amp;product_id=279">Add To Cart</a></strong>
+									</div>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div class="Block PopularProducts Moveable" id="SidePopularProducts" style="display:">
+					<h2><span class="FeedLink FloatRight">
+	<a href="https://www.mmdental.com/rss.php?action=popularproducts&amp;type=rss">
+		<img src="https://www.mmdental.com/templates/Computers/images/RSS.gif" title="Popular Products RSS Feed" alt="RSS" />
+	</a>
+</span>Best Sellers</h2>
+					<div class="BlockContent">
+						<ul class="ProductList">
+														<li class="Odd">
+								<div class="ProductImage">
+									<a href="http://www.mmdental.com/products/Philips-Zoom-WhiteSpeed-Light%252dActivated-Whitening-System.html" ><img src="https://www.mmdental.com/product_images/f/1__25901.jpg" alt="" /></a>
+								</div>
+								<div class="ProductDetails">
+									<strong><a href="http://www.mmdental.com/products/Philips-Zoom-WhiteSpeed-Light%252dActivated-Whitening-System.html">Philips Zoom WhiteSpeed Light-Activated Whitening System</a></strong>
+									<em></em>
+									<span class="Rating Rating5"><img src="https://www.mmdental.com/templates/Computers/images/IcoRating5.gif" alt="" style="" /></span>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</div>
+			
+			
+		</div>
+		<br class="Clear" />
+	</div>
+			<br class="Clear" />
+		<div id="Footer">
+			<p>
+				All prices are in <span title='Indian Rupees'>INR</span>.
+				Copyright 2026 MM Dental.
+				
+			</p>
+<br /><br /><br /><br /><a href="http://www.itsy.in" title="Ecommerce Web Designing Mumbai">Ecommerce Web Designing Mumbai</a><br /><a href="http://www.a2zyellowpages.co.in" target="_blank" title="Indian Yellow Pages">Indian Yellow Pages</a><br /><a href="http://www.email-hosting.in" target="_blank" title="Corporate Email Hosting Mumbai India">Corporate Email Hosting Mumbai India</a><br /><a href="http://www.suninter.net" target="_blank" title="Domain Name Registration Mumbai India">Domain Name Registration Mumbai India</a><br />			
+		</div>
+		<br class="Clear" />
+		</div>
+
+		
+		
+		
+		
+
+</div>
+</body>
+</html>

@@ -10,7 +10,7 @@ import {
   AlertTitle,
   AlertDescription,
 } from '@databricks/appkit-ui/react';
-import { ArrowLeft, MapPin, Building2, Globe, ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowLeft, MapPin, Building2, Globe, ChevronDown, ChevronRight, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { api, type FacilityDetail, type TrustSignal } from '../lib/api';
 import { SignalBadge, CapabilityEvidence } from '../components/trust';
 
@@ -61,14 +61,25 @@ export function FacilityPage() {
 
   const f = detail.facility;
 
+  const counts = detail.capabilities.reduce(
+    (acc, c) => {
+      const eff = overrides[c.key] ?? c.overrideSignal ?? c.trustSignal;
+      if (eff === 'strong') acc.strong += 1;
+      else if (eff === 'partial') acc.partial += 1;
+      else if (eff === 'weak_suspicious') acc.weak += 1;
+      return acc;
+    },
+    { strong: 0, partial: 0, weak: 0 },
+  );
+
   return (
-    <div className="mx-auto max-w-4xl space-y-5">
+    <div className="mx-auto max-w-4xl space-y-5 gift-fade-in">
       <Link to="/" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
         <ArrowLeft className="h-4 w-4" /> Back to Trust Desk
       </Link>
 
-      <Card>
-        <CardContent className="space-y-3 p-5">
+      <Card className="overflow-hidden gift-elevate">
+        <CardContent className="space-y-4 p-5">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <h2 className="text-xl font-bold text-foreground">{f.name}</h2>
@@ -96,6 +107,25 @@ export function FacilityPage() {
               <Badge variant="outline">entity-match {Math.round(f.matchConfidence * 100)}%</Badge>
             )}
           </div>
+
+          {/* Trust at a glance */}
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/30 p-2.5">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Trust at a glance</span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-semibold text-white">
+              <ShieldCheck className="h-3.5 w-3.5" /> {counts.strong} strong
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-semibold text-white">
+              {counts.partial} partial
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-2.5 py-0.5 text-xs font-semibold text-white">
+              <ShieldAlert className="h-3.5 w-3.5" /> {counts.weak} suspicious
+            </span>
+            {f.beds !== null && (
+              <span className="ml-auto inline-flex items-center gap-1.5 text-xs font-medium text-emerald-800">
+                <Building2 className="h-3.5 w-3.5" /> {f.beds} beds serving {f.district}
+              </span>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -108,7 +138,7 @@ export function FacilityPage() {
             const open = openCap === cap.key;
             const effective = overrides[cap.key] ?? cap.overrideSignal ?? cap.trustSignal;
             return (
-              <Card key={cap.key} className="overflow-hidden">
+              <Card key={cap.key} className={`overflow-hidden ${open ? '' : 'gift-lift'}`}>
                 <button
                   type="button"
                   onClick={() => setOpenCap(open ? null : cap.key)}
@@ -120,10 +150,10 @@ export function FacilityPage() {
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   )}
                   <CardTitle className="flex-1 text-base">{cap.label}</CardTitle>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="hidden text-xs text-muted-foreground sm:inline">
                     {cap.evidenceCount} citation{cap.evidenceCount === 1 ? '' : 's'}
                   </span>
-                  <SignalBadge signal={effective} />
+                  <SignalBadge signal={effective} size="lg" />
                 </button>
                 {open && (
                   <CardContent className="border-t bg-muted/20 pt-4">

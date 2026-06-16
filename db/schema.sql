@@ -84,3 +84,37 @@ CREATE INDEX IF NOT EXISTS facility_web_crawl_facility_idx
     ON bronze.facility_web_crawl (facility_id);
 CREATE INDEX IF NOT EXISTS facility_web_crawl_crawled_at_idx
     ON bronze.facility_web_crawl (crawled_at);
+
+-- JCI (Joint Commission International) accredited organizations in India, seeded
+-- from the curated medical-tourism aggregator lists (a sample spot-checked
+-- against the official JCI directory, which blocks bulk export), landed by
+-- src/load_jci.py. This is an external accreditation REFERENCE source, not a
+-- facility record — there is intentionally NO foreign key to bronze.facilities;
+-- entity resolution to a facility_id happens downstream in dbt (silver -> gold
+-- crosswalk) on the normalized `match_name` / `brand_key`. `data_source` tags
+-- the provenance ('jci') so the lineage of the accreditation flag is explicit.
+-- Loads are idempotent on `jci_org_id` = sha256(match_name + city + state)[:16].
+CREATE TABLE IF NOT EXISTS bronze.jci_accreditations (
+    jci_org_id            text        PRIMARY KEY,
+    jci_name              text        NOT NULL,
+    city                  text,
+    state                 text,
+    country               text        NOT NULL DEFAULT 'India',
+    accreditation_program text,
+    accreditation_decision text,                 -- portal decision, e.g. 'Accredited'
+    effective_date        date,                  -- accreditation effective date (or null)
+    match_name            text        NOT NULL,  -- normalized name (entity-resolution key)
+    brand_key             text,                  -- first 2 significant tokens
+    website_url           text,                  -- official hospital homepage (scrape target)
+    snapshot_dir          text,                  -- relative path to the scraped page snapshot
+    verified_on_portal    boolean     NOT NULL DEFAULT false,
+    source                text,                  -- aggregator the row came from
+    source_url            text,
+    data_source           text        NOT NULL DEFAULT 'jci',
+    collected_at          timestamptz NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS jci_accreditations_match_name_idx
+    ON bronze.jci_accreditations (match_name);
+CREATE INDEX IF NOT EXISTS jci_accreditations_state_idx
+    ON bronze.jci_accreditations (state);

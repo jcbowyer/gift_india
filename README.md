@@ -220,9 +220,41 @@ extracted JSON, plus a top-level `manifest.json`). `src/load_crawl.py` then land
 those snapshots in the raw `bronze.facility_web_crawl` table — the replayable
 input to the silver extraction step.
 
+> 📍 **Coverage — full crawl data is limited to 5 pilot districts.** While the
+> project is in pilot, the facility crawl is **scoped** (`CRAWL_REGIONS` in
+> `src/scraper.py`) to:
+>
+> - **Mumbai City / Suburban** (Maharashtra) — dense coastal urban, high income
+> - **New Delhi / Central Delhi** (Delhi NCT) — political hub, high income, inland
+> - **Bengaluru Urban** (Karnataka) — tech-driven, South India, high growth
+> - **Lucknow** (Uttar Pradesh) — large northern-plains district, medium-low income
+> - **Jaisalmer** (Rajasthan) — vast desert/rural district, low density, arid
+>
+> Facilities outside these districts are skipped (≈1,100 of the ~8,400 facilities
+> with a `website_url` are in scope). **More cities coming soon** — pass
+> `--all-districts` (or `make crawl ALL=1`) to crawl the whole dataset.
+
+> 🚫 **Excluded facility types — small primary-care / clinic records are skipped.**
+> Deep analysis from scraping found that the bulk of the governed dataset is low-
+> capability primary-care rows with little-to-no useful official web presence and
+> no surgical role. Those types are excluded from the deep crawl **and** the
+> downstream analysis regardless of district (`EXCLUDED_TYPES` in
+> `src/scraper.py`), focusing the crawl on the ~6.5K hospital-grade facilities:
+>
+> | Excluded type | Rows (real VF dataset) |
+> | --- | ---: |
+> | `Clinic / Centre` | 3,481 |
+> | `Primary Health Centre` | 12 |
+> | `Community Health Centre` | 7 |
+>
+> Hospital-grade types are kept: `Private Hospital`, `Medical College Hospital`,
+> `District Hospital`, `Charitable / Mission Hospital`. The match is
+> case-insensitive on the facility `type`; edit `EXCLUDED_TYPES` to change it.
+
 ```bash
-make crawl                       # scrape every facility with a website_url + land in bronze
-make scrape LIMIT=20             # just scrape (snapshots to data/scraped/)
+make crawl                       # scrape the pilot districts + land in bronze
+make crawl ALL=1                 # scrape EVERY facility with a website_url (all districts)
+make scrape LIMIT=20             # just scrape a sample (snapshots to data/scraped/)
 make load-crawl                  # just land an existing data/scraped/ into bronze
 make scrape INPUT=data/urls.csv  # scrape an ad-hoc URL list (website_url/url column, or .txt)
 ```
@@ -235,6 +267,47 @@ scrape appends new crawl history. It loads to Lakebase too
 > The synthetic demo facilities have an empty `website_url`, so `make scrape`
 > finds nothing to fetch until you populate it from the governed Virtue
 > Foundation dataset (or pass `INPUT=`).
+
+### JCI accreditation as a trust signal (`data_source = jci`)
+
+A second external source flags which facilities hold **JCI (Joint Commission
+International)** accreditation. The official JCI directory is JS-rendered and
+blocks bulk export (it 403s automated fetches), so — as the data-engineering
+brief recommends — `src/jci_scraper.py` builds a **curated seed**
+(`data/jci_india_seed.csv`) of India's JCI-accredited hospitals from medical-
+tourism aggregators (Karetrip, Shifam Health, …), with a sample spot-checked
+against the official portal
+(`verified_on_portal`) and every row's `source` / `source_url` retained. It still
+attempts the live directory (`--fetch-official`) and records the outcome in the
+manifest. `src/load_jci.py` upserts the result into `bronze.jci_accreditations`
+(`data_source = 'jci'`, idempotent on `jci_org_id`).
+
+It also **snapshots each accredited hospital's official homepage** (the
+`website_url` column of the seed) into the same human-readable hierarchy the
+facility crawler uses —
+`data/jci/scraped/<state>/<district>/<hospital-name>-<jci_org_id>/` (`page.html` +
+`extracted.json`, plus a `manifest.json`) — and lands those snapshots in
+`bronze.facility_web_crawl` so the JCI accreditation and its source page share one
+raw-crawl table. Real hospital sites with bot protection (Apollo, BLK-Max, …)
+return 403; those are recorded as failed crawls, the rest are captured.
+
+```bash
+make jci                         # seed + snapshot homepages + land BOTH in bronze
+make jci-scrape                  # compile seed + snapshot homepages to data/jci/
+make jci-scrape NO_PAGES=1       # seed only, no homepage snapshots (offline)
+make load-jci                    # upsert data/jci/ into bronze.jci_accreditations
+make load-jci-crawl              # land data/jci/scraped/ into bronze.facility_web_crawl
+```
+
+**Entity resolution** then turns those messy names ("Apollo Hospital, Chennai"
+vs "Apollo Hospitals Enterprise Limited") into a `facility_id`: dbt normalizes
+both the JCI org names and the governed facility names (`jci_normalize` macro) and
+**inner-joins** them — tiered by specificity (exact name + state → brand + city →
+brand + state, hospitals only) — into the gold reference table
+`gold.facility_jci`. `gold.facilities` left-joins that crosswalk to flag
+`jci_accredited` (confidence ≥ 0.70) and carry the resolved org name + provenance.
+Against the real VF facility set this resolves 10 JCI organizations to their
+governed `facility_id`s (AIG, Amrita, Continental, Medanta, Wockhardt, …).
 
 ## Publish to Lakebase
 

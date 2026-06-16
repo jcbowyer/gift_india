@@ -82,3 +82,38 @@ sources:
             description: Crawl outcome — `ok`, `http_error`, or `fetch_error`.
             tests:
               - not_null
+
+      - name: jci_accreditations
+        description: >-
+          JCI (Joint Commission International) accredited organizations in India,
+          compiled by `gift_india_api/src/jci_scraper.py` from curated medical-
+          tourism aggregator lists (a sample spot-checked against the official JCI
+          directory, which blocks bulk export) and landed by `src/load_jci.py`. An
+          external accreditation REFERENCE source (`data_source` = 'jci'), NOT a
+          facility record — resolved to facility_ids downstream (silver -> gold
+          crosswalk) on the normalized name. Idempotent on `jci_org_id`.
+        columns:
+          - name: jci_org_id
+            description: sha256(match_name + city + state)[:16] — stable per org.
+            tests:
+              - not_null
+              - unique
+          - name: jci_name
+            description: Organization name as published by the source.
+            tests:
+              - not_null
+          - name: match_name
+            description: Normalized name (entity-resolution key).
+            tests:
+              - not_null
+          - name: website_url
+            description: >-
+              Official hospital homepage — the scrape target. `src.jci_scraper
+              --scrape-pages` snapshots it under
+              data/jci/scraped/<state>/<district>/<name>-<id>/.
+          - name: snapshot_dir
+            description: Relative path to the scraped homepage snapshot (or null).
+          - name: data_source
+            description: Provenance tag — always `jci`.
+            tests:
+              - not_null

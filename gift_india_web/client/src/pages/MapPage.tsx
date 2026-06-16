@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router';
 import type { Topology } from 'topojson-specification';
 import {
   Card,
@@ -53,7 +53,7 @@ import {
 } from '../lib/api';
 import { DrilldownMap, type HoverInfo, type MapDisplay } from '../components/DrilldownMap';
 import { SIGNAL_COLORS, rampFor, builtinValue, normName, placeMatch, type BuiltinMetric } from '../lib/mapPalette';
-import { SignalBadge, TrustScoreDial, EvidenceTally } from '../components/trust';
+import { SignalBadge, TrustScoreDial, EvidenceTally, BestSourceBadge } from '../components/trust';
 
 const SIGNAL_FILTERS: { value: TrustSignal | 'all'; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -69,6 +69,8 @@ const DEFAULT_METRIC: CatalogMetric = {
   unit: 'score',
   source: 'builtin',
 };
+
+const REGION_FILTERS = ['North', 'Central', 'East', 'West', 'South', 'North-East'] as const;
 
 function regionSignal(score: number | null): TrustSignal {
   if (score === null) return 'no_claim';
@@ -122,23 +124,16 @@ function MetricReadout({
   scope,
   metric,
   value,
-  rank,
-  total,
 }: {
   regionName: string;
   scope: string;
   metric: CatalogMetric;
   value: number | null;
-  rank: number | null;
-  total: number;
 }) {
   return (
-    <div className="rounded-xl border bg-card p-4">
+    <div className="gift-elevate rounded-xl border bg-card p-4">
       <div className="flex items-start justify-between gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{regionName}</span>
-        {rank !== null && total > 1 && (
-          <Badge variant="outline" className="shrink-0 text-[10px]">#{rank} of {total}</Badge>
-        )}
+        <span className="text-base font-semibold uppercase tracking-wide text-foreground">{regionName}</span>
       </div>
       <div className="mt-1 flex items-baseline gap-1">
         <span className="text-4xl font-bold tabular-nums text-foreground">{formatMetric(value, metric.unit)}</span>
@@ -153,7 +148,7 @@ function MetricReadout({
 function RegionCard({ title, sub, rating }: { title: string; sub: string; rating: RegionRating }) {
   const sig = regionSignal(rating.avgScore);
   return (
-    <Card>
+    <Card className="gift-lift gift-fade-in">
       <CardContent className="space-y-3 p-4">
         <div className="flex items-start gap-3">
           <TrustScoreDial score={rating.avgScore ?? 0} signal={sig} />
@@ -184,7 +179,7 @@ function RegionCard({ title, sub, rating }: { title: string; sub: string; rating
 function FacilityCard({ f, onClose }: { f: FacilityRanking; onClose: () => void }) {
   const sig = f.overrideSignal ?? f.trustSignal;
   return (
-    <Card className="border-primary/40">
+    <Card className="border-primary/40 gift-lift gift-fade-in">
       <CardContent className="space-y-3 p-4">
         <div className="flex items-start gap-3">
           <TrustScoreDial score={f.trustScore} signal={sig} />
@@ -204,10 +199,15 @@ function FacilityCard({ f, onClose }: { f: FacilityRanking; onClose: () => void 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {f.district}, {f.state}</span>
           <span className="inline-flex items-center gap-1"><Building2 className="h-3.5 w-3.5" /> {f.type}</span>
-          {f.beds !== null && <span>{f.beds} beds</span>}
         </div>
+        {f.beds !== null && (
+          <div className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800">
+            <Building2 className="h-3.5 w-3.5" /> Impact: {f.beds} beds serving {f.district}
+          </div>
+        )}
         <p className="text-sm text-foreground/80">{f.summary}</p>
         <EvidenceTally supporting={f.supportingCount} contradicting={f.contradictingCount} />
+        {f.bestSource && <BestSourceBadge source={f.bestSource} />}
         <Link to={`/facility/${encodeURIComponent(f.facilityId)}`} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
           Full facility record <ExternalLink className="h-3 w-3" />
         </Link>
@@ -231,10 +231,12 @@ export function MapPage() {
   const [openCats, setOpenCats] = useState<Set<string>>(new Set(['Trust & Capacity']));
 
   // filters
+  const [regionFilter, setRegionFilter] = useState<string>('all');
   const [capability, setCapability] = useState('icu');
   const [signal, setSignal] = useState<TrustSignal | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [minBeds, setMinBeds] = useState(0);
+  const [minTrustScore, setMinTrustScore] = useState(0);
 
   // map display controls
   const [display, setDisplay] = useState<MapDisplay>('shade');
@@ -246,6 +248,18 @@ export function MapPage() {
   const [selectedFacility, setSelectedFacility] = useState<FacilityRanking | null>(null);
   const [hover, setHover] = useState<HoverInfo | null>(null);
   const [hoveredFacilityId, setHoveredFacilityId] = useState<string | null>(null);
+
+  // Deep-link drilldown: /navigator?state=…&district=… (e.g. from the landing
+  // page's "analysed in depth" list). Captured once at mount — the query carries
+  // descriptive labels ("Delhi NCT", "Mumbai City / Suburban") that get resolved
+  // to the data's canonical names when geo loads (see the geo effect below).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [deepLink] = useState(() => {
+    const state = searchParams.get('state');
+    const district = searchParams.get('district');
+    return state || district ? { state, district } : null;
+  });
+  const deepLinkApplied = useRef(false);
 
   useEffect(() => {
     fetch('/india-topo.json')
@@ -263,8 +277,38 @@ export function MapPage() {
   }, []);
 
   useEffect(() => {
-    api.mapGeography(capability).then(setGeo).catch(() => setGeo(null));
-  }, [capability]);
+    let cancelled = false;
+    api
+      .mapGeography(capability, { region: regionFilter !== 'all' ? regionFilter : undefined })
+      .then((g) => {
+        if (cancelled) return;
+        setGeo(g);
+        // Resolve a pending deep-link once the geography is available, matching the
+        // descriptive labels against the data's canonical state/district names so
+        // the selection uses values the `===` rating lookups + facilities query
+        // expect (e.g. "Delhi NCT" → "Delhi", "Mumbai City / Suburban" → "Mumbai").
+        if (!deepLink || deepLinkApplied.current) return;
+        deepLinkApplied.current = true;
+        const matchedState = deepLink.state
+          ? g.states.find((s) => placeMatch(s.state, deepLink.state!))?.state ?? null
+          : null;
+        if (matchedState) {
+          setSelectedState(matchedState);
+          setSelectedFacility(null);
+          setSelectedDistrict(
+            deepLink.district
+              ? g.districts.find((d) => d.state === matchedState && placeMatch(d.district, deepLink.district!))?.district ?? null
+              : null,
+          );
+        }
+        // Drop the params so a later reset/back doesn't re-apply and the URL stays clean.
+        setSearchParams({}, { replace: true });
+      })
+      .catch(() => !cancelled && setGeo(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [capability, deepLink, setSearchParams]);
 
   // store-metric district values (built-in metrics need no fetch; stale values
   // for a different metric are ignored by the `store` memo's key guard below)
@@ -278,9 +322,24 @@ export function MapPage() {
   }, [activeMetric]);
 
   useEffect(() => {
+    if (!geo) return;
+    if (selectedState && !geo.states.some((s) => s.state === selectedState)) {
+      setSelectedState(null);
+      setSelectedDistrict(null);
+      setSelectedFacility(null);
+      return;
+    }
+    if (selectedDistrict && !geo.districts.some((d) => d.state === selectedState && d.district === selectedDistrict)) {
+      setSelectedDistrict(null);
+      setSelectedFacility(null);
+    }
+  }, [geo, selectedState, selectedDistrict]);
+
+  useEffect(() => {
     api
       .facilities({
         capability,
+        region: regionFilter !== 'all' ? regionFilter : undefined,
         state: selectedState ?? undefined,
         district: selectedDistrict ?? undefined,
         signal: signal === 'all' ? undefined : signal,
@@ -288,19 +347,30 @@ export function MapPage() {
       })
       .then((res) => setFacilities(res.results))
       .catch(() => setFacilities([]));
-  }, [capability, selectedState, selectedDistrict, signal]);
+  }, [capability, regionFilter, selectedState, selectedDistrict, signal]);
 
   const stateRatings: StateRating[] = useMemo(() => geo?.states ?? [], [geo]);
   const districtRatings: DistrictRating[] = useMemo(() => geo?.districts ?? [], [geo]);
 
   const facilityTypes = useMemo(() => Array.from(new Set(facilities.map((f) => f.type))).sort(), [facilities]);
   const filteredFacilities = useMemo(
-    () => facilities.filter((f) => (typeFilter === 'all' || f.type === typeFilter) && (f.beds ?? 0) >= minBeds),
-    [facilities, typeFilter, minBeds],
+    () =>
+      facilities.filter(
+        (f) =>
+          (typeFilter === 'all' || f.type === typeFilter) &&
+          (f.beds ?? 0) >= minBeds &&
+          Math.round(f.trustScore * 100) >= minTrustScore,
+      ),
+    [facilities, typeFilter, minBeds, minTrustScore],
   );
 
   const level = selectedDistrict ? 'district' : selectedState ? 'state' : 'nation';
-  const activeFilters = (signal !== 'all' ? 1 : 0) + (typeFilter !== 'all' ? 1 : 0) + (minBeds > 0 ? 1 : 0);
+  const activeFilters =
+    (regionFilter !== 'all' ? 1 : 0) +
+    (signal !== 'all' ? 1 : 0) +
+    (typeFilter !== 'all' ? 1 : 0) +
+    (minBeds > 0 ? 1 : 0) +
+    (minTrustScore > 0 ? 1 : 0);
   const { ramp, isRate } = rampFor(activeMetric.source, activeMetric.key);
   const logDisabled = isRate;
   const effectiveLog = logScale && !logDisabled;
@@ -384,30 +454,32 @@ export function MapPage() {
     if ((hover?.kind === 'district' && hoverRating) || level === 'district') {
       const dr = (hoverRating as DistrictRating) ?? selDistrictRating;
       if (dr) {
-        const peers = districtRatings.filter((d) => d.state === dr.state).map(valueOfDistrict).filter((v): v is number => v !== null);
         const v = valueOfDistrict(dr);
-        const rank = v === null ? null : peers.filter((p) => p > v).length + 1;
-        return { name: dr.district, scope: `District · ${dr.state}`, value: v, rank, total: peers.length };
+        return { name: dr.district, scope: `District · ${dr.state}`, value: v };
       }
     }
     if ((hover?.kind === 'state' && hoverRating) || level === 'state') {
       const sr = (hoverRating as StateRating) ?? selStateRating;
       if (sr) {
-        const peers = stateRatings.map(valueOfState).filter((v): v is number => v !== null);
         const v = valueOfState(sr);
-        const rank = v === null ? null : peers.filter((p) => p > v).length + 1;
-        return { name: sr.state, scope: 'State', value: v, rank, total: peers.length };
+        return { name: sr.state, scope: 'State', value: v };
       }
     }
     // nation
     const v = activeMetric.source === 'builtin' ? builtinValue(national, activeMetric.key as BuiltinMetric) : store?.national ?? null;
-    return { name: 'India', scope: 'All states', value: v, rank: null, total: 0 };
-  }, [hover, level, selDistrictRating, selStateRating, districtRatings, stateRatings, valueOfState, valueOfDistrict, activeMetric, national, store]);
+    return { name: 'India', scope: regionFilter === 'all' ? 'All states' : `${regionFilter} region`, value: v };
+  }, [hover, level, selDistrictRating, selStateRating, valueOfState, valueOfDistrict, activeMetric, national, store, regionFilter]);
 
   const drillTo = {
     state: (s: string | null) => { setSelectedState(s); setSelectedDistrict(null); setSelectedFacility(null); },
     district: (d: string | null) => { setSelectedDistrict(d); setSelectedFacility(null); },
     nation: () => { setSelectedState(null); setSelectedDistrict(null); setSelectedFacility(null); },
+  };
+  // Step up exactly one drill level (facility → district → state → nation).
+  const goBack = () => {
+    if (selectedFacility) setSelectedFacility(null);
+    else if (selectedDistrict) drillTo.state(selectedState);
+    else drillTo.nation();
   };
   const toggleCat = (c: string) =>
     setOpenCats((prev) => {
@@ -424,8 +496,8 @@ export function MapPage() {
       {/* breadcrumb + title + capability pills */}
       <div className="space-y-2">
         <div className="flex items-center gap-1.5 text-sm">
-          {level !== 'nation' && (
-            <Button variant="ghost" size="sm" className="h-7 gap-1 px-2" onClick={() => (selectedDistrict ? drillTo.state(selectedState) : drillTo.nation())}>
+          {(selectedState || selectedFacility) && (
+            <Button variant="ghost" size="sm" className="h-7 gap-1 px-2" onClick={goBack}>
               <ArrowLeft className="h-3.5 w-3.5" /> Back
             </Button>
           )}
@@ -433,31 +505,56 @@ export function MapPage() {
           {selectedState && (
             <>
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-              <button className="font-medium text-muted-foreground hover:text-foreground" onClick={() => drillTo.state(selectedState)}>{selectedState}</button>
+              {selectedDistrict ? (
+                <button className="font-medium text-muted-foreground hover:text-foreground" onClick={() => drillTo.state(selectedState)}>{selectedState}</button>
+              ) : (
+                <span className="font-semibold text-foreground">{selectedState}</span>
+              )}
             </>
           )}
           {selectedDistrict && (
             <>
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="font-semibold text-foreground">{selectedDistrict}</span>
+              {selectedFacility ? (
+                <button className="font-medium text-muted-foreground hover:text-foreground" onClick={() => drillTo.district(selectedDistrict)}>{selectedDistrict}</button>
+              ) : (
+                <span className="font-semibold text-foreground">{selectedDistrict}</span>
+              )}
+            </>
+          )}
+          {selectedFacility && (
+            <>
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="max-w-[16rem] truncate font-semibold text-foreground">{selectedFacility.name}</span>
             </>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
-          {capabilities.map((c) => (
-            <button
-              key={c.key}
-              type="button"
-              onClick={() => setCapability(c.key)}
-              className={`rounded-full border px-3 py-1 text-sm font-medium transition-colors ${
-                capability === c.key
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-card text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-              }`}
-            >
-              {c.label}
-            </button>
-          ))}
+          {capabilities.map((c) => {
+            const active = capability === c.key;
+            return (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => setCapability(c.key)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-all ${
+                  active
+                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                    : 'border-border bg-card text-muted-foreground hover:-translate-y-px hover:border-primary/40 hover:text-foreground'
+                }`}
+              >
+                {c.label}
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-1.5 text-[10px] font-semibold tabular-nums ${
+                    active ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-emerald-100 text-emerald-700'
+                  }`}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${active ? 'bg-primary-foreground' : 'bg-emerald-500'}`} />
+                  {c.strong}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -550,8 +647,85 @@ export function MapPage() {
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="ml-auto gap-1.5">
+                  <MapPin className="h-4 w-4" />
+                  Geography
+                  {(regionFilter !== 'all' || selectedState || selectedDistrict) && (
+                    <Badge className="ml-1 h-5 min-w-5 justify-center px-1 text-[10px]">
+                      {(regionFilter !== 'all' ? 1 : 0) + (selectedState ? 1 : 0) + (selectedDistrict ? 1 : 0)}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80 space-y-4">
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Region</span>
+                  <Select value={regionFilter} onValueChange={setRegionFilter}>
+                    <SelectTrigger><SelectValue placeholder="All regions" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All regions</SelectItem>
+                      {REGION_FILTERS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">State</span>
+                  <Select
+                    value={selectedState ?? 'all'}
+                    onValueChange={(v) => {
+                      if (v === 'all') drillTo.nation();
+                      else drillTo.state(v);
+                    }}
+                  >
+                    <SelectTrigger><SelectValue placeholder="All states" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All states</SelectItem>
+                      {stateRatings
+                        .slice()
+                        .sort((a, b) => a.state.localeCompare(b.state))
+                        .map((s) => <SelectItem key={s.state} value={s.state}>{s.state}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">District</span>
+                  <Select
+                    value={selectedDistrict ?? 'all'}
+                    onValueChange={(v) => {
+                      if (v === 'all') setSelectedDistrict(null);
+                      else drillTo.district(v);
+                    }}
+                    disabled={!selectedState}
+                  >
+                    <SelectTrigger><SelectValue placeholder="All districts" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All districts</SelectItem>
+                      {districtRatings
+                        .filter((d) => d.state === selectedState)
+                        .slice()
+                        .sort((a, b) => a.district.localeCompare(b.district))
+                        .map((d) => <SelectItem key={`${d.state}-${d.district}`} value={d.district}>{d.district}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Separator />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => {
+                    setRegionFilter('all');
+                    drillTo.nation();
+                  }}
+                >
+                  Clear geography
+                </Button>
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
                   <SlidersHorizontal className="h-4 w-4" />
-                  Filters
+                  Facility ratings
                   {activeFilters > 0 && <Badge className="ml-1 h-5 min-w-5 justify-center px-1 text-[10px]">{activeFilters}</Badge>}
                 </Button>
               </PopoverTrigger>
@@ -579,8 +753,28 @@ export function MapPage() {
                   </div>
                   <Slider value={[minBeds]} onValueChange={(v) => setMinBeds(v[0])} min={0} max={1000} step={20} />
                 </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Min trust score</span>
+                    <span className="text-xs font-medium tabular-nums text-foreground">{minTrustScore}</span>
+                  </div>
+                  <Slider value={[minTrustScore]} onValueChange={(v) => setMinTrustScore(v[0])} min={0} max={100} step={5} />
+                </div>
                 <Separator />
-                <Button variant="ghost" size="sm" className="w-full" onClick={() => { setSignal('all'); setTypeFilter('all'); setMinBeds(0); }}>Reset filters</Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => {
+                    setRegionFilter('all');
+                    setSignal('all');
+                    setTypeFilter('all');
+                    setMinBeds(0);
+                    setMinTrustScore(0);
+                  }}
+                >
+                  Reset filters
+                </Button>
               </PopoverContent>
             </Popover>
           </div>
@@ -650,7 +844,7 @@ export function MapPage() {
         <aside className="flex min-h-0 flex-col">
           <ScrollArea className="min-h-0 flex-1 pr-2">
             <div className="space-y-3">
-              <MetricReadout regionName={readout.name} scope={readout.scope} metric={activeMetric} value={readout.value} rank={readout.rank} total={readout.total} />
+              <MetricReadout regionName={readout.name} scope={readout.scope} metric={activeMetric} value={readout.value} />
 
               {selectedFacility ? (
                 <FacilityCard f={selectedFacility} onClose={() => setSelectedFacility(null)} />
@@ -666,7 +860,7 @@ export function MapPage() {
 
               <div className="flex items-center justify-between px-0.5">
                 <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Top facilities {level !== 'nation' && `· ${selectedDistrict ?? selectedState}`}
+                  Facility rankings {level !== 'nation' && `· ${selectedDistrict ?? selectedState}`}
                 </span>
                 <Badge variant="outline" className="text-[10px]">{filteredFacilities.length}</Badge>
               </div>

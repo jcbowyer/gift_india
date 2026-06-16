@@ -34,6 +34,107 @@ def test_normalise_url_rejects_empty_and_schemeless(raw):
     assert scraper._normalise_url(raw) is None
 
 
+def test_normalise_url_strips_stray_quotes():
+    # Real facility data carries values like '"esic.nic.in"' (embedded quotes).
+    assert scraper._normalise_url('"esic.nic.in"') == "https://esic.nic.in"
+    assert scraper._normalise_url("'hospital.org'") == "https://hospital.org"
+
+
+def test_normalise_url_survives_malformed_host():
+    # urlparse raises ValueError on bad IPv6 brackets — must skip, not crash.
+    assert scraper._normalise_url("http://[bad::host") is None
+
+
+# --------------------------------------------------------------- crawl scope
+@pytest.mark.parametrize(
+    "district, state",
+    [
+        ("Mumbai", "Maharashtra"),
+        ("Andheri West, Mumbai", "Maharashtra"),
+        ("Central Delhi", "Delhi"),
+        ("Delhi", "East Delhi"),            # noisy/swapped fields
+        ("Bengaluru", "Karnataka"),
+        ("Bangalore", "Karnataka"),
+        ("Lucknow", "U.p."),                # locality in district, junk in state
+        ("Jaisalmer", "Rajasthan"),
+    ],
+)
+def test_in_crawl_scope_matches_pilot_districts(district, state):
+    assert scraper._in_crawl_scope(district, state) is True
+
+
+@pytest.mark.parametrize(
+    "district, state",
+    [
+        ("Pune", "Maharashtra"),
+        ("Chennai", "Tamil Nadu"),
+        ("Bangarapet", "Karnataka"),        # 'bangar' must NOT match 'bangalore'
+        ("Jaipur", "Rajasthan"),
+        ("", ""),
+        (None, None),
+    ],
+)
+def test_in_crawl_scope_excludes_others(district, state):
+    assert scraper._in_crawl_scope(district, state) is False
+
+
+# ------------------------------------------------------- excluded facility types
+@pytest.mark.parametrize(
+    "ftype",
+    [
+        "Clinic / Centre",
+        "Primary Health Centre",
+        "Community Health Centre",
+        "  clinic / centre  ",   # whitespace + casing tolerated
+        "PRIMARY HEALTH CENTRE",
+    ],
+)
+def test_is_excluded_type_matches_small_primary_care(ftype):
+    assert scraper._is_excluded_type(ftype) is True
+
+
+@pytest.mark.parametrize(
+    "ftype",
+    [
+        "Private Hospital",
+        "Medical College Hospital",
+        "District Hospital",
+        "Charitable / Mission Hospital",
+        "",
+        None,
+    ],
+)
+def test_is_excluded_type_keeps_hospitals(ftype):
+    assert scraper._is_excluded_type(ftype) is False
+
+
+def test_targets_from_facilities_drops_excluded_types(monkeypatch):
+    import pandas as pd
+
+    from src import data as data_module
+
+    facilities = pd.DataFrame(
+        [
+            # In-scope hospital — kept.
+            {"facility_id": "VF-1", "name": "Mumbai Private", "type": "Private Hospital",
+             "district": "Mumbai", "state": "Maharashtra", "website_url": "hosp.example"},
+            # In-scope but an excluded clinic type — dropped.
+            {"facility_id": "VF-2", "name": "Mumbai Clinic", "type": "Clinic / Centre",
+             "district": "Mumbai", "state": "Maharashtra", "website_url": "clinic.example"},
+            # Excluded type, all-districts — still dropped regardless of scope.
+            {"facility_id": "VF-3", "name": "Pune PHC", "type": "Primary Health Centre",
+             "district": "Pune", "state": "Maharashtra", "website_url": "phc.example"},
+        ]
+    )
+    monkeypatch.setattr(
+        data_module, "load_bundle",
+        lambda: data_module.DataBundle(facilities=facilities, districts=pd.DataFrame()),
+    )
+
+    targets = scraper.targets_from_facilities(all_districts=True)
+    assert [t.facility_id for t in targets] == ["VF-1"]
+
+
 # --------------------------------------------------------------- extraction
 def test_extract_pulls_structured_fields():
     html = """

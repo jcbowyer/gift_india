@@ -47,6 +47,31 @@ models:
       - name: match_confidence
         description: Named-entity-resolution confidence score (0-1).
 
+  - name: silver_jci_accreditations
+    description: >-
+      Cleaned, typed, deduped JCI-accredited organizations in India, with the
+      canonical entity-resolution keys (`match_name`, `brand_key`) re-derived via
+      the `jci_normalize` macro and a `state_code` attached. One row per
+      `jci_org_id`. Feeds the gold.facility_jci crosswalk.
+    columns:
+      - name: jci_org_id
+        tests:
+          - not_null
+          - unique
+      - name: jci_name
+        tests: [not_null]
+      - name: match_name
+        description: Normalized name used to entity-resolve to a facility_id.
+        tests: [not_null]
+      - name: verified_on_portal
+        description: True for rows spot-checked against the official JCI directory.
+        tests: [not_null]
+      - name: data_source
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['jci']
+
   - name: silver_facility_web_crawl
     description: >-
       Cleaned, typed, deduped facility website crawls — one row per facility (or

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { Application, Request } from 'express';
 import { CAPABILITIES, type TrustSignal } from './capabilities';
-import { regionOf, type Region } from './regions';
+import { regionOf, statesInRegion, REGION_VALUES, type Region } from './regions';
 
 interface LakebaseQuery {
   query(text: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>;
@@ -16,6 +16,34 @@ interface AppKitWithLakebase {
 
 const SIGNALS: TrustSignal[] = ['strong', 'partial', 'weak_suspicious', 'no_claim'];
 const CAP_KEYS = CAPABILITIES.map((c) => c.key);
+
+// Synthetic "All" capability: aggregates every capability into one per-facility
+// view. Selectable in the navigator alongside the real capabilities, but never a
+// valid override target (overrides are always per real capability).
+const ALL_CAPABILITY = 'all';
+const CAP_KEYS_WITH_ALL = [ALL_CAPABILITY, ...CAP_KEYS];
+
+// Collapse a facility's per-capability assessments into one row: claimed if it
+// claims any capability, score = mean across claimed capabilities, signal binned
+// from that mean on the same 0.45 / 0.7 thresholds the UI uses elsewhere, and
+// evidence tallied across all capabilities. Drives the "All" capability view.
+const FACILITY_CAP_ROLLUP = `
+  SELECT facility_id,
+         bool_or(claimed)                                            AS claimed,
+         AVG(trust_score) FILTER (WHERE claimed)                     AS trust_score,
+         COALESCE(SUM(evidence_count), 0)::int                       AS evidence_count,
+         COALESCE(SUM(supporting_count), 0)::int                     AS supporting_count,
+         COALESCE(SUM(contradicting_count), 0)::int                  AS contradicting_count,
+         (array_agg(best_source ORDER BY trust_score DESC NULLS LAST))[1] AS best_source,
+         (array_agg(summary ORDER BY trust_score DESC NULLS LAST))[1]     AS summary,
+         CASE
+           WHEN NOT bool_or(claimed)                            THEN 'no_claim'
+           WHEN AVG(trust_score) FILTER (WHERE claimed) >= 0.7  THEN 'strong'
+           WHEN AVG(trust_score) FILTER (WHERE claimed) >= 0.45 THEN 'partial'
+           ELSE 'weak_suspicious'
+         END                                                         AS trust_signal
+  FROM gold.facility_capability_assessments
+  GROUP BY facility_id`;
 
 // Planner overrides only — all facility/capability/evidence data is served from
 // gold.* (built by gift_india_dbt: `make dbt`). Never seed synthetic rows here.
@@ -236,7 +264,8 @@ async function resolveMetricTables(lakebase: LakebaseQuery): Promise<{ catalog: 
 }
 
 const FacilitiesQuery = z.object({
-  capability: z.enum(CAP_KEYS as [string, ...string[]]),
+  capability: z.enum(CAP_KEYS_WITH_ALL as [string, ...string[]]),
+  region: z.enum(REGION_VALUES as [Region, ...Region[]]).optional(),
   state: z.string().optional(),
   district: z.string().optional(),
   signal: z.enum(SIGNALS as [string, ...string[]]).optional(),
@@ -295,7 +324,16 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           GROUP BY capability
         `);
         const byKey = new Map(rows.map((r) => [txt(r.capability), r]));
-        const out = CAPABILITIES.map((c) => {
+        const out: {
+          key: string;
+          label: string;
+          description: string;
+          claiming: number;
+          strong: number;
+          partial: number;
+          weak: number;
+          noClaim: number;
+        }[] = CAPABILITIES.map((c) => {
           const r = byKey.get(c.key) ?? {};
           return {
             key: c.key,
@@ -307,6 +345,29 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             weak: Number(r.weak ?? 0),
             noClaim: Number(r.no_claim ?? 0),
           };
+        });
+        // "All" pill: per-facility rollup counts (each facility counted once,
+        // classified by its mean trust) so the badge matches the map's All view.
+        const { rows: allRows } = await appkit.lakebase.query(`
+          WITH r AS (${FACILITY_CAP_ROLLUP})
+          SELECT
+            COUNT(*) FILTER (WHERE claimed)                          AS claiming,
+            COUNT(*) FILTER (WHERE trust_signal = 'strong')          AS strong,
+            COUNT(*) FILTER (WHERE trust_signal = 'partial')         AS partial,
+            COUNT(*) FILTER (WHERE trust_signal = 'weak_suspicious') AS weak,
+            COUNT(*) FILTER (WHERE trust_signal = 'no_claim')        AS no_claim
+          FROM r
+        `);
+        const a = allRows[0] ?? {};
+        out.unshift({
+          key: ALL_CAPABILITY,
+          label: 'All',
+          description: 'Overall trust across every capability, one rating per facility.',
+          claiming: Number(a.claiming ?? 0),
+          strong: Number(a.strong ?? 0),
+          partial: Number(a.partial ?? 0),
+          weak: Number(a.weak ?? 0),
+          noClaim: Number(a.no_claim ?? 0),
         });
         res.json(out);
       } catch (err) {
@@ -346,8 +407,14 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
     // facilities' trust — the underlying ranking is always per-facility.
     app.get('/api/map/geography', async (req, res) => {
       const capability = txt(req.query.capability) || 'icu';
-      if (!(CAP_KEYS as readonly string[]).includes(capability)) {
+      const regionParam = txt(req.query.region).trim();
+      const region = regionParam ? (regionParam as Region) : null;
+      if (!CAP_KEYS_WITH_ALL.includes(capability)) {
         res.status(400).json({ error: 'Invalid capability' });
+        return;
+      }
+      if (region && !REGION_VALUES.includes(region)) {
+        res.status(400).json({ error: 'Invalid region' });
         return;
       }
       try {
@@ -358,24 +425,34 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             COUNT(*) FILTER (WHERE a.trust_signal = 'strong')::int         AS strong,
             COUNT(*) FILTER (WHERE a.trust_signal = 'partial')::int        AS partial,
             COUNT(*) FILTER (WHERE a.trust_signal = 'weak_suspicious')::int AS weak`;
+        const regionStates = region ? statesInRegion(region) : null;
+        // "All" joins one rolled-up row per facility (so a facility is counted
+        // once, not six times); a single capability joins that capability's row.
+        const isAll = capability === ALL_CAPABILITY;
+        const assess = isAll
+          ? `JOIN (${FACILITY_CAP_ROLLUP}) a ON a.facility_id = f.facility_id`
+          : `JOIN gold.facility_capability_assessments a
+               ON a.facility_id = f.facility_id AND a.capability = $1`;
+        const regionFilter = isAll ? '$1' : '$2';
+        const params: unknown[] = isAll ? [regionStates] : [capability, regionStates];
         const [{ rows: states }, { rows: districts }] = await Promise.all([
           appkit.lakebase.query(
             `SELECT f.state, MAX(f.state_code) AS state_code, ${agg}
              FROM gold.facilities f
-             JOIN gold.facility_capability_assessments a
-               ON a.facility_id = f.facility_id AND a.capability = $1
+             ${assess}
+             WHERE (${regionFilter}::text[] IS NULL OR f.state = ANY(${regionFilter}))
              GROUP BY f.state`,
-            [capability],
+            params,
           ),
           appkit.lakebase.query(
             `SELECT f.state, f.district, MAX(f.state_code) AS state_code,
                     MAX(g.lat) AS lat, MAX(g.lon) AS lon, MAX(g.population)::bigint AS population, ${agg}
              FROM gold.facilities f
-             JOIN gold.facility_capability_assessments a
-               ON a.facility_id = f.facility_id AND a.capability = $1
+             ${assess}
              LEFT JOIN gold.geography g ON g.district = f.district AND g.state = f.state
+             WHERE (${regionFilter}::text[] IS NULL OR f.state = ANY(${regionFilter}))
              GROUP BY f.state, f.district`,
-            [capability],
+            params,
           ),
         ]);
         const region = (r: Record<string, unknown>) => ({
@@ -388,6 +465,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
         });
         res.json({
           capability,
+          region,
           states: states.map((r) => ({ state: txt(r.state), stateCode: txt(r.state_code), ...region(r) })),
           districts: districts.map((r) => ({
             state: txt(r.state),
@@ -599,29 +677,53 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
         return;
       }
       const { capability, state, district, signal, q, limit } = parsed.data;
+      const regionStates = parsed.data.region ? statesInRegion(parsed.data.region) : null;
       try {
-        const { rows } = await appkit.lakebase.query(
-          `SELECT f.facility_id, f.name, f.type, f.district, f.state, f.state_code, f.beds,
-                  f.lat, f.lon, f.website_url, f.match_confidence,
-                  a.claimed, a.trust_signal, a.trust_score, a.evidence_count,
-                  a.supporting_count, a.contradicting_count, a.best_source, a.summary,
-                  ov.override_signal, ov.note AS override_note
-           FROM gold.facility_capability_assessments a
-           JOIN gold.facilities f USING (facility_id)
-           LEFT JOIN LATERAL (
-             SELECT override_signal, note FROM app.capability_overrides o
-             WHERE o.facility_id = f.facility_id AND o.capability = a.capability AND o.created_by = $7
-             ORDER BY o.created_at DESC LIMIT 1
-           ) ov ON TRUE
-           WHERE a.capability = $1
-             AND ($2::text IS NULL OR f.state = $2)
-             AND ($3::text IS NULL OR f.district = $3)
-             AND (a.trust_signal = $4 OR ($4::text IS NULL AND a.trust_signal <> 'no_claim'))
-             AND ($5::text IS NULL OR f.name ILIKE '%' || $5 || '%')
-           ORDER BY a.trust_score DESC, a.evidence_count DESC, f.name
-           LIMIT $6`,
-          [capability, state ?? null, district ?? null, signal ?? null, q ?? null, limit, currentUser(req)],
-        );
+        // "All" ranks one rolled-up row per facility (mean trust across every
+        // capability, no per-capability override). A single capability ranks that
+        // capability's assessment and layers the planner override on top.
+        const isAll = capability === ALL_CAPABILITY;
+        const { rows } = isAll
+          ? await appkit.lakebase.query(
+              `SELECT f.facility_id, f.name, f.type, f.district, f.state, f.state_code, f.beds,
+                      f.lat, f.lon, f.website_url, f.match_confidence,
+                      a.claimed, a.trust_signal, a.trust_score, a.evidence_count,
+                      a.supporting_count, a.contradicting_count, a.best_source, a.summary,
+                      NULL::text AS override_signal, NULL::text AS override_note
+               FROM (${FACILITY_CAP_ROLLUP}) a
+               JOIN gold.facilities f USING (facility_id)
+               WHERE ($1::text IS NULL OR f.state = $1)
+                 AND ($2::text[] IS NULL OR f.state = ANY($2))
+                 AND ($3::text IS NULL OR f.district = $3)
+                 AND (a.trust_signal = $4 OR ($4::text IS NULL AND a.trust_signal <> 'no_claim'))
+                 AND ($5::text IS NULL OR f.name ILIKE '%' || $5 || '%')
+               ORDER BY a.trust_score DESC NULLS LAST, a.evidence_count DESC, f.name
+               LIMIT $6`,
+              [state ?? null, regionStates, district ?? null, signal ?? null, q ?? null, limit],
+            )
+          : await appkit.lakebase.query(
+              `SELECT f.facility_id, f.name, f.type, f.district, f.state, f.state_code, f.beds,
+                      f.lat, f.lon, f.website_url, f.match_confidence,
+                      a.claimed, a.trust_signal, a.trust_score, a.evidence_count,
+                      a.supporting_count, a.contradicting_count, a.best_source, a.summary,
+                      ov.override_signal, ov.note AS override_note
+               FROM gold.facility_capability_assessments a
+               JOIN gold.facilities f USING (facility_id)
+               LEFT JOIN LATERAL (
+                 SELECT override_signal, note FROM app.capability_overrides o
+                 WHERE o.facility_id = f.facility_id AND o.capability = a.capability AND o.created_by = $7
+                 ORDER BY o.created_at DESC LIMIT 1
+               ) ov ON TRUE
+               WHERE a.capability = $1
+                 AND ($2::text IS NULL OR f.state = $2)
+                 AND ($3::text[] IS NULL OR f.state = ANY($3))
+                 AND ($4::text IS NULL OR f.district = $4)
+                 AND (a.trust_signal = $5 OR ($5::text IS NULL AND a.trust_signal <> 'no_claim'))
+                 AND ($6::text IS NULL OR f.name ILIKE '%' || $6 || '%')
+               ORDER BY a.trust_score DESC, a.evidence_count DESC, f.name
+               LIMIT $7`,
+              [capability, state ?? null, regionStates, district ?? null, signal ?? null, q ?? null, limit, currentUser(req)],
+            );
         const results = rows.map((r, i) => ({
           rank: i + 1,
           facilityId: txt(r.facility_id),
@@ -646,7 +748,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           overrideSignal: r.override_signal ? (txt(r.override_signal) as TrustSignal) : null,
           overrideNote: r.override_note ? txt(r.override_note) : null,
         }));
-        res.json({ capability, state: state ?? null, district: district ?? null, results });
+        res.json({ capability, region: parsed.data.region ?? null, state: state ?? null, district: district ?? null, results });
       } catch (err) {
         console.error('facilities failed:', err);
         res.status(500).json({ error: 'Failed to load facilities' });

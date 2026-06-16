@@ -1,0 +1,1035 @@
+
+
+
+
+
+<!doctype html>
+<html lang="en-US" >
+<head><meta charset="UTF-8" /><script>if(navigator.userAgent.match(/MSIE|Internet Explorer/i)||navigator.userAgent.match(/Trident\/7\..*?rv:11/i)){var href=document.location.href;if(!href.match(/[?&]nowprocket/)){if(href.indexOf("?")==-1){if(href.indexOf("#")==-1){document.location.href=href+"?nowprocket=1"}else{document.location.href=href.replace("#","?nowprocket=1#")}}else{if(href.indexOf("#")==-1){document.location.href=href+"&nowprocket=1"}else{document.location.href=href.replace("#","&nowprocket=1#")}}}}</script><script>class RocketLazyLoadScripts{constructor(e){this.triggerEvents=e,this.userEventHandler=this.triggerListener.bind(this),this.touchStartHandler=this._onTouchStart.bind(this),this.touchMoveHandler=this._onTouchMove.bind(this),this.touchEndHandler=this._onTouchEnd.bind(this),this.clickHandler=this._onClick.bind(this),this.interceptedClicks=[],this.delayedScripts={normal:[],async:[],defer:[]},this.allJQueries=[]}_addUserInteractionListener(e){document.hidden?e.triggerListener():(this.triggerEvents.forEach((t=>window.addEventListener(t,e.userEventHandler,{passive:!0}))),window.addEventListener("touchstart",e.touchStartHandler,{passive:!0}),window.addEventListener("mousedown",e.touchStartHandler),document.addEventListener("visibilitychange",e.userEventHandler))}_removeUserInteractionListener(){this.triggerEvents.forEach((e=>window.removeEventListener(e,this.userEventHandler,{passive:!0}))),document.removeEventListener("visibilitychange",this.userEventHandler)}_onTouchStart(e){window.addEventListener("touchend",this.touchEndHandler),window.addEventListener("mouseup",this.touchEndHandler),window.addEventListener("touchmove",this.touchMoveHandler,{passive:!0}),window.addEventListener("mousemove",this.touchMoveHandler),e.target.addEventListener("click",this.clickHandler),this._renameDOMAttribute(e.target,"onclick","rocket-onclick")}_onTouchMove(e){window.removeEventListener("touchend",this.touchEndHandler),window.removeEventListener("mouseup",this.touchEndHandler),window.removeEventListener("touchmove",this.touchMoveHandler,{passive:!0}),window.removeEventListener("mousemove",this.touchMoveHandler),e.target.removeEventListener("click",this.clickHandler),this._renameDOMAttribute(e.target,"rocket-onclick","onclick")}_onTouchEnd(e){window.removeEventListener("touchend",this.touchEndHandler),window.removeEventListener("mouseup",this.touchEndHandler),window.removeEventListener("touchmove",this.touchMoveHandler,{passive:!0}),window.removeEventListener("mousemove",this.touchMoveHandler)}_onClick(e){e.target.removeEventListener("click",this.clickHandler),this._renameDOMAttribute(e.target,"rocket-onclick","onclick"),this.interceptedClicks.push(e),e.preventDefault(),e.stopPropagation(),e.stopImmediatePropagation()}_replayClicks(){window.removeEventListener("touchstart",this.touchStartHandler,{passive:!0}),window.removeEventListener("mousedown",this.touchStartHandler),this.interceptedClicks.forEach((e=>{e.target.dispatchEvent(new MouseEvent("click",{view:e.view,bubbles:!0,cancelable:!0}))}))}_renameDOMAttribute(e,t,n){e.hasAttribute(t)&&(event.target.setAttribute(n,event.target.getAttribute(t)),event.target.removeAttribute(t))}triggerListener(){this._removeUserInteractionListener(this),"loading"===document.readyState?document.addEventListener("DOMContentLoaded",this._loadEverythingNow.bind(this)):this._loadEverythingNow()}async _loadEverythingNow(){this._delayEventListeners(),this._delayJQueryReady(this),this._handleDocumentWrite(),this._registerAllDelayedScripts(),this._preloadAllScripts(),await this._loadScriptsFromList(this.delayedScripts.normal),await this._loadScriptsFromList(this.delayedScripts.defer),await this._loadScriptsFromList(this.delayedScripts.async),await this._triggerDOMContentLoaded(),await this._triggerWindowLoad(),window.dispatchEvent(new Event("rocket-allScriptsLoaded")),this._replayClicks()}_registerAllDelayedScripts(){document.querySelectorAll("script[type=rocketlazyloadscript]").forEach((e=>{e.hasAttribute("src")?e.hasAttribute("async")&&!1!==e.async?this.delayedScripts.async.push(e):e.hasAttribute("defer")&&!1!==e.defer||"module"===e.getAttribute("data-rocket-type")?this.delayedScripts.defer.push(e):this.delayedScripts.normal.push(e):this.delayedScripts.normal.push(e)}))}async _transformScript(e){return await this._requestAnimFrame(),new Promise((t=>{const n=document.createElement("script");[...e.attributes].forEach((e=>{let t=e.nodeName;"type"!==t&&("data-rocket-type"===t&&(t="type"),n.setAttribute(t,e.nodeValue))})),e.hasAttribute("src")?(n.addEventListener("load",t),n.addEventListener("error",t)):(n.text=e.text,t()),e.parentNode.replaceChild(n,e)}))}async _loadScriptsFromList(e){const t=e.shift();return t?(await this._transformScript(t),this._loadScriptsFromList(e)):Promise.resolve()}_preloadAllScripts(){var e=document.createDocumentFragment();[...this.delayedScripts.normal,...this.delayedScripts.defer,...this.delayedScripts.async].forEach((t=>{const n=t.getAttribute("src");if(n){const t=document.createElement("link");t.href=n,t.rel="preload",t.as="script",e.appendChild(t)}})),document.head.appendChild(e)}_delayEventListeners(){let e={};function t(t,n){!function(t){function n(n){return e[t].eventsToRewrite.indexOf(n)>=0?"rocket-"+n:n}e[t]||(e[t]={originalFunctions:{add:t.addEventListener,remove:t.removeEventListener},eventsToRewrite:[]},t.addEventListener=function(){arguments[0]=n(arguments[0]),e[t].originalFunctions.add.apply(t,arguments)},t.removeEventListener=function(){arguments[0]=n(arguments[0]),e[t].originalFunctions.remove.apply(t,arguments)})}(t),e[t].eventsToRewrite.push(n)}function n(e,t){let n=e[t];Object.defineProperty(e,t,{get:()=>n||function(){},set(i){e["rocket"+t]=n=i}})}t(document,"DOMContentLoaded"),t(window,"DOMContentLoaded"),t(window,"load"),t(window,"pageshow"),t(document,"readystatechange"),n(document,"onreadystatechange"),n(window,"onload"),n(window,"onpageshow")}_delayJQueryReady(e){let t=window.jQuery;Object.defineProperty(window,"jQuery",{get:()=>t,set(n){if(n&&n.fn&&!e.allJQueries.includes(n)){n.fn.ready=n.fn.init.prototype.ready=function(t){e.domReadyFired?t.bind(document)(n):document.addEventListener("rocket-DOMContentLoaded",(()=>t.bind(document)(n)))};const t=n.fn.on;n.fn.on=n.fn.init.prototype.on=function(){if(this[0]===window){function e(e){return e.split(" ").map((e=>"load"===e||0===e.indexOf("load.")?"rocket-jquery-load":e)).join(" ")}"string"==typeof arguments[0]||arguments[0]instanceof String?arguments[0]=e(arguments[0]):"object"==typeof arguments[0]&&Object.keys(arguments[0]).forEach((t=>{delete Object.assign(arguments[0],{[e(t)]:arguments[0][t]})[t]}))}return t.apply(this,arguments),this},e.allJQueries.push(n)}t=n}})}async _triggerDOMContentLoaded(){this.domReadyFired=!0,await this._requestAnimFrame(),document.dispatchEvent(new Event("rocket-DOMContentLoaded")),await this._requestAnimFrame(),window.dispatchEvent(new Event("rocket-DOMContentLoaded")),await this._requestAnimFrame(),document.dispatchEvent(new Event("rocket-readystatechange")),await this._requestAnimFrame(),document.rocketonreadystatechange&&document.rocketonreadystatechange()}async _triggerWindowLoad(){await this._requestAnimFrame(),window.dispatchEvent(new Event("rocket-load")),await this._requestAnimFrame(),window.rocketonload&&window.rocketonload(),await this._requestAnimFrame(),this.allJQueries.forEach((e=>e(window).trigger("rocket-jquery-load"))),window.dispatchEvent(new Event("rocket-pageshow")),await this._requestAnimFrame(),window.rocketonpageshow&&window.rocketonpageshow()}_handleDocumentWrite(){const e=new Map;document.write=document.writeln=function(t){const n=document.currentScript,i=document.createRange(),r=n.parentElement;let o=e.get(n);void 0===o&&(o=n.nextSibling,e.set(n,o));const s=document.createDocumentFragment();i.setStart(s,0),s.appendChild(i.createContextualFragment(t)),r.insertBefore(s,o)}}async _requestAnimFrame(){return document.hidden?new Promise((e=>setTimeout(e))):new Promise((e=>requestAnimationFrame(e)))}static run(){const e=new RocketLazyLoadScripts(["keydown","mousedown","mousemove","touchmove","touchstart","touchend","wheel"]);e._addUserInteractionListener(e)}}RocketLazyLoadScripts.run();</script>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<style>
+	@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+	</style>
+	<meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+
+	<!-- This site is optimized with the Yoast SEO plugin v23.4 - https://yoast.com/wordpress/plugins/seo/ -->
+	<title>Delhi Pain Management Centre - India&#039;s First Dedicated Pain Hospital</title><link rel="preload" as="style" href="https://fonts.googleapis.com/css?family=Open%20Sans%3A100%2C100italic%2C200%2C200italic%2C300%2C300italic%2C400%2C400italic%2C500%2C500italic%2C600%2C600italic%2C700%2C700italic%2C800%2C800italic%2C900%2C900italic&#038;display=swap" /><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open%20Sans%3A100%2C100italic%2C200%2C200italic%2C300%2C300italic%2C400%2C400italic%2C500%2C500italic%2C600%2C600italic%2C700%2C700italic%2C800%2C800italic%2C900%2C900italic&#038;display=swap" media="print" onload="this.media='all'" /><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open%20Sans%3A100%2C100italic%2C200%2C200italic%2C300%2C300italic%2C400%2C400italic%2C500%2C500italic%2C600%2C600italic%2C700%2C700italic%2C800%2C800italic%2C900%2C900italic&#038;display=swap" /></noscript><link rel="stylesheet" href="https://painhospital.in/wp-content/cache/min/1/3abb478eee148e3bfec1151f9b523fd8.css" media="all" data-minify="1" />
+	<meta name="description" content="DPMC provides the most advanced non-surgical pain treatment services for all types of chronic pain. Call : 9999123444" />
+	<link rel="canonical" href="https://painhospital.in/" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Delhi Pain Management Centre - India&#039;s First Dedicated Pain Hospital" />
+	<meta property="og:description" content="DPMC provides the most advanced non-surgical pain treatment services for all types of chronic pain. Call : 9999123444" />
+	<meta property="og:url" content="https://painhospital.in/" />
+	<meta property="og:site_name" content="Delhi Pain Management Centre" />
+	<meta property="article:publisher" content="https://www.facebook.com/DPMC.Delhi" />
+	<meta property="article:modified_time" content="2025-08-20T16:47:48+00:00" />
+	<meta property="og:image" content="https://painhospital.in/wp-content/uploads/2024/04/DPMC-Docs-1.jpg" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@painhospital" />
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://painhospital.in/","url":"https://painhospital.in/","name":"Delhi Pain Management Centre - India's First Dedicated Pain Hospital","isPartOf":{"@id":"https://painhospital.in/#website"},"about":{"@id":"https://painhospital.in/#organization"},"primaryImageOfPage":{"@id":"https://painhospital.in/#primaryimage"},"image":{"@id":"https://painhospital.in/#primaryimage"},"thumbnailUrl":"https://painhospital.in/wp-content/uploads/2024/04/DPMC-Docs-1.jpg","datePublished":"2024-05-09T06:59:54+00:00","dateModified":"2025-08-20T16:47:48+00:00","description":"DPMC provides the most advanced non-surgical pain treatment services for all types of chronic pain. Call : 9999123444","breadcrumb":{"@id":"https://painhospital.in/#breadcrumb"},"inLanguage":"en-US","potentialAction":[{"@type":"ReadAction","target":["https://painhospital.in/"]}]},{"@type":"ImageObject","inLanguage":"en-US","@id":"https://painhospital.in/#primaryimage","url":"https://painhospital.in/wp-content/uploads/2024/04/DPMC-Docs-1.jpg","contentUrl":"https://painhospital.in/wp-content/uploads/2024/04/DPMC-Docs-1.jpg","width":480,"height":317},{"@type":"BreadcrumbList","@id":"https://painhospital.in/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home"}]},{"@type":"WebSite","@id":"https://painhospital.in/#website","url":"https://painhospital.in/","name":"Delhi Pain Management Centre","description":"India&#039;s First Dedicated Pain Hospital","publisher":{"@id":"https://painhospital.in/#organization"},"potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://painhospital.in/?s={search_term_string}"},"query-input":{"@type":"PropertyValueSpecification","valueRequired":true,"valueName":"search_term_string"}}],"inLanguage":"en-US"},{"@type":"Organization","@id":"https://painhospital.in/#organization","name":"Delhi Pain Management Centre","url":"https://painhospital.in/","logo":{"@type":"ImageObject","inLanguage":"en-US","@id":"https://painhospital.in/#/schema/logo/image/","url":"https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png","contentUrl":"https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png","width":1300,"height":163,"caption":"Delhi Pain Management Centre"},"image":{"@id":"https://painhospital.in/#/schema/logo/image/"},"sameAs":["https://www.facebook.com/DPMC.Delhi","https://x.com/painhospital"]}]}</script>
+	<!-- / Yoast SEO plugin. -->
+
+
+<link href='https://fonts.gstatic.com' crossorigin rel='preconnect' />
+<link rel="alternate" type="application/rss+xml" title="Delhi Pain Management Centre &raquo; Feed" href="https://painhospital.in/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Delhi Pain Management Centre &raquo; Comments Feed" href="https://painhospital.in/comments/feed/" />
+<script type="rocketlazyloadscript">
+window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/15.0.3\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/15.0.3\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/painhospital.in\/wp-includes\/js\/wp-emoji-release.min.js?ver=6.5.8"}};
+/*! This file is auto-generated */
+!function(i,n){var o,s,e;function c(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(o,JSON.stringify(t))}catch(e){}}function p(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data),r=(e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0),new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data));return t.every(function(e,t){return e===r[t]})}function u(e,t,n){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\uddfa\ud83c\uddf3","\ud83c\uddfa\u200b\ud83c\uddf3")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!n(e,"\ud83d\udc26\u200d\u2b1b","\ud83d\udc26\u200b\u2b1b")}return!1}function f(e,t,n){var r="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):i.createElement("canvas"),a=r.getContext("2d",{willReadFrequently:!0}),o=(a.textBaseline="top",a.font="600 32px Arial",{});return e.forEach(function(e){o[e]=t(a,e,n)}),o}function t(e){var t=i.createElement("script");t.src=e,t.defer=!0,i.head.appendChild(t)}"undefined"!=typeof Promise&&(o="wpEmojiSettingsSupports",s=["flag","emoji"],n.supports={everything:!0,everythingExceptFlag:!0},e=new Promise(function(e){i.addEventListener("DOMContentLoaded",e,{once:!0})}),new Promise(function(t){var n=function(){try{var e=JSON.parse(sessionStorage.getItem(o));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+f.toString()+"("+[JSON.stringify(s),u.toString(),p.toString()].join(",")+"));",r=new Blob([e],{type:"text/javascript"}),a=new Worker(URL.createObjectURL(r),{name:"wpTestEmojiSupports"});return void(a.onmessage=function(e){c(n=e.data),a.terminate(),t(n)})}catch(e){}c(n=f(s,u,p))}t(n)}).then(function(e){for(var t in e)n.supports[t]=e[t],n.supports.everything=n.supports.everything&&n.supports[t],"flag"!==t&&(n.supports.everythingExceptFlag=n.supports.everythingExceptFlag&&n.supports[t]);n.supports.everythingExceptFlag=n.supports.everythingExceptFlag&&!n.supports.flag,n.DOMReady=!1,n.readyCallback=function(){n.DOMReady=!0}}).then(function(){return e}).then(function(){var e;n.supports.everything||(n.readyCallback(),(e=n.source||{}).concatemoji?t(e.concatemoji):e.wpemoji&&e.twemoji&&(t(e.twemoji),t(e.wpemoji)))}))}((window,document),window._wpemojiSettings);
+</script>
+<style id='wp-emoji-styles-inline-css'>
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+</style>
+
+<style id='wp-block-library-theme-inline-css'>
+.wp-block-audio figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-audio figcaption{color:#ffffffa6}.wp-block-audio{margin:0 0 1em}.wp-block-code{border:1px solid #ccc;border-radius:4px;font-family:Menlo,Consolas,monaco,monospace;padding:.8em 1em}.wp-block-embed figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-embed figcaption{color:#ffffffa6}.wp-block-embed{margin:0 0 1em}.blocks-gallery-caption{color:#555;font-size:13px;text-align:center}.is-dark-theme .blocks-gallery-caption{color:#ffffffa6}.wp-block-image figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-image figcaption{color:#ffffffa6}.wp-block-image{margin:0 0 1em}.wp-block-pullquote{border-bottom:4px solid;border-top:4px solid;color:currentColor;margin-bottom:1.75em}.wp-block-pullquote cite,.wp-block-pullquote footer,.wp-block-pullquote__citation{color:currentColor;font-size:.8125em;font-style:normal;text-transform:uppercase}.wp-block-quote{border-left:.25em solid;margin:0 0 1.75em;padding-left:1em}.wp-block-quote cite,.wp-block-quote footer{color:currentColor;font-size:.8125em;font-style:normal;position:relative}.wp-block-quote.has-text-align-right{border-left:none;border-right:.25em solid;padding-left:0;padding-right:1em}.wp-block-quote.has-text-align-center{border:none;padding-left:0}.wp-block-quote.is-large,.wp-block-quote.is-style-large,.wp-block-quote.is-style-plain{border:none}.wp-block-search .wp-block-search__label{font-weight:700}.wp-block-search__button{border:1px solid #ccc;padding:.375em .625em}:where(.wp-block-group.has-background){padding:1.25em 2.375em}.wp-block-separator.has-css-opacity{opacity:.4}.wp-block-separator{border:none;border-bottom:2px solid;margin-left:auto;margin-right:auto}.wp-block-separator.has-alpha-channel-opacity{opacity:1}.wp-block-separator:not(.is-style-wide):not(.is-style-dots){width:100px}.wp-block-separator.has-background:not(.is-style-dots){border-bottom:none;height:1px}.wp-block-separator.has-background:not(.is-style-wide):not(.is-style-dots){height:2px}.wp-block-table{margin:0 0 1em}.wp-block-table td,.wp-block-table th{word-break:normal}.wp-block-table figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-table figcaption{color:#ffffffa6}.wp-block-video figcaption{color:#555;font-size:13px;text-align:center}.is-dark-theme .wp-block-video figcaption{color:#ffffffa6}.wp-block-video{margin:0 0 1em}.wp-block-template-part.has-background{margin-bottom:0;margin-top:0;padding:1.25em 2.375em}
+</style>
+<style id='cb-carousel-style-inline-css'>
+.wp-block-cb-carousel .slick-slide{overflow:hidden;padding-left:7.5px;padding-right:7.5px}.wp-block-cb-carousel .slick-dots li button:not(:hover):not(:active),.wp-block-cb-carousel .slick-next:not(:hover):not(:active),.wp-block-cb-carousel .slick-prev:not(:hover):not(:active){background-color:transparent}.wp-block-cb-carousel .slick-next:before,.wp-block-cb-carousel .slick-prev:before{color:#000}.wp-block-cb-carousel.alignfull .slick-next,.wp-block-cb-carousel.alignfull .slick-prev{z-index:1}.wp-block-cb-carousel.alignfull .slick-prev{left:25px}.wp-block-cb-carousel.alignfull .slick-next{right:25px}.wp-block-cb-carousel .wp-block-cover,.wp-block-cb-carousel .wp-block-image{margin-bottom:0}.wp-block-cb-carousel .wp-block-cover.aligncenter,.wp-block-cb-carousel .wp-block-image.aligncenter{margin-left:auto!important;margin-right:auto!important}.is-layout-flex .wp-block-cb-carousel{width:100%}
+
+</style>
+
+
+<style id='twenty-twenty-one-custom-color-overrides-inline-css'>
+:root .editor-styles-wrapper{--global--color-background: #ffffff;--global--color-primary: #000;--global--color-secondary: #000;--button--color-background: #000;--button--color-text-hover: #000;}
+</style>
+<style id='classic-theme-styles-inline-css'>
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+</style>
+<style id='global-styles-inline-css'>
+body{--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #FFFFFF;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--color--dark-gray: #28303D;--wp--preset--color--gray: #39414D;--wp--preset--color--green: #D1E4DD;--wp--preset--color--blue: #D1DFE4;--wp--preset--color--purple: #D1D1E4;--wp--preset--color--red: #E4D1D1;--wp--preset--color--orange: #E4DAD1;--wp--preset--color--yellow: #EEEADD;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgba(6,147,227,1) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgba(252,185,0,1) 0%,rgba(255,105,0,1) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgba(255,105,0,1) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--gradient--purple-to-yellow: linear-gradient(160deg, #D1D1E4 0%, #EEEADD 100%);--wp--preset--gradient--yellow-to-purple: linear-gradient(160deg, #EEEADD 0%, #D1D1E4 100%);--wp--preset--gradient--green-to-yellow: linear-gradient(160deg, #D1E4DD 0%, #EEEADD 100%);--wp--preset--gradient--yellow-to-green: linear-gradient(160deg, #EEEADD 0%, #D1E4DD 100%);--wp--preset--gradient--red-to-yellow: linear-gradient(160deg, #E4D1D1 0%, #EEEADD 100%);--wp--preset--gradient--yellow-to-red: linear-gradient(160deg, #EEEADD 0%, #E4D1D1 100%);--wp--preset--gradient--purple-to-red: linear-gradient(160deg, #D1D1E4 0%, #E4D1D1 100%);--wp--preset--gradient--red-to-purple: linear-gradient(160deg, #E4D1D1 0%, #D1D1E4 100%);--wp--preset--font-size--small: 18px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 24px;--wp--preset--font-size--x-large: 42px;--wp--preset--font-size--extra-small: 16px;--wp--preset--font-size--normal: 20px;--wp--preset--font-size--extra-large: 40px;--wp--preset--font-size--huge: 96px;--wp--preset--font-size--gigantic: 144px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgba(255, 255, 255, 1), 6px 6px rgba(0, 0, 0, 1);--wp--preset--shadow--crisp: 6px 6px 0px rgba(0, 0, 0, 1);}:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}body .is-layout-flex{flex-wrap: wrap;align-items: center;}body .is-layout-flex > *{margin: 0;}body .is-layout-grid{display: grid;}body .is-layout-grid > *{margin: 0;}:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+.wp-block-navigation a:where(:not(.wp-element-button)){color: inherit;}
+:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}
+:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}
+.wp-block-pullquote{font-size: 1.5em;line-height: 1.6;}
+</style>
+
+
+
+
+<style id='twenty-twenty-one-style-inline-css'>
+:root{--global--color-background: #ffffff;--global--color-primary: #000;--global--color-secondary: #000;--button--color-background: #000;--button--color-text-hover: #000;}
+</style>
+<link rel='stylesheet' id='twenty-twenty-one-print-style-css' href='https://painhospital.in/wp-content/themes/twentytwentyone/assets/css/print.css?ver=1.0.1' media='print' />
+
+<style id='essential-blocks-frontend-style-inline-css'>
+
+            :root {
+                --eb-global-primary-color: #101828;
+--eb-global-secondary-color: #475467;
+--eb-global-tertiary-color: #98A2B3;
+--eb-global-text-color: #475467;
+--eb-global-heading-color: #1D2939;
+--eb-global-link-color: #444CE7;
+--eb-global-background-color: #F9FAFB;
+--eb-global-button-text-color: #FFFFFF;
+--eb-global-button-background-color: #101828;
+--eb-gradient-primary-color: linear-gradient(90deg, hsla(259, 84%, 78%, 1) 0%, hsla(206, 67%, 75%, 1) 100%);
+--eb-gradient-secondary-color: linear-gradient(90deg, hsla(18, 76%, 85%, 1) 0%, hsla(203, 69%, 84%, 1) 100%);
+--eb-gradient-tertiary-color: linear-gradient(90deg, hsla(248, 21%, 15%, 1) 0%, hsla(250, 14%, 61%, 1) 100%);
+--eb-gradient-background-color: linear-gradient(90deg, rgb(250, 250, 250) 0%, rgb(233, 233, 233) 49%, rgb(244, 243, 243) 100%);
+
+                --eb-tablet-breakpoint: 1024px;
+--eb-mobile-breakpoint: 767px;
+
+            }
+        
+</style>
+
+
+<style id='rocket-lazyload-inline-css'>
+.rll-youtube-player{position:relative;padding-bottom:56.23%;height:0;overflow:hidden;max-width:100%;}.rll-youtube-player iframe{position:absolute;top:0;left:0;width:100%;height:100%;z-index:100;background:0 0}.rll-youtube-player img{bottom:0;display:block;left:0;margin:auto;max-width:100%;width:100%;position:absolute;right:0;top:0;border:none;height:auto;cursor:pointer;-webkit-transition:.4s all;-moz-transition:.4s all;transition:.4s all}.rll-youtube-player img:hover{-webkit-filter:brightness(75%)}.rll-youtube-player .play{height:72px;width:72px;left:50%;top:50%;margin-left:-36px;margin-top:-36px;position:absolute;background:url(https://painhospital.in/wp-content/plugins/wp-rocket/assets/img/youtube.png) no-repeat;cursor:pointer}.wp-has-aspect-ratio .rll-youtube-player{position:absolute;padding-bottom:0;width:100%;height:100%;top:0;bottom:0;left:0;right:0}
+</style>
+<script type="rocketlazyloadscript" id="twenty-twenty-one-ie11-polyfills-js-after">
+( Element.prototype.matches && Element.prototype.closest && window.NodeList && NodeList.prototype.forEach ) || document.write( '<script data-minify="1" src="https://painhospital.in/wp-content/cache/min/1/wp-content/themes/twentytwentyone/assets/js/polyfills.js?ver=1771434615" defer></scr' + 'ipt>' );
+</script>
+<script type="rocketlazyloadscript" data-minify="1" src="https://painhospital.in/wp-content/cache/min/1/wp-content/themes/twentytwentyone/assets/js/primary-navigation.js?ver=1771434615" id="twenty-twenty-one-primary-navigation-script-js" defer data-wp-strategy="defer"></script>
+<link rel="https://api.w.org/" href="https://painhospital.in/wp-json/" /><link rel="alternate" type="application/json" href="https://painhospital.in/wp-json/wp/v2/pages/5540" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://painhospital.in/xmlrpc.php?rsd" />
+<meta name="generator" content="WordPress 6.5.8" />
+<link rel='shortlink' href='https://painhospital.in/' />
+<link rel="alternate" type="application/json+oembed" href="https://painhospital.in/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fpainhospital.in%2F" />
+<link rel="alternate" type="text/xml+oembed" href="https://painhospital.in/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fpainhospital.in%2F&#038;format=xml" />
+<style id="custom-background-css">
+body.custom-background { background-color: #ffffff; }
+</style>
+	<link rel="icon" href="https://painhospital.in/wp-content/uploads/2024/01/cropped-DPMC-logo-32x32.png" sizes="32x32" />
+<link rel="icon" href="https://painhospital.in/wp-content/uploads/2024/01/cropped-DPMC-logo-192x192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://painhospital.in/wp-content/uploads/2024/01/cropped-DPMC-logo-180x180.png" />
+<meta name="msapplication-TileImage" content="https://painhospital.in/wp-content/uploads/2024/01/cropped-DPMC-logo-270x270.png" />
+<noscript><style id="rocket-lazyload-nojs-css">.rll-youtube-player, [data-lazy-src]{display:none !important;}</style></noscript>	<script type="rocketlazyloadscript" data-minify="1" src="https://painhospital.in/wp-content/cache/min/1/ajax/libs/jquery/3.7.1/jquery.min.js?ver=1771434615" defer></script>
+	
+	<!-- Google Tag Manager -->
+<script type="rocketlazyloadscript">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KHCZ65T');</script>
+<!-- End Google Tag Manager -->
+
+<!-- Google tag (gtag.js) -->
+<script type="rocketlazyloadscript" async src="https://www.googletagmanager.com/gtag/js?id=G-7PDHYKKTMG"></script>
+<script type="rocketlazyloadscript">
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-7PDHYKKTMG');
+</script>
+	
+</head>
+
+<!-- top bar -->
+<div class="top-bar">
+<li id="block-22" class="widget widget_block">
+<div class="wp-block-columns is-layout-flex wp-container-core-columns-is-layout-1 wp-block-columns-is-layout-flex">
+<div class="wp-block-column top-row is-layout-flow wp-block-column-is-layout-flow">
+<ul class="top-contact-info">
+<li><img decoding="async" width="17" height="17" class="wp-image-43" style="width: 17px;" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2017%2017'%3E%3C/svg%3E" alt="" data-lazy-src="https://painhospital.in/wp-content/uploads/2023/09/Group-1105.png"><noscript><img decoding="async" width="17" height="17" class="wp-image-43" style="width: 17px;" src="https://painhospital.in/wp-content/uploads/2023/09/Group-1105.png" alt=""></noscript>  <a href="tel:9999123444">9999-123-444</a></li>
+
+
+
+<li><img decoding="async" width="17" height="17" class="wp-image-4436" style="width: 17px;" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2017%2017'%3E%3C/svg%3E" alt="" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2024/02/mail-1.png 512w, https://painhospital.in/wp-content/uploads/2024/02/mail-1-300x300.png 300w, https://painhospital.in/wp-content/uploads/2024/02/mail-1-150x150.png 150w, https://painhospital.in/wp-content/uploads/2024/02/mail-1-75x75.png 75w" data-lazy-sizes="(max-width: 17px) 100vw, 17px" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/02/mail-1.png" /><noscript><img decoding="async" width="17" height="17" class="wp-image-4436" style="width: 17px;" src="https://painhospital.in/wp-content/uploads/2024/02/mail-1.png" alt="" srcset="https://painhospital.in/wp-content/uploads/2024/02/mail-1.png 512w, https://painhospital.in/wp-content/uploads/2024/02/mail-1-300x300.png 300w, https://painhospital.in/wp-content/uploads/2024/02/mail-1-150x150.png 150w, https://painhospital.in/wp-content/uploads/2024/02/mail-1-75x75.png 75w" sizes="(max-width: 17px) 100vw, 17px" /></noscript> <a href="mailto:contact@painhospital.in">contact@painhospital.in</a></li>
+</ul>
+
+
+
+<ul class="top-contact-info">
+<li><a href="https://api.whatsapp.com/send?phone=919999123444&amp;text=Hello%20Delhi%20Pain%20Management%20Centre%20team&quot;" target="_blank" rel="noreferrer noopener"><img decoding="async" width="17" height="17" class="wp-image-4766" style="width: 17px;" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2017%2017'%3E%3C/svg%3E" alt="" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/02/whatsapp-1.png"><noscript><img decoding="async" width="17" height="17" class="wp-image-4766" style="width: 17px;" src="https://painhospital.in/wp-content/uploads/2024/02/whatsapp-1.png" alt=""></noscript> 9999123444</a></li>
+
+
+
+<li><img decoding="async" width="17" height="17" class="wp-image-1364" style="width: 17px;" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2017%2017'%3E%3C/svg%3E" alt="" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2024/02/calendar.png 512w, https://painhospital.in/wp-content/uploads/2024/02/calendar-300x300.png 300w, https://painhospital.in/wp-content/uploads/2024/02/calendar-150x150.png 150w, https://painhospital.in/wp-content/uploads/2024/02/calendar-75x75.png 75w" data-lazy-sizes="(max-width: 17px) 100vw, 17px" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/02/calendar.png" /><noscript><img decoding="async" width="17" height="17" class="wp-image-1364" style="width: 17px;" src="https://painhospital.in/wp-content/uploads/2024/02/calendar.png" alt="" srcset="https://painhospital.in/wp-content/uploads/2024/02/calendar.png 512w, https://painhospital.in/wp-content/uploads/2024/02/calendar-300x300.png 300w, https://painhospital.in/wp-content/uploads/2024/02/calendar-150x150.png 150w, https://painhospital.in/wp-content/uploads/2024/02/calendar-75x75.png 75w" sizes="(max-width: 17px) 100vw, 17px" /></noscript> <a href="https://painhospital.in/appointments/">Book Appointment</a></li>
+</ul>
+</div>
+</div>
+</li>
+</div>
+<!-- end top bar -->
+
+<body class="home page-template-default page page-id-5540 custom-background wp-custom-logo wp-embed-responsive is-light-theme has-background-white no-js singular has-main-navigation">
+<div id="page" class="site">
+	<a class="skip-link screen-reader-text" href="#content">
+		Skip to content	</a>
+
+	
+<header id="masthead" class="site-header has-logo has-menu">
+	<div class="container">
+		<div class="header-inner">
+			
+
+<div class="site-branding">
+
+			<div class="site-logo"><span class="custom-logo-link"><img width="1300" height="163" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201300%20163'%3E%3C/svg%3E" class="custom-logo" alt="" decoding="async" fetchpriority="high" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png 1300w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-300x38.png 300w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-1024x128.png 1024w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-768x96.png 768w" data-lazy-sizes="(max-width: 1300px) 100vw, 1300px" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png" /><noscript><img width="1300" height="163" src="https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png" class="custom-logo" alt="" decoding="async" fetchpriority="high" srcset="https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png 1300w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-300x38.png 300w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-1024x128.png 1024w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-768x96.png 768w" sizes="(max-width: 1300px) 100vw, 1300px" /></noscript></span></div>
+	
+						<div class="screen-reader-text">Delhi Pain Management Centre</div>
+			
+	</div><!-- .site-branding -->
+			
+	<nav id="site-navigation" class="primary-navigation" aria-label="Primary menu">
+		<div class="menu-button-container">
+			<button id="primary-mobile-menu" class="button" aria-controls="primary-menu-list" aria-expanded="false">
+				<span class="dropdown-icon open">
+					<svg class="svg-icon" width="24" height="24" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.5 6H19.5V7.5H4.5V6ZM4.5 12H19.5V13.5H4.5V12ZM19.5 18H4.5V19.5H19.5V18Z" fill="currentColor"/></svg>				</span>
+				<span class="dropdown-icon close">
+					<svg class="svg-icon" width="24" height="24" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 10.9394L5.53033 4.46973L4.46967 5.53039L10.9393 12.0001L4.46967 18.4697L5.53033 19.5304L12 13.0607L18.4697 19.5304L19.5303 18.4697L13.0607 12.0001L19.5303 5.53039L18.4697 4.46973L12 10.9394Z" fill="currentColor"/></svg>				</span>
+			</button><!-- #primary-mobile-menu -->
+		</div><!-- .menu-button-container -->
+		<div class="primary-menu-container"><ul id="primary-menu-list" class="menu-wrapper"><li id="menu-item-5614" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-5540 current_page_item menu-item-5614"><a href="https://painhospital.in/" aria-current="page">Home</a></li>
+<li id="menu-item-510" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-510"><a href="#">About Us</a><button class="sub-menu-toggle" aria-expanded="false" onClick="twentytwentyoneExpandSubMenu(this)"><span class="icon-plus"><svg class="svg-icon" width="18" height="18" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M18 11.2h-5.2V6h-1.6v5.2H6v1.6h5.2V18h1.6v-5.2H18z" fill="currentColor"/></svg></span><span class="icon-minus"><svg class="svg-icon" width="18" height="18" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 11h12v2H6z" fill="currentColor"/></svg></span><span class="screen-reader-text">Open menu</span></button>
+<ul class="sub-menu">
+	<li id="menu-item-1067" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1067"><a href="https://painhospital.in/about-us/">About DPMC</a></li>
+	<li id="menu-item-1066" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1066"><a href="https://painhospital.in/our-doctors/">Our Doctors</a></li>
+</ul>
+</li>
+<li id="menu-item-1069" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-1069"><a href="#">Pain Management</a><button class="sub-menu-toggle" aria-expanded="false" onClick="twentytwentyoneExpandSubMenu(this)"><span class="icon-plus"><svg class="svg-icon" width="18" height="18" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M18 11.2h-5.2V6h-1.6v5.2H6v1.6h5.2V18h1.6v-5.2H18z" fill="currentColor"/></svg></span><span class="icon-minus"><svg class="svg-icon" width="18" height="18" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 11h12v2H6z" fill="currentColor"/></svg></span><span class="screen-reader-text">Open menu</span></button>
+<ul class="sub-menu">
+	<li id="menu-item-1078" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1078"><a href="https://painhospital.in/reasons-for-pain/">What causes pain?</a></li>
+	<li id="menu-item-1076" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1076"><a href="https://painhospital.in/pain-management/">What is Pain Management?</a></li>
+</ul>
+</li>
+<li id="menu-item-1060" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-1060"><a href="#">Conditions</a><button class="sub-menu-toggle" aria-expanded="false" onClick="twentytwentyoneExpandSubMenu(this)"><span class="icon-plus"><svg class="svg-icon" width="18" height="18" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M18 11.2h-5.2V6h-1.6v5.2H6v1.6h5.2V18h1.6v-5.2H18z" fill="currentColor"/></svg></span><span class="icon-minus"><svg class="svg-icon" width="18" height="18" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 11h12v2H6z" fill="currentColor"/></svg></span><span class="screen-reader-text">Open menu</span></button>
+<ul class="sub-menu">
+	<li id="menu-item-1056" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1056"><a href="https://painhospital.in/back-pain/">Back Pain</a></li>
+	<li id="menu-item-1052" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1052"><a href="https://painhospital.in/knee-pain/">Knee Pain</a></li>
+	<li id="menu-item-1051" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1051"><a href="https://painhospital.in/joint-pain/">Joint Pain</a></li>
+	<li id="menu-item-1050" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1050"><a href="https://painhospital.in/arthritis-pain/">Arthritis Pain</a></li>
+	<li id="menu-item-1053" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1053"><a href="https://painhospital.in/neck-pain/">Neck Pain</a></li>
+	<li id="menu-item-1055" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1055"><a href="https://painhospital.in/sciatic-pain/">Sciatic Pain or Sciatica</a></li>
+	<li id="menu-item-1054" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1054"><a href="https://painhospital.in/slipped-disc/">Slipped Disc</a></li>
+	<li id="menu-item-1059" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1059"><a href="https://painhospital.in/migraine/">Migraine</a></li>
+	<li id="menu-item-1043" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1043"><a href="https://painhospital.in/cancer-pain/">Cancer Pain</a></li>
+	<li id="menu-item-1045" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1045"><a href="https://painhospital.in/sports-injuries/">Sports Injuries</a></li>
+</ul>
+</li>
+<li id="menu-item-1068" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-1068"><a href="#">Treatments</a><button class="sub-menu-toggle" aria-expanded="false" onClick="twentytwentyoneExpandSubMenu(this)"><span class="icon-plus"><svg class="svg-icon" width="18" height="18" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M18 11.2h-5.2V6h-1.6v5.2H6v1.6h5.2V18h1.6v-5.2H18z" fill="currentColor"/></svg></span><span class="icon-minus"><svg class="svg-icon" width="18" height="18" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 11h12v2H6z" fill="currentColor"/></svg></span><span class="screen-reader-text">Open menu</span></button>
+<ul class="sub-menu">
+	<li id="menu-item-1094" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1094"><a href="https://painhospital.in/injections/">Injections</a></li>
+	<li id="menu-item-1095" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1095"><a href="https://painhospital.in/ozone-discectomy-2/">Ozone Discectomy</a></li>
+	<li id="menu-item-1096" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1096"><a href="https://painhospital.in/ozone-injections/">Ozone Injections</a></li>
+	<li id="menu-item-1109" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1109"><a href="https://painhospital.in/platelet-rich-plasma-therapyprp/">Platelet Rich Plasma Therapy(PRP)</a></li>
+	<li id="menu-item-1108" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1108"><a href="https://painhospital.in/radiofrequency-ablation/">Radiofrequency Ablation</a></li>
+	<li id="menu-item-1107" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1107"><a href="https://painhospital.in/vertebroplasty-2/">Vertebroplasty</a></li>
+</ul>
+</li>
+<li id="menu-item-1070" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-1070"><a href="#">For Doctors</a><button class="sub-menu-toggle" aria-expanded="false" onClick="twentytwentyoneExpandSubMenu(this)"><span class="icon-plus"><svg class="svg-icon" width="18" height="18" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M18 11.2h-5.2V6h-1.6v5.2H6v1.6h5.2V18h1.6v-5.2H18z" fill="currentColor"/></svg></span><span class="icon-minus"><svg class="svg-icon" width="18" height="18" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 11h12v2H6z" fill="currentColor"/></svg></span><span class="screen-reader-text">Open menu</span></button>
+<ul class="sub-menu">
+	<li id="menu-item-1133" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1133"><a href="https://painhospital.in/pain-management-fellowship/">Short-Term Fellowships</a></li>
+	<li id="menu-item-1132" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1132"><a href="https://painhospital.in/4-months-full-time-fellowship/">4-Months Fellowship</a></li>
+</ul>
+</li>
+<li id="menu-item-1071" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-1071"><a href="#">Contact Us</a><button class="sub-menu-toggle" aria-expanded="false" onClick="twentytwentyoneExpandSubMenu(this)"><span class="icon-plus"><svg class="svg-icon" width="18" height="18" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M18 11.2h-5.2V6h-1.6v5.2H6v1.6h5.2V18h1.6v-5.2H18z" fill="currentColor"/></svg></span><span class="icon-minus"><svg class="svg-icon" width="18" height="18" aria-hidden="true" role="img" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 11h12v2H6z" fill="currentColor"/></svg></span><span class="screen-reader-text">Open menu</span></button>
+<ul class="sub-menu">
+	<li id="menu-item-1131" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1131"><a href="https://painhospital.in/contact/">Centers</a></li>
+	<li id="menu-item-1130" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1130"><a href="https://painhospital.in/appointments/">Appointments</a></li>
+	<li id="menu-item-1129" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1129"><a href="https://painhospital.in/video-appointments/">Online Video Appointment</a></li>
+	<li id="menu-item-1128" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1128"><a href="https://painhospital.in/ask-a-pain-query/">Ask A Pain Query</a></li>
+	<li id="menu-item-1127" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1127"><a href="https://painhospital.in/international-patients/">International Patients</a></li>
+</ul>
+</li>
+</ul></div>	</nav><!-- #site-navigation -->
+			</div>
+	</div>
+</header><!-- #masthead -->
+
+	<div id="content" class="site-content">
+		<div id="primary" class="content-area">
+			<main id="main" class="site-main">
+
+<article id="post-5540" class="post-5540 page type-page status-publish hentry entry">
+
+	
+	<div class="entry-content mt-0">
+		
+<div class="wp-block-columns alignfull banner-slider mt-0 mb-0 is-layout-flex wp-container-core-columns-is-layout-5 wp-block-columns-is-layout-flex" style="padding-top:0;padding-right:0;padding-bottom:0;padding-left:0">
+<div class="wp-block-column is-layout-flow wp-block-column-is-layout-flow">
+<div style="height:100vh;width:100%" class="superblockslider alignfull" data-transition-duration=".6s" data-animation="cubic-bezier(0.46, 0.03, 0.52, 0.96)" data-slide-navigation="none"><div class="superblockslider__window"><div class="superblockslider__track" style="width:300%;transform:translateX(-0.0000%);transition-duration:.6s;transition-timing-function:cubic-bezier(0.46, 0.03, 0.52, 0.96)">
+<div class="wp-block-superblockslider-slide superblockslider__slide superblockslider__slide--active is-vertical-center" data-slide-index="0"><div class="superblockslider__slide__bg"><img decoding="async" class="image--xl visible--xl visible--sm visible--md visible--lg" src="https://painhospital.in/wp-content/uploads/2024/04/DPMC-Docs-1.jpg" width="480" height="317" title="DPMC-Docs-1" alt="" loading="eager" srcset="https://painhospital.in/wp-content/uploads/2024/04/DPMC-Docs-1-150x150.jpg 150w,https://painhospital.in/wp-content/uploads/2024/04/DPMC-Docs-1-300x198.jpg 300w,https://painhospital.in/wp-content/uploads/2024/04/DPMC-Docs-1.jpg 480w," sizes="(max-width: 480px) 100vw, 480px" style="object-fit:cover;object-position:49% 0%"/></div><div class="superblockslider__slide__overlay" style="background-color:#28303D;opacity:0.5"></div><div class="superblockslider__slide_inner"><div class="inner-blocks" style="overflow:hidden">
+<div class="wp-block-columns alignfull no-padding is-layout-flex wp-container-core-columns-is-layout-2 wp-block-columns-is-layout-flex">
+<div class="wp-block-column is-vertically-aligned-center slider-content is-layout-flow wp-block-column-is-layout-flow">
+<p class="has-text-align-left banner-title mb-20 mt-0">Leading Pain Management Care</p>
+
+
+
+<p class="has-text-align-left mb-10 mt-0"><strong>Trusted by 2,50,000 patients over 18 years.</strong></p>
+
+
+
+<p class="mb-30 mt-0"><strong>Wide-ranging treatments, from medications to advanced&nbsp;procedures.</strong></p>
+
+
+
+<div class="wp-block-buttons button-light-blue mt-0 mb-0 animated fadeInUp is-content-justification-left is-layout-flex wp-container-core-buttons-is-layout-1 wp-block-buttons-is-layout-flex">
+<div class="wp-block-button"><a class="wp-block-button__link has-text-align-center wp-element-button" href="https://painhospital.in/about-us/">Know More →</a></div>
+</div>
+</div>
+
+
+
+<div class="wp-block-column is-vertically-aligned-bottom slider-image is-layout-flow wp-block-column-is-layout-flow"></div>
+</div>
+</div></div></div>
+
+
+
+<div class="wp-block-superblockslider-slide superblockslider__slide is-vertical-center" data-slide-index="1"><div class="superblockslider__slide__bg"><img decoding="async" class="image--xl visible--xl visible--sm visible--md visible--lg" src="https://painhospital.in/wp-content/uploads/2024/04/DSC_0263-2.jpg" width="616" height="384" title="DSC_0263-2" alt="" loading="eager" srcset="https://painhospital.in/wp-content/uploads/2024/04/DSC_0263-2-150x150.jpg 150w,https://painhospital.in/wp-content/uploads/2024/04/DSC_0263-2-300x187.jpg 300w,https://painhospital.in/wp-content/uploads/2024/04/DSC_0263-2.jpg 616w," sizes="(max-width: 616px) 100vw, 616px" style="object-fit:cover;object-position:50% 50%"/></div><div class="superblockslider__slide__overlay" style="background-color:#28303D;opacity:0.5"></div><div class="superblockslider__slide_inner"><div class="inner-blocks" style="overflow:hidden">
+<div class="wp-block-columns alignfull no-padding is-layout-flex wp-container-core-columns-is-layout-3 wp-block-columns-is-layout-flex">
+<div class="wp-block-column is-vertically-aligned-center slider-content is-layout-flow wp-block-column-is-layout-flow">
+<p class="has-text-align-left banner-title mb-20 mt-0 animated fadeInUp">Patient-Centered Approach</p>
+
+
+
+<p class="has-text-align-left mb-10 mt-0 animated fadeInUp delay-100ms"><strong>Tailored treatments for individual patient needs.</strong></p>
+
+
+
+<p class="mb-30 mt-0 animated fadeInUp"><strong>Ongoing support for improved&nbsp;quality&nbsp;of&nbsp;life.</strong></p>
+
+
+
+<div class="wp-block-buttons button-light-blue mt-0 mb-0 animated fadeInUp delay-500ms is-content-justification-left is-layout-flex wp-container-core-buttons-is-layout-2 wp-block-buttons-is-layout-flex">
+<div class="wp-block-button"><a class="wp-block-button__link has-text-align-center wp-element-button" href="https://painhospital.in/contact/">Know More →</a></div>
+</div>
+</div>
+
+
+
+<div class="wp-block-column is-vertically-aligned-bottom slider-image is-layout-flow wp-block-column-is-layout-flow"></div>
+</div>
+</div></div></div>
+
+
+
+<div class="wp-block-superblockslider-slide superblockslider__slide is-vertical-center" data-slide-index="2"><div class="superblockslider__slide__bg"><img decoding="async" class="image--xl visible--xl visible--sm visible--md visible--lg" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20768%20512'%3E%3C/svg%3E" width="768" height="512" title="reception-1536x1024" alt="" loading="lazy" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2024/04/reception-1536x1024-1-150x150.jpg 150w,https://painhospital.in/wp-content/uploads/2024/04/reception-1536x1024-1-300x200.jpg 300w,https://painhospital.in/wp-content/uploads/2024/04/reception-1536x1024-1.jpg 768w," data-lazy-sizes="(max-width: 768px) 100vw, 768px" style="object-fit:cover;object-position:50% 50%" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/04/reception-1536x1024-1.jpg"/><noscript><img decoding="async" class="image--xl visible--xl visible--sm visible--md visible--lg" src="https://painhospital.in/wp-content/uploads/2024/04/reception-1536x1024-1.jpg" width="768" height="512" title="reception-1536x1024" alt="" loading="lazy" srcset="https://painhospital.in/wp-content/uploads/2024/04/reception-1536x1024-1-150x150.jpg 150w,https://painhospital.in/wp-content/uploads/2024/04/reception-1536x1024-1-300x200.jpg 300w,https://painhospital.in/wp-content/uploads/2024/04/reception-1536x1024-1.jpg 768w," sizes="(max-width: 768px) 100vw, 768px" style="object-fit:cover;object-position:50% 50%"/></noscript></div><div class="superblockslider__slide__overlay" style="background-color:#28303D;opacity:0.5"></div><div class="superblockslider__slide_inner"><div class="inner-blocks" style="overflow:hidden">
+<div class="wp-block-columns alignfull no-padding is-layout-flex wp-container-core-columns-is-layout-4 wp-block-columns-is-layout-flex">
+<div class="wp-block-column is-vertically-aligned-center slider-content is-layout-flow wp-block-column-is-layout-flow">
+<p class="has-text-align-left banner-title mb-20 mt-0 animated fadeInUp">State-of-the-Art Facilities</p>
+
+
+
+<p class="has-text-align-left mb-10 mt-0 animated fadeInUp delay-100ms"><strong>Latest technology for accurate pain diagnosis and treatment.</strong></p>
+
+
+
+<p class="mb-30 mt-0 animated fadeInUp"><strong>Modern clinics designed for comfort and&nbsp;accessibility.</strong></p>
+
+
+
+<div class="wp-block-buttons button-light-blue mt-0 mb-0 animated fadeInUp delay-500ms is-content-justification-left is-layout-flex wp-container-core-buttons-is-layout-3 wp-block-buttons-is-layout-flex">
+<div class="wp-block-button"><a class="wp-block-button__link has-text-align-center wp-element-button" href="https://painhospital.in/video-appointment/">Know More →</a></div>
+</div>
+</div>
+
+
+
+<div class="wp-block-column is-vertically-aligned-bottom slider-image is-layout-flow wp-block-column-is-layout-flow"></div>
+</div>
+</div></div></div>
+</div></div><div class="superblockslider__controls superblockslider__navigation"><button class="superblockslider__button__navigation superblockslider__button__previous" aria-label="Previous slide"><span class="superblockslider__button__previous--icon"><svg width="85" height="85" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 85 85" role="img" aria-hidden="true" focusable="false"><path d="M58.3,21.7l-5-4.2l-22.5,25l22.5,25l5-4.2L39.2,42.5L58.3,21.7z"></path></svg></span></button><button class="superblockslider__button__navigation superblockslider__button__next" aria-label="Next slide"><span class="superblockslider__button__next--icon"><svg width="85" height="85" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 85 85" role="img" aria-hidden="true" focusable="false"><path d="M31.7,17.5l-5,4.2l19.2,20.8L26.7,63.3l5,4.2l22.5-25L31.7,17.5z"></path></svg></span></button></div></div>
+</div>
+</div>
+
+
+
+<div class="wp-block-columns alignfull about-section mt-0 mb-0 section-pad has-background is-layout-flex wp-container-core-columns-is-layout-6 wp-block-columns-is-layout-flex" style="background-color:#f1f9ff">
+<div class="wp-block-column container is-layout-flow wp-block-column-is-layout-flow">
+<div class="wp-block-group mt-0 mb-30"><div class="wp-block-group__inner-container is-layout-constrained wp-block-group-is-layout-constrained">
+<p class="has-text-align-center sub-title mb-0 animated fadeInUp ">About</p>
+
+
+
+<h1 class="wp-block-heading alignfull has-text-align-center title1 mt-0 mb-0 animated fadeInUp">India’s Most Advanced Non-Surgical<br> Pain Treatment Services</h1>
+</div></div>
+
+
+
+<p class="has-text-align-center animated fadeInUp ">Trusted by over 2,50,000 patients, Delhi Pain Management Centre is the pioneer in providing non-surgical pain treatment services in India. Treatment for&nbsp;<strong>all major chronic pain conditions like back pain, slipped disc, sciatic pain, knee pain, joint pains, arthritis, neuralgic pain, headaches and migraines</strong>&nbsp;is provided using the latest and most advanced treatment modalities like ozone discectomy, radiofrequency lesioning, Platelet Rich Plasma (PRP) therapy, spinal cord stimulator implant, and vertebroplasty.</p>
+
+
+
+<h2 class="wp-block-heading alignfull has-text-align-center mt-0 mb-12 animated fadeInUp facilities-title">4 fully equipped state-of-the-art facilities</h2>
+
+
+
+<ul class="shadow-listing animated fadeInUp">
+<li><strong>South Delhi</strong>&nbsp;– Safdarjung Enclave</li>
+
+
+
+<li><strong>West Delhi</strong>&nbsp;– Rajouri Garden</li>
+
+
+
+<li><strong>Gurgaon</strong>&nbsp;&#8211; Sector 51</li>
+
+
+
+<li><strong>Ghaziabad</strong> – Indirapuram</li>
+</ul>
+
+
+
+<div class="wp-block-buttons button-light-blue animated fadeInUp is-content-justification-center is-layout-flex wp-container-core-buttons-is-layout-4 wp-block-buttons-is-layout-flex">
+<div class="wp-block-button"><a class="wp-block-button__link has-text-align-center wp-element-button" href="https://painhospital.in/appointments/">Book Appointment →</a></div>
+</div>
+</div>
+</div>
+
+
+
+<div class="wp-block-columns alignfull appointment-sec mt-0 mb-0  section-pad has-white-background-color has-background is-layout-flex wp-container-core-columns-is-layout-8 wp-block-columns-is-layout-flex">
+<div class="wp-block-column container is-layout-flow wp-block-column-is-layout-flow">
+<div class="wp-block-columns alignfull appointment-row mt-0 mb-0 is-layout-flex wp-container-core-columns-is-layout-7 wp-block-columns-is-layout-flex">
+<div class="wp-block-column appointment-item animated fadeInUp delay-100ms is-layout-flow wp-block-column-is-layout-flow">
+<figure class="wp-block-image size-full"><img decoding="async" width="275" height="144" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20275%20144'%3E%3C/svg%3E" alt="" class="wp-image-5136" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/04/image-02.png"/><noscript><img decoding="async" width="275" height="144" src="https://painhospital.in/wp-content/uploads/2024/04/image-02.png" alt="" class="wp-image-5136"/></noscript></figure>
+
+
+
+<p class="has-text-align-center title3">Book a Clinic <br>Appointment</p>
+
+
+
+<div class="wp-block-buttons button-light-blue is-content-justification-center is-layout-flex wp-container-core-buttons-is-layout-5 wp-block-buttons-is-layout-flex">
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://painhospital.in/appointments/">Book Now</a></div>
+</div>
+</div>
+
+
+
+<div class="wp-block-column appointment-item animated fadeInUp delay-200ms is-layout-flow wp-block-column-is-layout-flow">
+<figure class="wp-block-image size-full"><img decoding="async" width="271" height="144" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20271%20144'%3E%3C/svg%3E" alt="" class="wp-image-5137" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/04/image-01.png"/><noscript><img decoding="async" width="271" height="144" src="https://painhospital.in/wp-content/uploads/2024/04/image-01.png" alt="" class="wp-image-5137"/></noscript></figure>
+
+
+
+<p class="has-text-align-center title3">Book an Online Video<br>Appointment</p>
+
+
+
+<div class="wp-block-buttons button-light-blue is-content-justification-center is-layout-flex wp-container-core-buttons-is-layout-6 wp-block-buttons-is-layout-flex">
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://painhospital.in/video-appointment/">Book Now</a></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+
+<div class="wp-block-columns alignfull section-pad pb-70 mt-0 mb-0 our-team-section has-background is-layout-flex wp-container-core-columns-is-layout-11 wp-block-columns-is-layout-flex" style="background-color:#f1f9ff">
+<div class="wp-block-column container is-layout-flow wp-block-column-is-layout-flow">
+<div class="wp-block-group mt-0 mb-30"><div class="wp-block-group__inner-container is-layout-constrained wp-block-group-is-layout-constrained">
+<p class="has-text-align-center sub-title mb-0 animated fadeInUp ">Meet Our</p>
+
+
+
+<h3 class="wp-block-heading alignfull has-text-align-center title1 mt-0 mb-0 animated fadeInUp">Doctors</h3>
+</div></div>
+
+
+
+<div class="wp-block-columns are-vertically-aligned-center mb-40 is-layout-flex wp-container-core-columns-is-layout-9 wp-block-columns-is-layout-flex">
+<div class="wp-block-column is-vertically-aligned-center animated fadeInLeft is-layout-flow wp-block-column-is-layout-flow">
+<figure class="wp-block-image size-full leftimg-shadow"><img decoding="async" width="1280" height="854" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201280%20854'%3E%3C/svg%3E" alt="" class="wp-image-5140" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2024/04/9-scaled-1.jpg 1280w, https://painhospital.in/wp-content/uploads/2024/04/9-scaled-1-300x200.jpg 300w, https://painhospital.in/wp-content/uploads/2024/04/9-scaled-1-1024x683.jpg 1024w, https://painhospital.in/wp-content/uploads/2024/04/9-scaled-1-768x512.jpg 768w" data-lazy-sizes="(max-width: 1280px) 100vw, 1280px" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/04/9-scaled-1.jpg" /><noscript><img decoding="async" width="1280" height="854" src="https://painhospital.in/wp-content/uploads/2024/04/9-scaled-1.jpg" alt="" class="wp-image-5140" srcset="https://painhospital.in/wp-content/uploads/2024/04/9-scaled-1.jpg 1280w, https://painhospital.in/wp-content/uploads/2024/04/9-scaled-1-300x200.jpg 300w, https://painhospital.in/wp-content/uploads/2024/04/9-scaled-1-1024x683.jpg 1024w, https://painhospital.in/wp-content/uploads/2024/04/9-scaled-1-768x512.jpg 768w" sizes="(max-width: 1280px) 100vw, 1280px" /></noscript></figure>
+</div>
+
+
+
+<div class="wp-block-column is-vertically-aligned-center our-team-content is-layout-flow wp-block-column-is-layout-flow">
+<p class="font2x mb-30 team-head animated fadeInRight"><strong>Dr. Dhruv Bibra</strong></p>
+
+
+
+<p class="animated fadeInRight ">MBBS, DA, DNB, FIPP (USA), EDPM (Belgium), FPM (Germany)</p>
+
+
+
+<ul class="check-listing mt-0 mb-0 animated fadeInUp">
+<li class="animated fadeInRight ">20 years of experience in pain management</li>
+
+
+
+<li class="animated fadeInRight ">Trained on pain management in USA, Germany and Hungary</li>
+
+
+
+<li class="animated slideInRight ">Expert in non-surgical regenerative treatments</li>
+</ul>
+</div>
+</div>
+
+
+
+<div class="wp-block-columns are-vertically-aligned-center row-reverse is-layout-flex wp-container-core-columns-is-layout-10 wp-block-columns-is-layout-flex">
+<div class="wp-block-column is-vertically-aligned-center animated fadeInRight is-layout-flow wp-block-column-is-layout-flow">
+<figure class="wp-block-image size-full rightimg-shadow"><img decoding="async" width="640" height="360" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20640%20360'%3E%3C/svg%3E" alt="" class="wp-image-5138" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2024/04/Dr.-Prof-G.P.Dureja.jpg 640w, https://painhospital.in/wp-content/uploads/2024/04/Dr.-Prof-G.P.Dureja-300x169.jpg 300w" data-lazy-sizes="(max-width: 640px) 100vw, 640px" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/04/Dr.-Prof-G.P.Dureja.jpg" /><noscript><img decoding="async" width="640" height="360" src="https://painhospital.in/wp-content/uploads/2024/04/Dr.-Prof-G.P.Dureja.jpg" alt="" class="wp-image-5138" srcset="https://painhospital.in/wp-content/uploads/2024/04/Dr.-Prof-G.P.Dureja.jpg 640w, https://painhospital.in/wp-content/uploads/2024/04/Dr.-Prof-G.P.Dureja-300x169.jpg 300w" sizes="(max-width: 640px) 100vw, 640px" /></noscript></figure>
+</div>
+
+
+
+<div class="wp-block-column is-vertically-aligned-center our-team-content is-layout-flow wp-block-column-is-layout-flow">
+<p class="font2x mb-30 team-head animated fadeInLeft"><strong>Dr. (Prof) G.P.Dureja</strong></p>
+
+
+
+<p class="animated fadeInLeft">MBBS, MD, FIASP (USA)</p>
+
+
+
+<ul class="check-listing mt-0 mb-0 animated fadeInUp">
+<li class="animated fadeInLeft ">40 years of experience in pain management</li>
+
+
+
+<li class="animated fadeInLeft ">Started pain clinic at AIIMS, New Delhi</li>
+
+
+
+<li class="animated fadeInLeft ">Expert in back pain and joint pain treatments </li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+
+
+<div class="wp-block-columns alignfull section-pad service-section mt-0 mb-0  has-white-background-color has-background is-layout-flex wp-container-core-columns-is-layout-15 wp-block-columns-is-layout-flex">
+<div class="wp-block-column container is-layout-flow wp-block-column-is-layout-flow">
+<div class="wp-block-group mb-40"><div class="wp-block-group__inner-container is-layout-constrained wp-block-group-is-layout-constrained">
+<p class="has-text-align-center sub-title mb-0 animated fadeInUp">Our Services</p>
+
+
+
+<h3 class="wp-block-heading has-text-align-center title1 mt-0 mb-0 animated fadeInUp delay-100ms">Pain Conditions Treated</h3>
+</div></div>
+
+
+
+<div class="wp-block-columns service-row mb-0 is-layout-flex wp-container-core-columns-is-layout-12 wp-block-columns-is-layout-flex">
+<div class="wp-block-column service-item animated fadeInUp is-layout-flow wp-block-column-is-layout-flow"></div>
+
+
+
+<div class="wp-block-column service-item animated fadeInUp delay-100ms is-layout-flow wp-block-column-is-layout-flow"></div>
+
+
+
+<div class="wp-block-column service-item animated fadeInUp delay-200ms is-layout-flow wp-block-column-is-layout-flow"></div>
+
+
+
+<div class="wp-block-column service-item animated fadeInUp delay-500ms is-layout-flow wp-block-column-is-layout-flow"></div>
+</div>
+
+
+
+<div class="wp-block-columns service-row mb-0 is-layout-flex wp-container-core-columns-is-layout-13 wp-block-columns-is-layout-flex">
+<div class="wp-block-column service-item animated fadeInUp is-layout-flow wp-block-column-is-layout-flow"></div>
+
+
+
+<div class="wp-block-column service-item animated fadeInUp delay-100ms is-layout-flow wp-block-column-is-layout-flow"></div>
+
+
+
+<div class="wp-block-column service-item animated fadeInUp delay-200ms is-layout-flow wp-block-column-is-layout-flow"></div>
+
+
+
+<div class="wp-block-column service-item animated fadeInUp delay-500ms is-layout-flow wp-block-column-is-layout-flow"></div>
+</div>
+
+
+
+<div class="wp-block-columns service-row mb-0 is-layout-flex wp-container-core-columns-is-layout-14 wp-block-columns-is-layout-flex">
+<div class="wp-block-column service-item animated fadeInUp is-layout-flow wp-block-column-is-layout-flow"></div>
+
+
+
+<div class="wp-block-column service-item animated fadeInUp delay-100ms is-layout-flow wp-block-column-is-layout-flow"></div>
+
+
+
+<div class="wp-block-column service-item animated fadeInUp delay-200ms is-layout-flow wp-block-column-is-layout-flow"></div>
+
+
+
+<div class="wp-block-column service-item animated fadeInUp delay-500ms is-layout-flow wp-block-column-is-layout-flow"></div>
+</div>
+</div>
+</div>
+
+
+
+<div class="wp-block-columns alignfull section-pad testimonial-section mt-0 mb-0 has-background is-layout-flex wp-container-core-columns-is-layout-16 wp-block-columns-is-layout-flex" style="background-color:#f1f9ff">
+<div class="wp-block-column testi-col container animated fadeInUp is-layout-flow wp-block-column-is-layout-flow">
+<div class="wp-block-group"><div class="wp-block-group__inner-container is-layout-constrained wp-block-group-is-layout-constrained">
+<p class="has-text-align-center sub-title mb-0 animated fadeInUp">Patient Testimonials</p>
+
+
+
+<h3 class="wp-block-heading alignfull has-text-align-center title1 mt-0 mb-0 animated fadeInUp delay-100ms">Success Stories</h3>
+</div></div>
+
+
+<div class="strong-view strong-view-id-1 simple wpmtst-simple slider-container carousel slider-mode-horizontal slider-adaptive pager-type-full pager-style-buttons nav-position-outside" data-count=9 data-slider-var=strong_slider_id_1 data-state=idle><div class="strong-content wpmslider-content"><div class="wpmtst-testimonial testimonial t-slide post-175"><div class="wpmtst-testimonial-inner testimonial-inner"><div data-infinite-loop="true"  class="wpmtst-testimonial-content testimonial-content"><div class="maybe-clear"></div><p>My experience. Just meeting and speaking to Dr Bibra half of your problem is gone. You are positive about getting recovered. I felt very optimistic during my visit two months ago for the first time. Second time when my friend Bupesh Nagarkoti got his recovery.</p></div><div class="wpmtst-testimonial-field testimonial-field testimonial-name">DS Srinivasan</div><div class="clear"></div></div></div><div class="wpmtst-testimonial testimonial t-slide post-835"><div class="wpmtst-testimonial-inner testimonial-inner"><div data-infinite-loop="true"  class="wpmtst-testimonial-content testimonial-content"><div class="maybe-clear"></div><p>Dr Dhruv Bibra is a wonderful doctor who listens to his patient&#8217;s problem with great patience and calm. It is very difficult to find such doctors in this busy world.</p></div><div class="wpmtst-testimonial-field testimonial-field testimonial-name">Mehul Garg</div><div class="clear"></div></div></div><div class="wpmtst-testimonial testimonial t-slide post-836"><div class="wpmtst-testimonial-inner testimonial-inner"><div data-infinite-loop="true"  class="wpmtst-testimonial-content testimonial-content"><div class="maybe-clear"></div><p>The experience with the doctor is very good. He is very polite and tries to understand the problem and suggest relevant medication accordingly. Will surely recommend the doctor to others. The appointment with the doctor started well on time and the doctor listened to every small pain that is there in the body. He doesn&#8217;t try to give extra medicine only the medicines that are relevant.</p></div><div class="wpmtst-testimonial-field testimonial-field testimonial-name">Minakshi Sharma</div><div class="clear"></div></div></div><div class="wpmtst-testimonial testimonial t-slide post-837"><div class="wpmtst-testimonial-inner testimonial-inner"><div data-infinite-loop="true"  class="wpmtst-testimonial-content testimonial-content"><div class="maybe-clear"></div><p>Wonderful Experience !! Great Doctor. Gives a patient listening and guides and advises very nicely.</p></div><div class="wpmtst-testimonial-field testimonial-field testimonial-name">Debarun Kalita</div><div class="clear"></div></div></div><div class="wpmtst-testimonial testimonial t-slide post-838"><div class="wpmtst-testimonial-inner testimonial-inner"><div data-infinite-loop="true"  class="wpmtst-testimonial-content testimonial-content"><div class="maybe-clear"></div><p>I really appreciate the Communication skills, efforts and knowledge of doctor. He had answered all my query and suggested me some lifestyle changes. overall highly commended.</p></div><div class="wpmtst-testimonial-field testimonial-field testimonial-name">Ashish Bithar</div><div class="clear"></div></div></div><div class="wpmtst-testimonial testimonial t-slide post-839"><div class="wpmtst-testimonial-inner testimonial-inner"><div data-infinite-loop="true"  class="wpmtst-testimonial-content testimonial-content"><div class="maybe-clear"></div><p>Excellent. The first time that any doctor has understood what i am going through which is an essential starting point. The interaction has helped me manage my condition better and more importantly with a more positive outlook to the whole situation.</p></div><div class="wpmtst-testimonial-field testimonial-field testimonial-name">SHEFALI KHANNA</div><div class="clear"></div></div></div><div class="wpmtst-testimonial testimonial t-slide post-840"><div class="wpmtst-testimonial-inner testimonial-inner"><div data-infinite-loop="true"  class="wpmtst-testimonial-content testimonial-content"><div class="maybe-clear"></div><p>It was very satisfying. He gave me a detailed examination, assessed the pain, listened to the history of the back problems, and advised very safe pain medication for my late stage pregnancy. And the effect was almost immediate. By the time I took my second dosage at night, I could feel a significant reduction in pain. Thanks a lot!</p></div><div class="wpmtst-testimonial-field testimonial-field testimonial-name">Gargi Bhattacharya</div><div class="clear"></div></div></div><div class="wpmtst-testimonial testimonial t-slide post-841"><div class="wpmtst-testimonial-inner testimonial-inner"><div data-infinite-loop="true"  class="wpmtst-testimonial-content testimonial-content"><div class="maybe-clear"></div><p>The Visit was extremely productive. Dr Dureja gave us a very patient hearing My mother who had been in pain for nearly two years forgot all about it. Dr Dureja was gentle and patient far beyond our expectations. I would recommend him to all my friends and relatives who are needlessly suffering pain.</p></div><div class="wpmtst-testimonial-field testimonial-field testimonial-name">PRAMILA</div><div class="clear"></div></div></div><div class="wpmtst-testimonial testimonial t-slide post-842"><div class="wpmtst-testimonial-inner testimonial-inner"><div data-infinite-loop="true"  class="wpmtst-testimonial-content testimonial-content"><div class="maybe-clear"></div><p>I was suffering from back ache from 1 month, consultated with many doctors, but no result finally came to know about Dr. Dureja&#8230; Bingo&#8230; My back ache is gone now. He listens everything and the suggestions and medicines done wonders to me. Only one thing, which I noticed that it is better to go early as doctor see patient on basis of first come first serve.</p></div><div class="wpmtst-testimonial-field testimonial-field testimonial-name">Manoj Tiwari</div><div class="clear"></div></div></div></div></div>
+
+
+
+<div class="wp-block-buttons button-light-blue animated fadeInUp is-content-justification-center is-layout-flex wp-container-core-buttons-is-layout-7 wp-block-buttons-is-layout-flex">
+<div class="wp-block-button"><a class="wp-block-button__link has-text-align-center wp-element-button" href="https://painhospital.in/testimonials/">See all&nbsp;Testimonials</a></div>
+</div>
+</div>
+</div>
+
+
+
+<div class="wp-block-columns alignfull logo-section  section-pad mt-0 mb-0 has-white-background-color has-background is-layout-flex wp-container-core-columns-is-layout-18 wp-block-columns-is-layout-flex">
+<div class="wp-block-column container is-layout-flow wp-block-column-is-layout-flow">
+<div class="wp-block-group mt-0 mb-40"><div class="wp-block-group__inner-container is-layout-constrained wp-block-group-is-layout-constrained">
+<p class="has-text-align-center sub-title mb-0 animated fadeInUp">Media</p>
+
+
+
+<h3 class="wp-block-heading has-text-align-center title1 mt-0 mb-0 animated fadeInUp delay-100ms">Coverage</h3>
+</div></div>
+
+
+
+<div class="wp-block-columns alignfull are-vertically-aligned-center logo-row  mt-0 mb-0 is-layout-flex wp-container-core-columns-is-layout-17 wp-block-columns-is-layout-flex">
+<div class="wp-block-column is-vertically-aligned-center logo-item animated fadeInUp is-layout-flow wp-block-column-is-layout-flow">
+<figure class="wp-block-image size-full"><a href="https://timesofindia.indiatimes.com/india/Dont-let-pain-rule-your-life/articleshow/3535299.cms"><img decoding="async" width="372" height="105" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20372%20105'%3E%3C/svg%3E" alt="" class="wp-image-796" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2024/01/TOI-Logo.gif.png 372w, https://painhospital.in/wp-content/uploads/2024/01/TOI-Logo.gif-300x85.png 300w" data-lazy-sizes="(max-width: 372px) 100vw, 372px" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/01/TOI-Logo.gif.png" /><noscript><img decoding="async" width="372" height="105" src="https://painhospital.in/wp-content/uploads/2024/01/TOI-Logo.gif.png" alt="" class="wp-image-796" srcset="https://painhospital.in/wp-content/uploads/2024/01/TOI-Logo.gif.png 372w, https://painhospital.in/wp-content/uploads/2024/01/TOI-Logo.gif-300x85.png 300w" sizes="(max-width: 372px) 100vw, 372px" /></noscript></a></figure>
+</div>
+
+
+
+<div class="wp-block-column is-vertically-aligned-center logo-item animated fadeInUp delay-100ms is-layout-flow wp-block-column-is-layout-flow">
+<figure class="wp-block-image size-full"><a href="https://www.indiatoday.in/lifestyle/health/story/bent-neck-spondylitis-back-pain-91566-2012-01-31"><img decoding="async" width="372" height="105" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20372%20105'%3E%3C/svg%3E" alt="" class="wp-image-938" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2024/01/india-today.png 372w, https://painhospital.in/wp-content/uploads/2024/01/india-today-300x85.png 300w" data-lazy-sizes="(max-width: 372px) 100vw, 372px" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/01/india-today.png" /><noscript><img decoding="async" width="372" height="105" src="https://painhospital.in/wp-content/uploads/2024/01/india-today.png" alt="" class="wp-image-938" srcset="https://painhospital.in/wp-content/uploads/2024/01/india-today.png 372w, https://painhospital.in/wp-content/uploads/2024/01/india-today-300x85.png 300w" sizes="(max-width: 372px) 100vw, 372px" /></noscript></a></figure>
+</div>
+
+
+
+<div class="wp-block-column is-vertically-aligned-center logo-item animated fadeInUp delay-200ms is-layout-flow wp-block-column-is-layout-flow">
+<figure class="wp-block-image size-full"><a href="https://www.hindustantimes.com/brunch/does-being-in-pain-make-you-feel-helpless-try-pain-management/story-u6VfTmevBvMICyTsSUgHGP.html"><img decoding="async" width="354" height="49" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20354%2049'%3E%3C/svg%3E" alt="" class="wp-image-811" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2024/01/HindustanTimes.jpg 354w, https://painhospital.in/wp-content/uploads/2024/01/HindustanTimes-300x42.jpg 300w" data-lazy-sizes="(max-width: 354px) 100vw, 354px" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/01/HindustanTimes.jpg" /><noscript><img decoding="async" width="354" height="49" src="https://painhospital.in/wp-content/uploads/2024/01/HindustanTimes.jpg" alt="" class="wp-image-811" srcset="https://painhospital.in/wp-content/uploads/2024/01/HindustanTimes.jpg 354w, https://painhospital.in/wp-content/uploads/2024/01/HindustanTimes-300x42.jpg 300w" sizes="(max-width: 354px) 100vw, 354px" /></noscript></a></figure>
+</div>
+
+
+
+<div class="wp-block-column is-vertically-aligned-center logo-item animated fadeInUp delay-500ms is-layout-flow wp-block-column-is-layout-flow">
+<figure class="wp-block-image size-full"><a href="https://www.telegraphindia.com/"><img decoding="async" width="290" height="64" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20290%2064'%3E%3C/svg%3E" alt="" class="wp-image-821" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/01/telegraph.jpg"/><noscript><img decoding="async" width="290" height="64" src="https://painhospital.in/wp-content/uploads/2024/01/telegraph.jpg" alt="" class="wp-image-821"/></noscript></a></figure>
+</div>
+</div>
+</div>
+</div>
+
+
+
+<div class="wp-block-columns alignfull section-pad blog-section mt-0 mb-0 has-background is-layout-flex wp-container-core-columns-is-layout-20 wp-block-columns-is-layout-flex" style="background-color:#f1f9ff">
+<div class="wp-block-column container is-layout-flow wp-block-column-is-layout-flow">
+<div class="wp-block-group"><div class="wp-block-group__inner-container is-layout-constrained wp-block-group-is-layout-constrained">
+<p class="has-text-align-center sub-title mb-0 animated fadeInUp">News &amp;</p>
+
+
+
+<h3 class="wp-block-heading has-text-align-center title1 mt-0 mb-0 animated fadeInUp delay-100ms">Blog</h3>
+</div></div>
+
+
+
+<div class="wp-block-columns alignfull mt-0 mb-0 blog-content is-layout-flex wp-container-core-columns-is-layout-19 wp-block-columns-is-layout-flex">
+<div class="wp-block-column is-layout-flow wp-block-column-is-layout-flow"><div class="animated fadeInUp wp-block-essential-blocks-post-grid">    <div class="eb-parent-wrapper eb-parent-eb-post-grid-s9dsxd5 eb_animation eb___animated eb___fadeInUp">
+        <div
+            class="eb-post-grid-s9dsxd5 style-1 animated fadeInUp eb-post-grid-wrapper"
+            data-id="eb-post-grid-s9dsxd5"
+            data-querydata="{&quot;source&quot;:&quot;post&quot;,&quot;sourceIndex&quot;:0,&quot;rest_base&quot;:&quot;posts&quot;,&quot;rest_namespace&quot;:&quot;wp\/v2&quot;,&quot;author&quot;:&quot;&quot;,&quot;taxonomies&quot;:{&quot;category&quot;:{&quot;name&quot;:&quot;Categories&quot;,&quot;rest_base&quot;:&quot;categories&quot;,&quot;rest_namespace&quot;:&quot;wp\/v2&quot;,&quot;slug&quot;:&quot;category&quot;,&quot;value&quot;:&quot;[]&quot;}},&quot;per_page&quot;:&quot;6&quot;,&quot;offset&quot;:&quot;0&quot;,&quot;orderby&quot;:&quot;date&quot;,&quot;order&quot;:&quot;asc&quot;,&quot;include&quot;:&quot;&quot;,&quot;exclude&quot;:&quot;&quot;,&quot;exclude_current&quot;:false,&quot;exclude_password_protected&quot;:false}"
+            data-attributes="{&quot;thumbnailSize&quot;:&quot;&quot;,&quot;loadMoreOptions&quot;:{&quot;totalPosts&quot;:32,&quot;enableMorePosts&quot;:false,&quot;loadMoreType&quot;:&quot;1&quot;,&quot;loadMoreButtonTxt&quot;:&quot;EXPLORE ALL&quot;,&quot;alignment&quot;:&quot;center&quot;,&quot;prevTxt&quot;:&quot;u003c&quot;,&quot;nextTxt&quot;:&quot;u003e&quot;},&quot;showSearch&quot;:false,&quot;showTaxonomyFilter&quot;:false,&quot;enableAjaxSearch&quot;:false,&quot;addIcon&quot;:false,&quot;iconPosition&quot;:&quot;left&quot;,&quot;icon&quot;:&quot;fas fa-chevron-right&quot;,&quot;preset&quot;:&quot;style-1&quot;,&quot;defaultFilter&quot;:&quot;all&quot;,&quot;version&quot;:&quot;v2&quot;,&quot;showBlockContent&quot;:true,&quot;showThumbnail&quot;:true,&quot;showTitle&quot;:true,&quot;titleLength&quot;:&quot;&quot;,&quot;titleTag&quot;:&quot;h4&quot;,&quot;showContent&quot;:true,&quot;contentLength&quot;:20,&quot;expansionIndicator&quot;:&quot;...&quot;,&quot;showReadMore&quot;:true,&quot;readmoreText&quot;:&quot;View Detail \u2192&quot;,&quot;showMeta&quot;:true,&quot;headerMeta&quot;:&quot;[]&quot;,&quot;footerMeta&quot;:&quot;[]&quot;,&quot;authorPrefix&quot;:&quot;&quot;,&quot;datePrefix&quot;:&quot;&quot;}">
+
+            
+
+    <div class="eb-post-grid-posts-wrapper"><article class="ebpg-grid-post ebpg-post-grid-column" data-id="1852"><div class="ebpg-grid-post-holder"><div class="ebpg-entry-wrapper"><div class="ebpg-entry-media">
+                <div class="ebpg-entry-thumbnail">
+                    <a class="ebpg-post-link-wrapper eb-sr-only" href="https://painhospital.in/understanding-and-avoiding-heel-pain/">Understanding And Avoiding Heel Pain</a>
+                    <img decoding="async" width="300" height="199" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20199'%3E%3C/svg%3E" class="attachment- size- wp-post-image" alt="" style="width:100%;height:66.33%;max-width:300px" data-lazy-src="https://painhospital.in/wp-content/uploads/2015/09/heel-pain.jpg" /><noscript><img decoding="async" width="300" height="199" src="https://painhospital.in/wp-content/uploads/2015/09/heel-pain.jpg" class="attachment- size- wp-post-image" alt="" style="width:100%;height:66.33%;max-width:300px" /></noscript>
+                </div>
+            </div><header class="ebpg-entry-header">
+            <h4 class="ebpg-entry-title">
+                <a class="ebpg-grid-post-link" href="https://painhospital.in/understanding-and-avoiding-heel-pain/" title="Understanding And Avoiding Heel Pain">Understanding And Avoiding Heel Pain</a>
+            </h4>
+        </header><div class="ebpg-entry-meta ebpg-header-meta"><div class="ebpg-entry-meta-items"></div></div><div class="ebpg-entry-content"><div class="ebpg-grid-post-excerpt">
+            <p>Heel pain is a common foot condition. It is usually felt as an intense pain when using the affected heel.
+
+
+
+Heel...</p>
+        </div><div class="ebpg-readmore-btn">
+            <a href="https://painhospital.in/understanding-and-avoiding-heel-pain/"> View Detail → </a>
+        </div></div><div class="ebpg-entry-meta ebpg-footer-meta"><div class="ebpg-entry-meta-items"></div></div></div></div></article><article class="ebpg-grid-post ebpg-post-grid-column" data-id="1853"><div class="ebpg-grid-post-holder"><div class="ebpg-entry-wrapper"><div class="ebpg-entry-media">
+                <div class="ebpg-entry-thumbnail">
+                    <a class="ebpg-post-link-wrapper eb-sr-only" href="https://painhospital.in/8-quick-tips-for-a-healthier-back/">8 Quick Tips For A Healthier Back</a>
+                    <img decoding="async" width="471" height="260" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20471%20260'%3E%3C/svg%3E" class="attachment- size- wp-post-image" alt="" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2015/09/back.jpg 471w, https://painhospital.in/wp-content/uploads/2015/09/back-300x166.jpg 300w" data-lazy-sizes="(max-width: 471px) 100vw, 471px" style="width:100%;height:55.2%;max-width:471px" data-lazy-src="https://painhospital.in/wp-content/uploads/2015/09/back.jpg" /><noscript><img decoding="async" width="471" height="260" src="https://painhospital.in/wp-content/uploads/2015/09/back.jpg" class="attachment- size- wp-post-image" alt="" srcset="https://painhospital.in/wp-content/uploads/2015/09/back.jpg 471w, https://painhospital.in/wp-content/uploads/2015/09/back-300x166.jpg 300w" sizes="(max-width: 471px) 100vw, 471px" style="width:100%;height:55.2%;max-width:471px" /></noscript>
+                </div>
+            </div><header class="ebpg-entry-header">
+            <h4 class="ebpg-entry-title">
+                <a class="ebpg-grid-post-link" href="https://painhospital.in/8-quick-tips-for-a-healthier-back/" title="8 Quick Tips For A Healthier Back">8 Quick Tips For A Healthier Back</a>
+            </h4>
+        </header><div class="ebpg-entry-meta ebpg-header-meta"><div class="ebpg-entry-meta-items"></div></div><div class="ebpg-entry-content"><div class="ebpg-grid-post-excerpt">
+            <p>Want to have a healthy, pain-free back, but not sure how to get it? Here are 8 quick tips which...</p>
+        </div><div class="ebpg-readmore-btn">
+            <a href="https://painhospital.in/8-quick-tips-for-a-healthier-back/"> View Detail → </a>
+        </div></div><div class="ebpg-entry-meta ebpg-footer-meta"><div class="ebpg-entry-meta-items"></div></div></div></div></article><article class="ebpg-grid-post ebpg-post-grid-column" data-id="1854"><div class="ebpg-grid-post-holder"><div class="ebpg-entry-wrapper"><div class="ebpg-entry-media">
+                <div class="ebpg-entry-thumbnail">
+                    <a class="ebpg-post-link-wrapper eb-sr-only" href="https://painhospital.in/how-to-prevent-yourself-from-a-frozen-shoulder/">How To Prevent Yourself From A 'Frozen Shoulder'</a>
+                    <img decoding="async" width="302" height="201" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20302%20201'%3E%3C/svg%3E" class="attachment- size- wp-post-image" alt="" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2015/09/back1-1.jpg 302w, https://painhospital.in/wp-content/uploads/2015/09/back1-1-300x200.jpg 300w" data-lazy-sizes="(max-width: 302px) 100vw, 302px" style="width:100%;height:66.56%;max-width:302px" data-lazy-src="https://painhospital.in/wp-content/uploads/2015/09/back1-1.jpg" /><noscript><img decoding="async" width="302" height="201" src="https://painhospital.in/wp-content/uploads/2015/09/back1-1.jpg" class="attachment- size- wp-post-image" alt="" srcset="https://painhospital.in/wp-content/uploads/2015/09/back1-1.jpg 302w, https://painhospital.in/wp-content/uploads/2015/09/back1-1-300x200.jpg 300w" sizes="(max-width: 302px) 100vw, 302px" style="width:100%;height:66.56%;max-width:302px" /></noscript>
+                </div>
+            </div><header class="ebpg-entry-header">
+            <h4 class="ebpg-entry-title">
+                <a class="ebpg-grid-post-link" href="https://painhospital.in/how-to-prevent-yourself-from-a-frozen-shoulder/" title="How To Prevent Yourself From A &#039;Frozen Shoulder&#039;">How To Prevent Yourself From A 'Frozen Shoulder'</a>
+            </h4>
+        </header><div class="ebpg-entry-meta ebpg-header-meta"><div class="ebpg-entry-meta-items"></div></div><div class="ebpg-entry-content"><div class="ebpg-grid-post-excerpt">
+            <p>What is Frozen Shoulder?
+
+
+
+Frozen shoulder, medically referred to as adhesive capsulitis, is a disorder in which the shoulder capsule, the...</p>
+        </div><div class="ebpg-readmore-btn">
+            <a href="https://painhospital.in/how-to-prevent-yourself-from-a-frozen-shoulder/"> View Detail → </a>
+        </div></div><div class="ebpg-entry-meta ebpg-footer-meta"><div class="ebpg-entry-meta-items"></div></div></div></div></article><article class="ebpg-grid-post ebpg-post-grid-column" data-id="2078"><div class="ebpg-grid-post-holder"><div class="ebpg-entry-wrapper"><div class="ebpg-entry-media">
+                <div class="ebpg-entry-thumbnail">
+                    <a class="ebpg-post-link-wrapper eb-sr-only" href="https://painhospital.in/6-simple-ways-to-keep-away-body-pains-during-winters/">6 Simple Ways to Keep Away Body Pains during Winters</a>
+                    <img decoding="async" width="580" height="326" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20580%20326'%3E%3C/svg%3E" class="attachment- size- wp-post-image" alt="" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2016/01/featuredImage.jpg 580w, https://painhospital.in/wp-content/uploads/2016/01/featuredImage-300x169.jpg 300w" data-lazy-sizes="(max-width: 580px) 100vw, 580px" style="width:100%;height:56.21%;max-width:580px" data-lazy-src="https://painhospital.in/wp-content/uploads/2016/01/featuredImage.jpg" /><noscript><img decoding="async" width="580" height="326" src="https://painhospital.in/wp-content/uploads/2016/01/featuredImage.jpg" class="attachment- size- wp-post-image" alt="" srcset="https://painhospital.in/wp-content/uploads/2016/01/featuredImage.jpg 580w, https://painhospital.in/wp-content/uploads/2016/01/featuredImage-300x169.jpg 300w" sizes="(max-width: 580px) 100vw, 580px" style="width:100%;height:56.21%;max-width:580px" /></noscript>
+                </div>
+            </div><header class="ebpg-entry-header">
+            <h4 class="ebpg-entry-title">
+                <a class="ebpg-grid-post-link" href="https://painhospital.in/6-simple-ways-to-keep-away-body-pains-during-winters/" title="6 Simple Ways to Keep Away Body Pains during Winters">6 Simple Ways to Keep Away Body Pains during Winters</a>
+            </h4>
+        </header><div class="ebpg-entry-meta ebpg-header-meta"><div class="ebpg-entry-meta-items"></div></div><div class="ebpg-entry-content"><div class="ebpg-grid-post-excerpt">
+            <p>These winters have been different from most others. If you live in Delhi or other parts of North India, you...</p>
+        </div><div class="ebpg-readmore-btn">
+            <a href="https://painhospital.in/6-simple-ways-to-keep-away-body-pains-during-winters/"> View Detail → </a>
+        </div></div><div class="ebpg-entry-meta ebpg-footer-meta"><div class="ebpg-entry-meta-items"></div></div></div></div></article><article class="ebpg-grid-post ebpg-post-grid-column" data-id="2087"><div class="ebpg-grid-post-holder"><div class="ebpg-entry-wrapper"><div class="ebpg-entry-media">
+                <div class="ebpg-entry-thumbnail">
+                    <a class="ebpg-post-link-wrapper eb-sr-only" href="https://painhospital.in/bid-adieu-to-back-pain-and-say-hello-to-a-happy-life/">Bid Adieu To Back Pain And Say Hello To a Happy Life!</a>
+                    <img decoding="async" width="727" height="409" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20727%20409'%3E%3C/svg%3E" class="attachment- size- wp-post-image" alt="" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2016/01/shutterstock.jpg 727w, https://painhospital.in/wp-content/uploads/2016/01/shutterstock-300x169.jpg 300w" data-lazy-sizes="(max-width: 727px) 100vw, 727px" style="width:100%;height:56.26%;max-width:727px" data-lazy-src="https://painhospital.in/wp-content/uploads/2016/01/shutterstock.jpg" /><noscript><img decoding="async" width="727" height="409" src="https://painhospital.in/wp-content/uploads/2016/01/shutterstock.jpg" class="attachment- size- wp-post-image" alt="" srcset="https://painhospital.in/wp-content/uploads/2016/01/shutterstock.jpg 727w, https://painhospital.in/wp-content/uploads/2016/01/shutterstock-300x169.jpg 300w" sizes="(max-width: 727px) 100vw, 727px" style="width:100%;height:56.26%;max-width:727px" /></noscript>
+                </div>
+            </div><header class="ebpg-entry-header">
+            <h4 class="ebpg-entry-title">
+                <a class="ebpg-grid-post-link" href="https://painhospital.in/bid-adieu-to-back-pain-and-say-hello-to-a-happy-life/" title="Bid Adieu To Back Pain And Say Hello To a Happy Life!">Bid Adieu To Back Pain And Say Hello To a Happy Life!</a>
+            </h4>
+        </header><div class="ebpg-entry-meta ebpg-header-meta"><div class="ebpg-entry-meta-items"></div></div><div class="ebpg-entry-content"><div class="ebpg-grid-post-excerpt">
+            <p>One of the most common ailments faced by people today is back pain. In a world where work is slowly...</p>
+        </div><div class="ebpg-readmore-btn">
+            <a href="https://painhospital.in/bid-adieu-to-back-pain-and-say-hello-to-a-happy-life/"> View Detail → </a>
+        </div></div><div class="ebpg-entry-meta ebpg-footer-meta"><div class="ebpg-entry-meta-items"></div></div></div></div></article><article class="ebpg-grid-post ebpg-post-grid-column" data-id="2102"><div class="ebpg-grid-post-holder"><div class="ebpg-entry-wrapper"><div class="ebpg-entry-media">
+                <div class="ebpg-entry-thumbnail">
+                    <a class="ebpg-post-link-wrapper eb-sr-only" href="https://painhospital.in/the-ultimate-guide-to-slipped-disc-treatment/">The Ultimate Guide To Slipped Disc Treatment</a>
+                    <img decoding="async" width="590" height="350" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20590%20350'%3E%3C/svg%3E" class="attachment- size- wp-post-image" alt="" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2016/01/slippedisc-.jpg 590w, https://painhospital.in/wp-content/uploads/2016/01/slippedisc--300x178.jpg 300w" data-lazy-sizes="(max-width: 590px) 100vw, 590px" style="width:100%;height:59.32%;max-width:590px" data-lazy-src="https://painhospital.in/wp-content/uploads/2016/01/slippedisc-.jpg" /><noscript><img decoding="async" width="590" height="350" src="https://painhospital.in/wp-content/uploads/2016/01/slippedisc-.jpg" class="attachment- size- wp-post-image" alt="" srcset="https://painhospital.in/wp-content/uploads/2016/01/slippedisc-.jpg 590w, https://painhospital.in/wp-content/uploads/2016/01/slippedisc--300x178.jpg 300w" sizes="(max-width: 590px) 100vw, 590px" style="width:100%;height:59.32%;max-width:590px" /></noscript>
+                </div>
+            </div><header class="ebpg-entry-header">
+            <h4 class="ebpg-entry-title">
+                <a class="ebpg-grid-post-link" href="https://painhospital.in/the-ultimate-guide-to-slipped-disc-treatment/" title="The Ultimate Guide To Slipped Disc Treatment">The Ultimate Guide To Slipped Disc Treatment</a>
+            </h4>
+        </header><div class="ebpg-entry-meta ebpg-header-meta"><div class="ebpg-entry-meta-items"></div></div><div class="ebpg-entry-content"><div class="ebpg-grid-post-excerpt">
+            <p>A slipped disc known as a prolapsed or herniated plate happens when one of the circles that sit between the...</p>
+        </div><div class="ebpg-readmore-btn">
+            <a href="https://painhospital.in/the-ultimate-guide-to-slipped-disc-treatment/"> View Detail → </a>
+        </div></div><div class="ebpg-entry-meta ebpg-footer-meta"><div class="ebpg-entry-meta-items"></div></div></div></div></article></div>        </div>
+    </div>
+</div>
+
+
+
+<div class="wp-block-buttons button-light-blue animated fadeInUp is-content-justification-center is-layout-flex wp-container-core-buttons-is-layout-8 wp-block-buttons-is-layout-flex">
+<div class="wp-block-button"><a class="wp-block-button__link has-text-align-center wp-element-button" href="https://painhospital.in/blog/">EXPLORE ALL →</a></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+	</div><!-- .entry-content -->
+</article><!-- #post-5540 -->
+			</main><!-- #main -->
+		</div><!-- #primary -->
+	</div><!-- #content -->
+
+
+	<footer id="colophon" class="site-footer">
+		<div class="container">
+		
+	<aside class="widget-area">
+		<section id="block-14" class="widget widget_block">
+<div class="wp-block-group animated fadeInLeft"><div class="wp-block-group__inner-container is-layout-constrained wp-block-group-is-layout-constrained">
+<figure class="wp-block-image size-full"><a href="https://painhospital.in/"><img decoding="async" width="1300" height="163" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201300%20163'%3E%3C/svg%3E" alt="" class="wp-image-806" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png 1300w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-300x38.png 300w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-1024x128.png 1024w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-768x96.png 768w" data-lazy-sizes="(max-width: 1300px) 100vw, 1300px" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png" /><noscript><img decoding="async" width="1300" height="163" src="https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png" alt="" class="wp-image-806" srcset="https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png 1300w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-300x38.png 300w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-1024x128.png 1024w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-768x96.png 768w" sizes="(max-width: 1300px) 100vw, 1300px" /></noscript></a></figure>
+
+
+
+<p>DPMC is the pioneer in providing non-surgical pain treatment services in India, providing the latest and most advanced treatment modalities. It has served patients suffering from a range of conditions including back pain, knee pain, joint pains, arthritis, headache and migraines, cancer pain, cerebral palsy, fibromyalgia, shoulder pain, ankle pain, heel pain, facial pain, trigeminal neuralgia, and herpes pain among others.</p>
+</div></div>
+</section><section id="block-16" class="widget widget_block">
+<div class="wp-block-group animated fadeInLeft delay-100ms"><div class="wp-block-group__inner-container is-layout-constrained wp-block-group-is-layout-constrained">
+<p class="widget-title">QUICK LINKS</p>
+
+
+<div class="widget widget_nav_menu"><nav class="menu-footer-menu-container" aria-label="Menu"><ul id="menu-footer-menu" class="menu"><li id="menu-item-5615" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-5540 current_page_item menu-item-5615"><a href="https://painhospital.in/" aria-current="page">Home</a></li>
+<li id="menu-item-1828" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1828"><a href="https://painhospital.in/about-us/">About Us</a></li>
+<li id="menu-item-1197" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1197"><a href="https://painhospital.in/blog/">Blogs</a></li>
+<li id="menu-item-1829" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1829"><a href="https://painhospital.in/contact/">Contact Us</a></li>
+</ul></nav></div></div></div>
+</section><section id="block-15" class="widget widget_block">
+<div class="wp-block-group animated fadeInLeft delay-200ms"><div class="wp-block-group__inner-container is-layout-constrained wp-block-group-is-layout-constrained">
+<p class="widget-title">CONTACT US</p>
+
+
+
+<p><img decoding="async" width="22" height="16" class="wp-image-41" style="width: 22px;" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2022%2016'%3E%3C/svg%3E" alt="" data-lazy-src="https://painhospital.in/wp-content/uploads/2023/09/Group-1106.png"><noscript><img decoding="async" width="22" height="16" class="wp-image-41" style="width: 22px;" src="https://painhospital.in/wp-content/uploads/2023/09/Group-1106.png" alt=""></noscript> <a href="mailto:contact@painhospital.in">contact@painhospital.in</a></p>
+
+
+
+<p><img decoding="async" width="21" height="21" class="wp-image-43" style="width: 21px;" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2021%2021'%3E%3C/svg%3E" alt="" data-lazy-src="https://painhospital.in/wp-content/uploads/2023/09/Group-1105.png"><noscript><img decoding="async" width="21" height="21" class="wp-image-43" style="width: 21px;" src="https://painhospital.in/wp-content/uploads/2023/09/Group-1105.png" alt=""></noscript> <a href="tel:9999123444" data-type="page" data-id="44">9999-123-444</a></p>
+
+
+
+<ul class="wp-block-social-links aligncenter has-normal-icon-size is-style-logos-only is-content-justification-left is-layout-flex wp-container-core-social-links-is-layout-1 wp-block-social-links-is-layout-flex"><li class="wp-social-link wp-social-link-facebook  wp-block-social-link"><a rel="noopener nofollow" target="_blank" href="https://facebook.com/" class="wp-block-social-link-anchor"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 2C6.5 2 2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7C18.3 21.1 22 17 22 12c0-5.5-4.5-10-10-10z"></path></svg><span class="wp-block-social-link-label screen-reader-text">Facebook</span></a></li>
+
+<li class="wp-social-link wp-social-link-instagram  wp-block-social-link"><a rel="noopener nofollow" target="_blank" href="https://instagram.com/" class="wp-block-social-link-anchor"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12,4.622c2.403,0,2.688,0.009,3.637,0.052c0.877,0.04,1.354,0.187,1.671,0.31c0.42,0.163,0.72,0.358,1.035,0.673 c0.315,0.315,0.51,0.615,0.673,1.035c0.123,0.317,0.27,0.794,0.31,1.671c0.043,0.949,0.052,1.234,0.052,3.637 s-0.009,2.688-0.052,3.637c-0.04,0.877-0.187,1.354-0.31,1.671c-0.163,0.42-0.358,0.72-0.673,1.035 c-0.315,0.315-0.615,0.51-1.035,0.673c-0.317,0.123-0.794,0.27-1.671,0.31c-0.949,0.043-1.233,0.052-3.637,0.052 s-2.688-0.009-3.637-0.052c-0.877-0.04-1.354-0.187-1.671-0.31c-0.42-0.163-0.72-0.358-1.035-0.673 c-0.315-0.315-0.51-0.615-0.673-1.035c-0.123-0.317-0.27-0.794-0.31-1.671C4.631,14.688,4.622,14.403,4.622,12 s0.009-2.688,0.052-3.637c0.04-0.877,0.187-1.354,0.31-1.671c0.163-0.42,0.358-0.72,0.673-1.035 c0.315-0.315,0.615-0.51,1.035-0.673c0.317-0.123,0.794-0.27,1.671-0.31C9.312,4.631,9.597,4.622,12,4.622 M12,3 C9.556,3,9.249,3.01,8.289,3.054C7.331,3.098,6.677,3.25,6.105,3.472C5.513,3.702,5.011,4.01,4.511,4.511 c-0.5,0.5-0.808,1.002-1.038,1.594C3.25,6.677,3.098,7.331,3.054,8.289C3.01,9.249,3,9.556,3,12c0,2.444,0.01,2.751,0.054,3.711 c0.044,0.958,0.196,1.612,0.418,2.185c0.23,0.592,0.538,1.094,1.038,1.594c0.5,0.5,1.002,0.808,1.594,1.038 c0.572,0.222,1.227,0.375,2.185,0.418C9.249,20.99,9.556,21,12,21s2.751-0.01,3.711-0.054c0.958-0.044,1.612-0.196,2.185-0.418 c0.592-0.23,1.094-0.538,1.594-1.038c0.5-0.5,0.808-1.002,1.038-1.594c0.222-0.572,0.375-1.227,0.418-2.185 C20.99,14.751,21,14.444,21,12s-0.01-2.751-0.054-3.711c-0.044-0.958-0.196-1.612-0.418-2.185c-0.23-0.592-0.538-1.094-1.038-1.594 c-0.5-0.5-1.002-0.808-1.594-1.038c-0.572-0.222-1.227-0.375-2.185-0.418C14.751,3.01,14.444,3,12,3L12,3z M12,7.378 c-2.552,0-4.622,2.069-4.622,4.622S9.448,16.622,12,16.622s4.622-2.069,4.622-4.622S14.552,7.378,12,7.378z M12,15 c-1.657,0-3-1.343-3-3s1.343-3,3-3s3,1.343,3,3S13.657,15,12,15z M16.804,6.116c-0.596,0-1.08,0.484-1.08,1.08 s0.484,1.08,1.08,1.08c0.596,0,1.08-0.484,1.08-1.08S17.401,6.116,16.804,6.116z"></path></svg><span class="wp-block-social-link-label screen-reader-text">Instagram</span></a></li>
+
+<li class="wp-social-link wp-social-link-x  wp-block-social-link"><a rel="noopener nofollow" target="_blank" href="https://twitter.com/" class="wp-block-social-link-anchor"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M13.982 10.622 20.54 3h-1.554l-5.693 6.618L8.745 3H3.5l6.876 10.007L3.5 21h1.554l6.012-6.989L15.868 21h5.245l-7.131-10.378Zm-2.128 2.474-.697-.997-5.543-7.93H8l4.474 6.4.697.996 5.815 8.318h-2.387l-4.745-6.787Z" /></svg><span class="wp-block-social-link-label screen-reader-text">X</span></a></li>
+
+<li class="wp-social-link wp-social-link-linkedin  wp-block-social-link"><a rel="noopener nofollow" target="_blank" href="https://linkedin.com/" class="wp-block-social-link-anchor"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M19.7,3H4.3C3.582,3,3,3.582,3,4.3v15.4C3,20.418,3.582,21,4.3,21h15.4c0.718,0,1.3-0.582,1.3-1.3V4.3 C21,3.582,20.418,3,19.7,3z M8.339,18.338H5.667v-8.59h2.672V18.338z M7.004,8.574c-0.857,0-1.549-0.694-1.549-1.548 c0-0.855,0.691-1.548,1.549-1.548c0.854,0,1.547,0.694,1.547,1.548C8.551,7.881,7.858,8.574,7.004,8.574z M18.339,18.338h-2.669 v-4.177c0-0.996-0.017-2.278-1.387-2.278c-1.389,0-1.601,1.086-1.601,2.206v4.249h-2.667v-8.59h2.559v1.174h0.037 c0.356-0.675,1.227-1.387,2.526-1.387c2.703,0,3.203,1.779,3.203,4.092V18.338z"></path></svg><span class="wp-block-social-link-label screen-reader-text">LinkedIn</span></a></li></ul>
+</div></div>
+</section><section id="block-17" class="widget widget_block">
+<div class="wp-block-group animated fadeInLeft delay-500ms"><div class="wp-block-group__inner-container is-layout-constrained wp-block-group-is-layout-constrained">
+<p class="widget-title">OUR ADDRESSES</p>
+
+
+
+<ul class="address-info">
+<li><strong>South Delhi</strong>: A-1/14 Safdarjung Enclave</li>
+
+
+
+<li><strong>West Delhi</strong>: 3rd Floor, 20 Raja Garden, Main Najafgarh Road, Opp. Metro Pillar No 380</li>
+
+
+
+<li><strong>Gurgaon</strong>: 162-P, Ambedkar Chowk, Vikas Marg, Sector 51, Gurgaon</li>
+
+
+
+<li><strong>Ghaziabad</strong>: LYF Hospital, NH4, Gyan Khand 1, Indirapuram</li>
+
+
+
+<li><strong>Noida</strong>: Manas Hospital, Sector 34, Noida</li>
+</ul>
+</div></div>
+</section>	</aside><!-- .widget-area -->
+
+	
+					<div class="footer-copyright-section">
+				<!--<div class="site-name">
+											<div class="site-logo"><span class="custom-logo-link"><img width="1300" height="163" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201300%20163'%3E%3C/svg%3E" class="custom-logo" alt="" decoding="async" data-lazy-srcset="https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png 1300w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-300x38.png 300w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-1024x128.png 1024w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-768x96.png 768w" data-lazy-sizes="(max-width: 1300px) 100vw, 1300px" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png" /><noscript><img width="1300" height="163" src="https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png" class="custom-logo" alt="" decoding="async" srcset="https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo.png 1300w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-300x38.png 300w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-1024x128.png 1024w, https://painhospital.in/wp-content/uploads/2024/01/DPMC-logo-768x96.png 768w" sizes="(max-width: 1300px) 100vw, 1300px" /></noscript></span></div>
+									</div>-->
+
+							<p>Copyright ©2026 <a href="https://painhospital.in"> Delhi Pain Management Center </a> | All rights reserved | Website designed by <a rel="nofollow noreferrer noopener" href="https://www.stelleninfotech.com/" target="_blank">Stelleninfotech</a></p>
+<!-- 
+				<p>
+					Proudly powered by <a href="https://wordpress.org/">WordPress</a>.				</p> -->
+				
+			
+			</div>	
+		</div>
+	</footer>
+
+<div class="floting-appointment">
+	<a href="/appointments/" class="btn-book-appointment"><img width="24" height="24" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3C/svg%3E" alt="calendar" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/02/calendar-white.png"><noscript><img width="24" height="24" src="https://painhospital.in/wp-content/uploads/2024/02/calendar-white.png" alt="calendar"></noscript>Book Appointment</a>
+</div>
+<a href="https://api.whatsapp.com/send?phone=919999123444&amp;text=Hello%20Delhi%20Pain%20Management%20Centre%20team" class="whatsapp-icon"  target="_blank"><img width="128" height="128" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20128%20128'%3E%3C/svg%3E" alt="whatsaap" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/04/whatsapwp.webp"><noscript><img width="128" height="128" src="https://painhospital.in/wp-content/uploads/2024/04/whatsapwp.webp" alt="whatsaap"></noscript></a>
+
+<a href="#" class="scrollup" style="display: inline;"><img width="24" height="24" src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3C/svg%3E" alt="scroll-top" data-lazy-src="https://painhospital.in/wp-content/uploads/2024/01/scroll-top.png"><noscript><img width="24" height="24" src="https://painhospital.in/wp-content/uploads/2024/01/scroll-top.png" alt="scroll-top"></noscript></a>
+
+</div><!-- #page -->
+<!--<div class="preloader-wrapper" style="background-color:#fff;">
+    <div class="preloader-container">
+        <div class="cssload-loader">
+            <div class="cssload-inner cssload-one" style="border-bottom-color:#7c529c;"></div>
+            <div class="cssload-inner cssload-two" style="border-right-color:#fd226a;"></div>
+            <div class="cssload-inner cssload-three" style="border-top-color:#ff6691;"></div>
+        </div>
+    </div>
+</div>-->
+<script>document.body.classList.remove("no-js");</script>	<script type="rocketlazyloadscript">
+	if ( -1 !== navigator.userAgent.indexOf( 'MSIE' ) || -1 !== navigator.appVersion.indexOf( 'Trident/' ) ) {
+		document.body.classList.add( 'is-IE' );
+	}
+	</script>
+	<style id="o-anim-hide-inline-css"> .animated:not(.o-anim-ready) {
+			visibility: hidden;
+			animation-play-state: paused;
+			animation: none !important;
+		 }</style>
+		 <noscript><style>.animated { visibility: visible; animation-play-state: running; }</style></noscript>
+
+
+
+
+
+<style id='core-block-supports-inline-css'>
+.wp-container-core-columns-is-layout-1.wp-container-core-columns-is-layout-1{flex-wrap:nowrap;}.wp-container-core-buttons-is-layout-1.wp-container-core-buttons-is-layout-1{justify-content:flex-start;}.wp-container-core-columns-is-layout-2.wp-container-core-columns-is-layout-2{flex-wrap:nowrap;}.wp-container-core-buttons-is-layout-2.wp-container-core-buttons-is-layout-2{justify-content:flex-start;}.wp-container-core-columns-is-layout-3.wp-container-core-columns-is-layout-3{flex-wrap:nowrap;}.wp-container-core-buttons-is-layout-3.wp-container-core-buttons-is-layout-3{justify-content:flex-start;}.wp-container-core-columns-is-layout-4.wp-container-core-columns-is-layout-4{flex-wrap:nowrap;}.wp-container-core-columns-is-layout-5.wp-container-core-columns-is-layout-5{flex-wrap:nowrap;}.wp-container-core-buttons-is-layout-4.wp-container-core-buttons-is-layout-4{justify-content:center;}.wp-container-core-columns-is-layout-6.wp-container-core-columns-is-layout-6{flex-wrap:nowrap;}.wp-container-core-buttons-is-layout-5.wp-container-core-buttons-is-layout-5{justify-content:center;}.wp-container-core-buttons-is-layout-6.wp-container-core-buttons-is-layout-6{justify-content:center;}.wp-container-core-columns-is-layout-7.wp-container-core-columns-is-layout-7{flex-wrap:nowrap;}.wp-container-core-columns-is-layout-8.wp-container-core-columns-is-layout-8{flex-wrap:nowrap;}.wp-container-core-columns-is-layout-9.wp-container-core-columns-is-layout-9{flex-wrap:nowrap;}.wp-container-core-columns-is-layout-10.wp-container-core-columns-is-layout-10{flex-wrap:nowrap;}.wp-container-core-columns-is-layout-11.wp-container-core-columns-is-layout-11{flex-wrap:nowrap;}.wp-container-core-columns-is-layout-12.wp-container-core-columns-is-layout-12{flex-wrap:nowrap;}.wp-container-core-columns-is-layout-13.wp-container-core-columns-is-layout-13{flex-wrap:nowrap;}.wp-container-core-columns-is-layout-14.wp-container-core-columns-is-layout-14{flex-wrap:nowrap;}.wp-container-core-columns-is-layout-15.wp-container-core-columns-is-layout-15{flex-wrap:nowrap;}.wp-container-core-buttons-is-layout-7.wp-container-core-buttons-is-layout-7{justify-content:center;}.wp-container-core-columns-is-layout-16.wp-container-core-columns-is-layout-16{flex-wrap:nowrap;}.wp-container-core-columns-is-layout-17.wp-container-core-columns-is-layout-17{flex-wrap:nowrap;}.wp-container-core-columns-is-layout-18.wp-container-core-columns-is-layout-18{flex-wrap:nowrap;}.wp-container-core-buttons-is-layout-8.wp-container-core-buttons-is-layout-8{justify-content:center;}.wp-container-core-columns-is-layout-19.wp-container-core-columns-is-layout-19{flex-wrap:nowrap;}.wp-container-core-columns-is-layout-20.wp-container-core-columns-is-layout-20{flex-wrap:nowrap;}.wp-container-core-social-links-is-layout-1.wp-container-core-social-links-is-layout-1{justify-content:flex-start;}
+</style>
+
+<script id="essential-blocks-blocks-localize-js-extra">
+var eb_conditional_localize = {"editor_type":""};
+var EssentialBlocksLocalize = {"eb_plugins_url":"https:\/\/painhospital.in\/wp-content\/plugins\/essential-blocks\/","image_url":"https:\/\/painhospital.in\/wp-content\/plugins\/essential-blocks\/assets\/images","eb_wp_version":"6.5","eb_version":"4.5.11","eb_admin_url":"https:\/\/painhospital.in\/wp-admin\/","rest_rootURL":"https:\/\/painhospital.in\/wp-json\/","ajax_url":"https:\/\/painhospital.in\/wp-admin\/admin-ajax.php","nft_nonce":"5fc6913ea8","post_grid_pagination_nonce":"60cb1a1f4d","placeholder_image":"https:\/\/painhospital.in\/wp-content\/plugins\/essential-blocks\/assets\/images\/placeholder.png","is_pro_active":"false","upgrade_pro_url":"https:\/\/essential-blocks.com\/upgrade","responsiveBreakpoints":{"tablet":1024,"mobile":767}};
+</script>
+<script type="rocketlazyloadscript" src="https://painhospital.in/wp-content/plugins/essential-blocks/assets/js/eb-blocks-localize.js?ver=4.5.11" id="essential-blocks-blocks-localize-js" defer></script>
+<script type="rocketlazyloadscript" data-minify="1" src="https://painhospital.in/wp-content/cache/min/1/wp-content/plugins/super-block-slider/build/superblockslider.js?ver=1771434615" id="superblockslider-js" defer data-wp-strategy="defer"></script>
+<script type="rocketlazyloadscript" id="rocket-browser-checker-js-after">
+"use strict";var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||!1,descriptor.configurable=!0,"value"in descriptor&&(descriptor.writable=!0),Object.defineProperty(target,descriptor.key,descriptor)}}return function(Constructor,protoProps,staticProps){return protoProps&&defineProperties(Constructor.prototype,protoProps),staticProps&&defineProperties(Constructor,staticProps),Constructor}}();function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor))throw new TypeError("Cannot call a class as a function")}var RocketBrowserCompatibilityChecker=function(){function RocketBrowserCompatibilityChecker(options){_classCallCheck(this,RocketBrowserCompatibilityChecker),this.passiveSupported=!1,this._checkPassiveOption(this),this.options=!!this.passiveSupported&&options}return _createClass(RocketBrowserCompatibilityChecker,[{key:"_checkPassiveOption",value:function(self){try{var options={get passive(){return!(self.passiveSupported=!0)}};window.addEventListener("test",null,options),window.removeEventListener("test",null,options)}catch(err){self.passiveSupported=!1}}},{key:"initRequestIdleCallback",value:function(){!1 in window&&(window.requestIdleCallback=function(cb){var start=Date.now();return setTimeout(function(){cb({didTimeout:!1,timeRemaining:function(){return Math.max(0,50-(Date.now()-start))}})},1)}),!1 in window&&(window.cancelIdleCallback=function(id){return clearTimeout(id)})}},{key:"isDataSaverModeOn",value:function(){return"connection"in navigator&&!0===navigator.connection.saveData}},{key:"supportsLinkPrefetch",value:function(){var elem=document.createElement("link");return elem.relList&&elem.relList.supports&&elem.relList.supports("prefetch")&&window.IntersectionObserver&&"isIntersecting"in IntersectionObserverEntry.prototype}},{key:"isSlowConnection",value:function(){return"connection"in navigator&&"effectiveType"in navigator.connection&&("2g"===navigator.connection.effectiveType||"slow-2g"===navigator.connection.effectiveType)}}]),RocketBrowserCompatibilityChecker}();
+</script>
+<script id="rocket-preload-links-js-extra">
+var RocketPreloadLinksConfig = {"excludeUris":"\/(.+\/)?feed\/?.+\/?|\/(?:.+\/)?embed\/|\/(index\\.php\/)?wp\\-json(\/.*|$)|\/wp-admin\/|\/logout\/|\/wp-login.php","usesTrailingSlash":"1","imageExt":"jpg|jpeg|gif|png|tiff|bmp|webp|avif","fileExt":"jpg|jpeg|gif|png|tiff|bmp|webp|avif|php|pdf|html|htm","siteUrl":"https:\/\/painhospital.in","onHoverDelay":"100","rateThrottle":"3"};
+</script>
+<script type="rocketlazyloadscript" id="rocket-preload-links-js-after">
+(function() {
+"use strict";var r="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},e=function(){function i(e,t){for(var n=0;n<t.length;n++){var i=t[n];i.enumerable=i.enumerable||!1,i.configurable=!0,"value"in i&&(i.writable=!0),Object.defineProperty(e,i.key,i)}}return function(e,t,n){return t&&i(e.prototype,t),n&&i(e,n),e}}();function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}var t=function(){function n(e,t){i(this,n),this.browser=e,this.config=t,this.options=this.browser.options,this.prefetched=new Set,this.eventTime=null,this.threshold=1111,this.numOnHover=0}return e(n,[{key:"init",value:function(){!this.browser.supportsLinkPrefetch()||this.browser.isDataSaverModeOn()||this.browser.isSlowConnection()||(this.regex={excludeUris:RegExp(this.config.excludeUris,"i"),images:RegExp(".("+this.config.imageExt+")$","i"),fileExt:RegExp(".("+this.config.fileExt+")$","i")},this._initListeners(this))}},{key:"_initListeners",value:function(e){-1<this.config.onHoverDelay&&document.addEventListener("mouseover",e.listener.bind(e),e.listenerOptions),document.addEventListener("mousedown",e.listener.bind(e),e.listenerOptions),document.addEventListener("touchstart",e.listener.bind(e),e.listenerOptions)}},{key:"listener",value:function(e){var t=e.target.closest("a"),n=this._prepareUrl(t);if(null!==n)switch(e.type){case"mousedown":case"touchstart":this._addPrefetchLink(n);break;case"mouseover":this._earlyPrefetch(t,n,"mouseout")}}},{key:"_earlyPrefetch",value:function(t,e,n){var i=this,r=setTimeout(function(){if(r=null,0===i.numOnHover)setTimeout(function(){return i.numOnHover=0},1e3);else if(i.numOnHover>i.config.rateThrottle)return;i.numOnHover++,i._addPrefetchLink(e)},this.config.onHoverDelay);t.addEventListener(n,function e(){t.removeEventListener(n,e,{passive:!0}),null!==r&&(clearTimeout(r),r=null)},{passive:!0})}},{key:"_addPrefetchLink",value:function(i){return this.prefetched.add(i.href),new Promise(function(e,t){var n=document.createElement("link");n.rel="prefetch",n.href=i.href,n.onload=e,n.onerror=t,document.head.appendChild(n)}).catch(function(){})}},{key:"_prepareUrl",value:function(e){if(null===e||"object"!==(void 0===e?"undefined":r(e))||!1 in e||-1===["http:","https:"].indexOf(e.protocol))return null;var t=e.href.substring(0,this.config.siteUrl.length),n=this._getPathname(e.href,t),i={original:e.href,protocol:e.protocol,origin:t,pathname:n,href:t+n};return this._isLinkOk(i)?i:null}},{key:"_getPathname",value:function(e,t){var n=t?e.substring(this.config.siteUrl.length):e;return n.startsWith("/")||(n="/"+n),this._shouldAddTrailingSlash(n)?n+"/":n}},{key:"_shouldAddTrailingSlash",value:function(e){return this.config.usesTrailingSlash&&!e.endsWith("/")&&!this.regex.fileExt.test(e)}},{key:"_isLinkOk",value:function(e){return null!==e&&"object"===(void 0===e?"undefined":r(e))&&(!this.prefetched.has(e.href)&&e.origin===this.config.siteUrl&&-1===e.href.indexOf("?")&&-1===e.href.indexOf("#")&&!this.regex.excludeUris.test(e.href)&&!this.regex.images.test(e.href))}}],[{key:"run",value:function(){"undefined"!=typeof RocketPreloadLinksConfig&&new n(new RocketBrowserCompatibilityChecker({capture:!0,passive:!0}),RocketPreloadLinksConfig).init()}}]),n}();t.run();
+}());
+</script>
+<script type="rocketlazyloadscript" data-minify="1" src="https://painhospital.in/wp-content/cache/min/1/wp-content/themes/twentytwentyone/assets/js/responsive-embeds.js?ver=1771434615" id="twenty-twenty-one-responsive-embeds-script-js" defer></script>
+<script type="rocketlazyloadscript" data-minify="1" src="https://painhospital.in/wp-content/cache/min/1/wp-content/plugins/blocks-animation/build/animation/frontend.js?ver=1771434615" id="otter-animation-frontend-js" defer></script>
+<script type="rocketlazyloadscript" data-minify="1" src="https://painhospital.in/wp-content/cache/min/1/wp-content/plugins/essential-blocks/assets/js/eb-animation-load.js?ver=1771434615" id="essential-blocks-eb-animation-js" defer></script>
+<script type="rocketlazyloadscript" src="https://painhospital.in/wp-includes/js/dist/vendor/wp-polyfill-inert.min.js?ver=3.1.2" id="wp-polyfill-inert-js" defer></script>
+<script type="rocketlazyloadscript" src="https://painhospital.in/wp-includes/js/dist/vendor/regenerator-runtime.min.js?ver=0.14.0" id="regenerator-runtime-js" defer></script>
+<script type="rocketlazyloadscript" src="https://painhospital.in/wp-includes/js/dist/vendor/wp-polyfill.min.js?ver=3.15.0" id="wp-polyfill-js"></script>
+<script type="rocketlazyloadscript" src="https://painhospital.in/wp-includes/js/dist/hooks.min.js?ver=2810c76e705dd1a53b18" id="wp-hooks-js"></script>
+<script type="rocketlazyloadscript" src="https://painhospital.in/wp-includes/js/dist/i18n.min.js?ver=5e580eb46a90c2b997e6" id="wp-i18n-js"></script>
+<script type="rocketlazyloadscript" id="wp-i18n-js-after">
+wp.i18n.setLocaleData( { 'text direction\u0004ltr': [ 'ltr' ] } );
+</script>
+<script type="rocketlazyloadscript" src="https://painhospital.in/wp-includes/js/dist/url.min.js?ver=421139b01f33e5b327d8" id="wp-url-js"></script>
+<script type="rocketlazyloadscript" src="https://painhospital.in/wp-includes/js/dist/api-fetch.min.js?ver=4c185334c5ec26e149cc" id="wp-api-fetch-js"></script>
+<script type="rocketlazyloadscript" id="wp-api-fetch-js-after">
+wp.apiFetch.use( wp.apiFetch.createRootURLMiddleware( "https://painhospital.in/wp-json/" ) );
+wp.apiFetch.nonceMiddleware = wp.apiFetch.createNonceMiddleware( "2a33cad93d" );
+wp.apiFetch.use( wp.apiFetch.nonceMiddleware );
+wp.apiFetch.use( wp.apiFetch.mediaUploadMiddleware );
+wp.apiFetch.nonceEndpoint = "https://painhospital.in/wp-admin/admin-ajax.php?action=rest-nonce";
+</script>
+<script type="rocketlazyloadscript" data-minify="1" src="https://painhospital.in/wp-content/cache/min/1/wp-content/plugins/essential-blocks/blocks/post-grid/frontend/index.js?ver=1771434615" id="essential-blocks-post-grid-frontend-js" defer></script>
+<script type="rocketlazyloadscript" src="https://painhospital.in/wp-includes/js/jquery/jquery.min.js?ver=3.7.1" id="jquery-core-js" defer></script>
+<script type="rocketlazyloadscript" src="https://painhospital.in/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1" id="jquery-migrate-js" defer></script>
+<script type="rocketlazyloadscript" defer src="https://painhospital.in/wp-content/plugins/strong-testimonials/public/js/lib/actual/jquery-actual.min.js?ver=1.0.16" id="jquery-actual-js"></script>
+<script type="rocketlazyloadscript" src="https://painhospital.in/wp-includes/js/imagesloaded.min.js?ver=5.0.0" id="imagesloaded-js" defer></script>
+<script type="rocketlazyloadscript" src="https://painhospital.in/wp-includes/js/underscore.min.js?ver=1.13.4" id="underscore-js" defer></script>
+<script type="rocketlazyloadscript" defer src="https://painhospital.in/wp-content/plugins/strong-testimonials/public/js/lib/verge/verge.min.js?ver=1.10.2" id="verge-js"></script>
+<script id="wpmtst-slider-js-extra">
+var strong_slider_id_1 = {"config":{"mode":"horizontal","speed":1000,"pause":8000,"autoHover":1,"autoStart":1,"infiniteLoop":1,"stopAutoOnClick":1,"adaptiveHeight":1,"adaptiveHeightSpeed":500,"controls":0,"autoControls":0,"pager":1,"slideCount":9,"debug":false,"compat":{"lazyload":{"active":false,"classes":[]}},"touchEnabled":true,"type":"show_multiple","breakpoints":{"single":{"maxSlides":1,"moveSlides":1,"slideMargin":1},"multiple":{"desktop":{"width":1200,"maxSlides":3,"moveSlides":1,"slideMargin":10},"large":{"width":1024,"maxSlides":2,"moveSlides":1,"slideMargin":10},"medium":{"width":640,"maxSlides":2,"moveSlides":1,"slideMargin":10},"small":{"width":480,"maxSlides":1,"moveSlides":1,"slideMargin":10}}},"buildPager":"icons","simpleSetPager":1}};
+</script>
+<script type="rocketlazyloadscript" defer src="https://painhospital.in/wp-content/plugins/strong-testimonials/public/js/lib/strongslider/jquery-strongslider.min.js?ver=3.1.12" id="wpmtst-slider-js"></script>
+<script id="wpmtst-controller-js-extra">
+var strongControllerParms = {"initializeOn":"documentReady","method":"","universalTimer":"500","observerTimer":"500","event":"","script":"","containerId":"page","addedNodeId":"content","debug":""};
+</script>
+<script type="rocketlazyloadscript" src="https://painhospital.in/wp-content/plugins/strong-testimonials/public/js/controller.min.js?ver=3.1.12" id="wpmtst-controller-js" defer></script>
+<script>window.lazyLoadOptions={elements_selector:"img[data-lazy-src],.rocket-lazyload,iframe[data-lazy-src]",data_src:"lazy-src",data_srcset:"lazy-srcset",data_sizes:"lazy-sizes",class_loading:"lazyloading",class_loaded:"lazyloaded",threshold:300,callback_loaded:function(element){if(element.tagName==="IFRAME"&&element.dataset.rocketLazyload=="fitvidscompatible"){if(element.classList.contains("lazyloaded")){if(typeof window.jQuery!="undefined"){if(jQuery.fn.fitVids){jQuery(element).parent().fitVids()}}}}}};window.addEventListener('LazyLoad::Initialized',function(e){var lazyLoadInstance=e.detail.instance;if(window.MutationObserver){var observer=new MutationObserver(function(mutations){var image_count=0;var iframe_count=0;var rocketlazy_count=0;mutations.forEach(function(mutation){for(var i=0;i<mutation.addedNodes.length;i++){if(typeof mutation.addedNodes[i].getElementsByTagName!=='function'){continue}
+if(typeof mutation.addedNodes[i].getElementsByClassName!=='function'){continue}
+images=mutation.addedNodes[i].getElementsByTagName('img');is_image=mutation.addedNodes[i].tagName=="IMG";iframes=mutation.addedNodes[i].getElementsByTagName('iframe');is_iframe=mutation.addedNodes[i].tagName=="IFRAME";rocket_lazy=mutation.addedNodes[i].getElementsByClassName('rocket-lazyload');image_count+=images.length;iframe_count+=iframes.length;rocketlazy_count+=rocket_lazy.length;if(is_image){image_count+=1}
+if(is_iframe){iframe_count+=1}}});if(image_count>0||iframe_count>0||rocketlazy_count>0){lazyLoadInstance.update()}});var b=document.getElementsByTagName("body")[0];var config={childList:!0,subtree:!0};observer.observe(b,config)}},!1)</script><script data-no-minify="1" async src="https://painhospital.in/wp-content/plugins/wp-rocket/assets/js/lazyload/17.5/lazyload.min.js"></script><script>function lazyLoadThumb(e){var t='<img data-lazy-src="https://i.ytimg.com/vi/ID/hqdefault.jpg" alt="" width="480" height="360"><noscript><img src="https://i.ytimg.com/vi/ID/hqdefault.jpg" alt="" width="480" height="360"></noscript>',a='<div class="play"></div>';return t.replace("ID",e)+a}function lazyLoadYoutubeIframe(){var e=document.createElement("iframe"),t="ID?autoplay=1";t+=0===this.dataset.query.length?'':'&'+this.dataset.query;e.setAttribute("src",t.replace("ID",this.dataset.src)),e.setAttribute("frameborder","0"),e.setAttribute("allowfullscreen","1"),e.setAttribute("allow", "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"),this.parentNode.replaceChild(e,this)}document.addEventListener("DOMContentLoaded",function(){var e,t,a=document.getElementsByClassName("rll-youtube-player");for(t=0;t<a.length;t++)e=document.createElement("div"),e.setAttribute("data-id",a[t].dataset.id),e.setAttribute("data-query", a[t].dataset.query),e.setAttribute("data-src", a[t].dataset.src),e.innerHTML=lazyLoadThumb(a[t].dataset.id),e.onclick=lazyLoadYoutubeIframe,a[t].appendChild(e)});</script>
+ <script type="rocketlazyloadscript">window.addEventListener('DOMContentLoaded', function() {
+	jQuery(window).scroll(function(){
+	    if (jQuery(window).scrollTop() >= 20) {
+	        jQuery('.site-header').addClass('fixed');        
+	    }
+	    else {
+	        jQuery('.site-header').removeClass('fixed');       
+	    }
+	});
+});</script>
+ 
+<script type="rocketlazyloadscript">window.addEventListener('DOMContentLoaded', function() {
+	jQuery(document).ready(function () {
+	    jQuery("ul.sub-menu").before("<span class='drop-menu'><img width="16" height="16" src='https://painhospital.in/wp-content/uploads/2024/01/down-arrow.png'></span>");
+	    	jQuery('li.menu-item-has-children>.drop-menu').on('click', function(){
+	        //$(this).removeAttr('href');
+	        var element = jQuery(this).parent('li');
+	        if (element.hasClass('open')) {
+	            element.removeClass('open');
+	            element.find('li').removeClass('open'); 
+	            element.find('ul').slideUp(200);
+	        }
+
+	        else {
+	            element.addClass('open');
+	            element.children('ul').slideDown(200);
+	            element.siblings('li').children('ul').slideUp(200);
+	            element.siblings('li').removeClass('open');
+	            element.siblings('li').find('li').removeClass('open');
+	            element.siblings('li').find('ul').slideUp(200); 
+	        }
+	    });
+	});    	
+});</script> 
+<script type="rocketlazyloadscript">window.addEventListener('DOMContentLoaded', function() {
+jQuery(document).ready(function () {
+    jQuery(window).scroll(function () {
+        if (jQuery(this).scrollTop() > 100) {
+            jQuery('.scrollup').fadeIn();
+        } else {
+            jQuery('.scrollup').fadeOut();
+        }
+    });
+
+   jQuery('.scrollup').click(function () {
+        jQuery("html, body").animate({
+            scrollTop: 0
+        }, 600);
+        return false;
+    });
+
+});
+});</script>
+
+<script type="rocketlazyloadscript">
+  window.addEventListener("load", function() {
+    // Hide the loader when the page is fully loaded
+    var loader = document.querySelector(".preloader-wrapper");
+    loader.style.display = "none";
+});
+</script>
+
+</body>
+</html>
+
+<!-- This website is like a Rocket, isn't it? Performance optimized by WP Rocket. Learn more: https://wp-rocket.me - Debug: cached@1781572680 -->

@@ -9,8 +9,27 @@
 -- state), keyed by `geography_id` and carrying the centroid lat/lon plus rolled
 -- up facility counts. This is the geography that gold.facilities links to.
 
-with geography as (
+with silver_geo as (
     select * from {{ ref('silver_geography') }}
+),
+
+-- Mint the surrogate key, then collapse to ONE row per geography_id. Real VF data
+-- spells the same place several ways ("Maharashtra"/"Mh", "Kalyan West"/
+-- "Kalyan-West") that slug to the same key; keep the largest-population variant so
+-- the gold.geography primary key holds.
+keyed as (
+    select
+        {{ geography_id('state_code', 'district', 'state') }} as geography_id,
+        g.*,
+        row_number() over (
+            partition by {{ geography_id('state_code', 'district', 'state') }}
+            order by population desc nulls last
+        ) as _rn
+    from silver_geo g
+),
+
+geography as (
+    select * from keyed where _rn = 1
 ),
 
 facilities as (
@@ -29,7 +48,7 @@ facility_rollup as (
 )
 
 select
-    cast({{ geography_id('g.state_code', 'g.district') }} as text)  as geography_id,
+    cast(g.geography_id as text)                                    as geography_id,
     cast(g.district as text)                                        as district,
     cast(g.state as text)                                           as state,
     cast(g.state_code as text)                                      as state_code,

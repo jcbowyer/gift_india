@@ -1,6 +1,24 @@
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M64 64H224V224H64V64Z" fill="#FABFBA"/>
-<path d="M440 448L280 448L280 352C280 316.654 308.654 288 344 288L376 288C411.346 288 440 316.654 440 352L440 448Z" fill="#FABFBA"/>
-<path d="M152 288L240 448H64L152 288Z" fill="#FF5F46"/>
-<path d="M280 148C280 101.608 317.608 64 364 64V64C410.392 64 448 101.608 448 148V148C448 194.392 410.392 232 364 232V232C317.608 232 280 194.392 280 148V148Z" fill="#FF5F46"/>
+<svg width="512" height="512" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d9a945"/>
+      <stop offset="55%" stop-color="#c08f30"/>
+      <stop offset="100%" stop-color="#a9781f"/>
+    </linearGradient>
+  </defs>
+  <!-- open navy ring -->
+  <path d="M25.91,81.40L23.27,79.39L20.79,77.18L18.50,74.78L16.40,72.20L14.52,69.47L12.85,66.60L11.42,63.60L10.23,60.50L9.29,57.32L8.60,54.07L8.17,50.77L8.00,47.46L8.10,44.14L8.45,40.84L9.07,37.57L9.94,34.37L11.07,31.25L12.43,28.22L14.03,25.31L15.86,22.54L17.90,19.92L20.14,17.46L22.57,15.20L25.16,13.13L27.92,11.27L30.81,9.64L33.82,8.24L36.93,7.08L40.13,6.18L43.38,5.52L46.68,5.13L50.00,5.00L53.32,5.13L56.62,5.52L59.87,6.18L63.07,7.08L66.18,8.24L69.19,9.64L72.08,11.27L74.84,13.13L77.43,15.20L79.86,17.46L82.10,19.92L84.14,22.54L85.97,25.31L87.57,28.22L88.93,31.25L90.06,34.37L90.93,37.57L91.55,40.84L91.90,44.14L92.00,47.46L91.83,50.77L91.40,54.07L90.71,57.32L89.77,60.50L88.58,63.60L87.15,66.60L85.48,69.47L83.60,72.20L81.50,74.78L79.21,77.18L76.73,79.39L74.09,81.40" fill="none" stroke="#1f3a5e" stroke-width="7.4" stroke-linecap="round"/>
+  <!-- gift box: bow, lid, body -->
+  <path d="M50,37 C 43,34 32,31 31,24.5 C 30.4,19.5 37,18.5 42,23 C 46.5,27 49.5,33 50,37 Z" fill="none" stroke="#492f1a" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M50,37 C 57,34 68,31 69,24.5 C 69.6,19.5 63,18.5 58,23 C 53.5,27 50.5,33 50,37 Z" fill="none" stroke="#492f1a" stroke-width="2.4" stroke-linejoin="round"/>
+  <rect x="47" y="34.5" width="6" height="6" rx="2" fill="#492f1a"/>
+  <rect x="26.5" y="39.5" width="47" height="9.5" rx="1.6" fill="#e0b252"/>
+  <rect x="30.5" y="49" width="39" height="24" rx="1.4" fill="url(#g)"/>
+  <!-- speedometer gauge -->
+  <path d="M29,80 A21,21 0 0 1 71,80 Z" fill="#fbfaf7"/>
+  <path d="M29,80 A21,21 0 0 1 50,59" fill="none" stroke="url(#g)" stroke-width="4.6" stroke-linecap="round"/>
+  <path d="M50,59 A21,21 0 0 1 71,80" fill="none" stroke="#1f3a5e" stroke-width="4.6" stroke-linecap="round"/>
+  <line x1="50" y1="80" x2="59.85" y2="67.39" stroke="#1f3a5e" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="50" cy="80" r="3.6" fill="#1f3a5e"/>
+  <circle cx="50" cy="80" r="1.5" fill="#fbfaf7"/>
 </svg>

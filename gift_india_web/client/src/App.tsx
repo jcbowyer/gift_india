@@ -9,7 +9,9 @@ import {
   Badge,
   useIsMobile,
 } from '@databricks/appkit-ui/react';
-import { Menu, ShieldCheck } from 'lucide-react';
+import { Menu } from 'lucide-react';
+import { GiftSeal } from './components/GiftSeal';
+import { DemoGuide, DemoLaunchButton } from './components/DemoGuide';
 import { TrustDeskPage } from './pages/TrustDeskPage';
 import { MapPage } from './pages/MapPage';
 import { ScorecardPage } from './pages/ScorecardPage';
@@ -42,6 +44,9 @@ function NavLinks({ className, linkClass, onClick }: { className?: string; linkC
       <NavLink to="/navigator" className={linkClass} onClick={onClick}>
         Navigator
       </NavLink>
+      <NavLink to="/open-navigator" className={linkClass} onClick={onClick}>
+        Open Navigator
+      </NavLink>
       <NavLink to="/scorecard" className={linkClass} onClick={onClick}>
         Scorecard
       </NavLink>
@@ -63,19 +68,19 @@ function Layout() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b px-4 md:px-6 py-3 flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <ShieldCheck className="h-5 w-5" />
-          </span>
+      <header className="sticky top-0 z-30 border-b bg-background/80 px-4 md:px-6 py-3 flex items-center gap-4 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+        <div className="flex items-center gap-2.5">
+          <GiftSeal size={36} showText={false} className="gift-seal-glow shrink-0" />
           <div className="leading-tight max-w-[11rem] sm:max-w-none">
+            <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700">GIFT Gauge ✨</span>
             <span className="block text-xs sm:text-sm font-semibold text-foreground leading-snug">
-              Governance, Integrity, & Facility Trust (GIFT) Desk
+              Great care, brought to light
             </span>
           </div>
         </div>
         <NavLinks className="hidden md:flex gap-1 ml-4" linkClass={navLinkClass} />
         <div className="ml-auto flex items-center gap-3">
+          <DemoLaunchButton />
           {email && <Badge variant="outline" className="hidden sm:inline-flex">{email}</Badge>}
           <div className="md:hidden">
             <Sheet open={mobileNavOpen && isMobile} onOpenChange={setMobileNavOpen}>
@@ -85,7 +90,7 @@ function Layout() {
               </Button>
               <SheetContent side="left">
                 <SheetHeader>
-                  <SheetTitle>Governance, Integrity, & Facility Trust (GIFT) Desk</SheetTitle>
+                  <SheetTitle>GIFT Gauge ✨ — Great care, brought to light</SheetTitle>
                 </SheetHeader>
                 <NavLinks className="flex flex-col gap-1 mt-4" linkClass={mobileNavLinkClass} onClick={() => setMobileNavOpen(false)} />
               </SheetContent>
@@ -101,6 +106,8 @@ function Layout() {
       <footer className="border-t px-4 md:px-6 py-3 text-xs text-muted-foreground">
         Trust signals computed in gold.* from facility records in Lakebase Postgres · Virtue Foundation hackathon demo
       </footer>
+
+      <DemoGuide />
     </div>
   );
 }
@@ -111,6 +118,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <TrustDeskPage /> },
       { path: '/navigator', element: <MapPage /> },
+      { path: '/open-navigator', element: <MapPage /> },
       { path: '/scorecard', element: <ScorecardPage /> },
       { path: '/facility/:id', element: <FacilityPage /> },
       { path: '/reviews', element: <ReviewsPage /> },

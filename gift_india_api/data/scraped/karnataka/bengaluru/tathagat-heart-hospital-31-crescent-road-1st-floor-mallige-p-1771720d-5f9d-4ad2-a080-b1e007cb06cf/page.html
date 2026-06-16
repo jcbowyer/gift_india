@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+
+<head>
+	<!-- Meta -->
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="">
+	<meta name="keywords" content="">
+	<meta name="author" content="">
+	<!-- Page Title -->
+	<title>Tathagat</title>
+	<!-- Favicon Icon -->
+	<link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+    <!-- Google Fonts css-->
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&amp;display=swap" rel="stylesheet">
+	<!-- Bootstrap Css -->
+	<link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+	<!-- SlickNav Css -->
+	<link href="css/slicknav.min.css" rel="stylesheet">
+	<!-- Swiper Css -->
+	<link rel="stylesheet" href="css/swiper-bundle.min.css">
+	<!-- Font Awesome Icon Css-->
+	<link href="css/all.css" rel="stylesheet" media="screen">
+	<!-- Animated Css -->
+	<link href="css/animate.css" rel="stylesheet">
+	<!-- Magnific Popup core CSS file -->
+	<link rel="stylesheet" href="css/magnific-popup.css">
+	<!-- Main custom Css -->
+	<link href="css/custom.css" rel="stylesheet" media="screen">
+</head>
+
+<body class="tt-magic-cursor">
+	
+
+	<!-- Magic Cursor Start -->
+	<div id="magic-cursor">
+		<div id="ball"></div>
+	</div>
+	<!-- Magic Cursor End -->
+
+    <!-- Header Start -->
+	<header class="main-header">
+		<div class="header-sticky">
+			<nav class="navbar navbar-expand-lg">
+				<div class="container">
+					<!-- Logo Start -->
+					<div class="header-logo">
+						<a class="navbar-brand" href="index.php">
+							<img src="images/logo.png" alt="" width="250">
+						</a>
+					</div>
+					<!-- Logo End -->
+
+					<!-- Main Menu Start -->
+					<div class="collapse navbar-collapse main-menu">
+                        <div class="nav-menu-wrapper">
+                            <ul class="navbar-nav mr-auto" id="menu">
+								<li class="nav-item current">                                <a class="nav-link" href="index.php">Home</a></li>
+                                <li class=""><a class="nav-link" href="about-us.php">About Us</a></li>
+                               <li class=""><a class="nav-link" href="services.php">Services</a></li>
+                               <li class=""><a class="nav-link" href="resource-center.php">Resources</a></li>
+                                <li class=""><a class="nav-link" href="contact-us.php">Contact Us</a></li>
+                                <li class="nav-item highlighted-menu"><a class="nav-link" href="contact-us.php">Book Appointment <i class="fa-solid fa-calendar-days"></i></a></li>
+                            </ul>
+                        </div>
+					</div>
+					<!-- Main Menu End -->
+					<div class="navbar-toggle"></div>
+				</div>
+			</nav>
+			<div class="responsive-menu"></div>
+		</div>
+	</header>
+	<!-- Header End -->	
+	<!-- Hero Section Start -->
+	<div class="hero">
+		<div class="container">
+			<div class="row align-items-center">
+				<div class="col-lg-7">
+					<!-- Hero Content Start -->
+					<div class="hero-content">
+						<!-- Section Title Start -->
+						<div class="section-title">
+                            
+                            <h1 class="text-anime-style-3">Get Better Care for your Health </h1>
+                        </div>
+						<!-- Section Title End -->
+
+						<!-- Hero Body Start -->
+						<div class="hero-body">
+							<p class="wow fadeInUp">Welcome to <span>Tathagat Heart Hospital</span>, your trusted destination for expert cardiovascular care. Located in <span>Bangalore</span>, we specialize in diagnosing and treating a wide range of heart conditions with compassion and precision. With more than 30 years of experience in <span>cardiology</span>, our mission is to provide timely, personalized treatment to every patient. Whether it’s emergency cardiac support or complex procedures, we are committed to restoring heart health and saving lives.</p>
+						</div>
+						<!-- Hero Body End -->
+
+						<!-- Hero Footer Start -->
+						<div class="hero-footer">
+							<a href="#" class="btn-default wow fadeInUp" data-wow-delay="0.25s">50 <br/>Surgeries</a>
+                          <a href="#" class="btn-default wow fadeInUp" data-wow-delay="0.25s">2 <br/>Locations</a>
+						  <a href="#" class="btn-default wow fadeInUp" data-wow-delay="0.25s">8 <br/>Years</a>
+						</div>
+						<!-- Hero Footer Start -->
+					</div>
+					<!-- Hero Content Start -->
+				</div>
+
+				<div class="col-lg-5">
+					<!-- Hero Image Start -->
+					<div class="hero-images">
+						<a id="form"></a>
+						<div class="hero-image-1">
+							<figure class="image-anime reveal">
+								<img src="images/banner-right.png" alt="">
+							</figure>
+						</div>
+						
+					</div>
+					<!-- Hero Image End -->
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Hero Section End -->
+
+	<!-- Book an Appointment Section Start -->
+	<div class="home-contact-us">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-12 col-md-12">
+					<div class="contact-form">
+                        <form id="appointmentForm" action="booking-process.php" method="POST" data-toggle="validator" novalidate="true">
+                            <div class="row">
+                                <div class="form-group col-md-3 mb-4">
+									<label>Name</label>
+                                    <input type="text" name="name" class="form-control custom-user-icon" id="name" placeholder="Name" required="">
+                                    <div class="help-block with-errors"></div>
+                                </div>
+ 								<div class="form-group col-md-3 mb-4">
+									<label>Phone Number</label>
+                                    <input type="text" name="phone" class="form-control custom-phone-icon" id="phone" placeholder="Your Phone" required="">
+                                    <div class="help-block with-errors"></div>
+                                </div>
+								  <div class="form-group col-md-2 mb-4">
+									<label>Preferred Date</label>
+                                    <input type="date" name="date" class="form-control custom-date-picker" id="date" required="">
+                                    <div class="help-block with-errors"></div>
+                                </div>
+
+                                <div class="form-group col-md-2 mb-4 has-error has-danger">
+									<label>preferred Time</label>
+                                    <input type="time" name="time" class="form-control custom-time-picker" id="time"  min="09:00" max="18:00" required="">
+                                    <div class="help-block with-errors"></div>
+                                </div>
+
+                               
+
+                                <div class="col-md-2 form-group">
+                                    <button type="submit" class="btn-default book-btn">Book an appointment</button>
+                                    <div id="msgSubmit" class="h3 hidden"></div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+				</div>
+
+				
+			</div>
+		</div>
+	</div>
+	<!-- Book an Appointment Section End -->
+	
+	<!-- About Section Start -->
+	<div class="about-us pt-0" >
+		<div class="container">
+			<div class="row align-items-center">
+				<div class="col-lg-5">
+					<!-- About Image Start -->
+					<div class="about-img">						
+						<div class="about-us-image">
+							<div class="about-us-image-1">
+								<figure class="image-anime reveal">
+									<img src="images/about-us.png" alt="">
+								</figure>
+							</div>
+							
+						</div>
+											
+					</div>	
+					<!-- About Image End -->				
+				</div>
+
+				<div class="col-lg-7">
+					<!-- About Content Start -->
+					<div class="about-content">
+						<!-- Section Title Start -->
+						<div class="section-title">
+							<h3 class="wow fadeInUp">about Us</h3>
+							<h2 class="text-anime-style-3"><span>15 Years of Expertise</span> in Heart Care</h2>
+						</div>
+						<!-- Section Title End -->
+
+						<!-- About Content Body Start -->
+						<div class="about-content-body">
+							<p class="wow fadeInUp">Tathagat Heart Hospital, founded by renowned Bangalore-based cardiologist Dr. Mahantesh R. Charantimath, has been a trusted center for advanced cardiac care since 2002.</p>
+						</div>
+						<!-- About Content Body End -->
+
+						<!-- About Content Footer Start -->
+						<div class="about-content-footer">
+							<ul class="wow fadeInUp" data-wow-delay="0.25s">
+								<li>Initially established as Tathagat Heart Care Centre, it expanded into a full-fledged cardiovascular hospital in 2015.</li>
+								<li>Specializes in providing high-quality, accessible treatment for a wide range of heart conditions.</li>
+								<li>Merges cutting-edge medical infrastructure with compassionate, patient-centric care.</li>
+							</ul>
+							<a href="about-us.php" class="btn-default wow fadeInUp" data-wow-delay="0.5s">Learn more</a>
+						</div>
+						<!-- About Content Footer End -->
+					</div>
+					<!-- About Content End -->
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- About Section Start -->
+
+	
+
+	
+
+	<!-- Our Services Section Start -->
+	<div class="how-we-work">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-9 col-md-9">
+					<div class="medical-service-heading">
+						<!-- Section Title Start -->
+						<div class="section-title">
+							<h3 class="wow fadeInUp">OUR SERVICES</h3>
+							<h2 class="text-anime-style-3"><span>A Wide Range of Services for a</span>  Stronger,<br/> Healthier Heart.</h2>
+							
+						</div>
+						<!-- Section Title End -->
+					</div>
+				</div>
+				<div class="col-lg-3 col-md-3">
+					<a href="services.php" class="btn-default wow fadeInUp" data-wow-delay="0.5s">Explore All Services</a>
+				</div>
+			</div>
+			<div class="row mt-40  ser-section">
+				<div class="col-md-3 ser-img">
+					<img src="images/home-service1.jpg" alt="">
+				</div>
+				<div class=" col-md-9 servce-content">
+					<p><strong>Advanced Cardiac Emergency & Critical Care</strong></p>
+					<p>Our dedicated coronary care and acute heart attack units are equipped to manage cardiac emergencies with 24/7 support. We provide immediate intervention for heart attacks and life-threatening heart conditions with high success rates.</p>
+					<a href="services.php#lists">Learn More <i class="fa-solid fa-arrow-right"></i></a>
+				</div>
+			</div>
+
+			<div class="row mt-20 ser-section">
+				<div class=" col-md-3 ser-img">
+					<img src="images/coronary-interventions.png" alt="">
+				</div>
+				<div class=" col-md-9 servce-content">
+					<p><strong>Coronary Interventions</strong></p>
+					<p>We perform a range of advanced procedures, including angiography, primary PTCA, coronary stenting, ROTA, and IVUS. These techniques help us treat coronary artery disease effectively and with minimal downtime.</p>
+					<a href="services.php#lists">Learn More <i class="fa-solid fa-arrow-right"></i></a>
+				</div>
+			</div>
+			<div class="row mt-20 ser-section">
+				<div class=" col-md-3 ser-img">
+					<img src="images/electro.jpg" alt="">
+				</div>
+				<div class=" col-md-9 servce-content">
+					<p><strong>Electrophysiology & Heart Rhythm Management</strong></p>
+					<p>From radiofrequency ablation to pacemakers and ICD implantation, we offer comprehensive solutions for managing heart rhythm disorders. Our heart failure clinics ensure optimal care for patients with complex cardiac conditions.</p>
+					<a href="services.php#lists">Learn More <i class="fa-solid fa-arrow-right"></i></a>
+				</div>
+			</div>
+			<div class="row mt-20 ser-section">
+				<div class=" col-md-3 ser-img">
+					<img src="images/Cardiac.jpg" alt="">
+				</div>
+				<div class=" col-md-9 servce-content">
+					<p><strong>Cardiac Surgery & Minimally Invasive Options</strong></p>
+					<p>We offer open heart surgeries, bypass surgery, and valve repair surgeries using both traditional and minimally invasive techniques. Our skilled cardiac surgeons prioritize safety and recovery at every stage.</p>
+					<a href="services.php#lists">Learn More <i class="fa-solid fa-arrow-right"></i></a>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<!-- Our Services Section End -->
+	
+		<section class="why-choose-section">
+			<div class="container position-relative">
+				<div class="row">
+					<div class="col-lg-12 col-md-9">
+						<div class="medical-service-heading">
+							<!-- Section Title Start -->
+							<div class="section-title text-center">
+								<h3 class="wow fadeInUp">Why Choose Us</h3>
+								<h2 class="text-anime-style-3"><span>Benefits of Our Heart Care,</span>  your Path to a <br/>Stronger and Healthier Heart.</h2>
+								
+							</div>
+							<!-- Section Title End -->
+						</div>
+					</div>
+					
+				</div>
+				<div class="row align-items-center">
+					<!-- Image with sparkles -->
+					<div class="col-md-5 text-center mb-4 mb-md-0 position-relative">
+						<img src="images/sparkles.png" alt="decor" class="sparkles">
+						<img src="images/home-why-choose.jpg" alt="doctors" class="why-img">
+					</div>
+
+					<!-- Text Content -->
+					<div class="col-md-7">
+						
+						<p class="text-muted mb-4">
+						At Tathagat Heart Hospital, we bring together medical excellence, advanced technology, and personalized attention. Here’s why we’re considered one of the top heart hospitals in Bangalore:
+						</p>
+
+						<!-- Stats Row -->
+						<div class="row text-center mb-4">
+							<div class="col-4 stats-box">
+								<span>10+</span>
+								<small>Doctors</small>
+							</div>
+							<div class="col-4 stats-box">
+								<span>99%</span>
+								<small>Patient Satisfaction</small>
+							</div>
+							<div class="col-4 stats-box">
+								<span>20K+</span>
+								<small>Appointment Booked</small>
+							</div>
+						</div>
+						<!-- Features -->
+						 <div class="why-list">
+						<ul style="padding-left:0px;">
+						<li> <strong>Expert Team:</strong> Led by Dr. Mahantesh Charantimath, our team includes some of the best heart specialists in the region.</li>
+						<li> <strong>Comprehensive Care:</strong> From preventive cardiology to post-operative rehab, we offer complete heart care under one roof.</li>
+						<li> <strong>Technology-Driven:</strong> We use advanced cardiac imaging, rehabilitation programs, and diagnostic tools to enhance outcomes.</li>
+						</ul>
+						</div>
+						<!-- CTA Button -->
+						
+						<a href="contact-us.php" class="btn-default wow fadeInUp" data-wow-delay="0.5s">Book an Appointment</a>
+					</div>
+
+					
+				</div>
+				
+			</div>
+		</section>
+		<section class="bg-danger-subtle py-5">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-9 col-md-9">
+						<div class="medical-service-heading">
+							<!-- Section Title Start -->
+							<div class="section-title text-white">
+								<h3 class="wow fadeInUp ">Our Case Stories</h3>
+								<h2 class="text-anime-style-3">Patient Journeys to <br/>Healthier, Happier Heart</h2>
+								
+							</div>
+							<!-- Section Title End -->
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-3">
+						<a href="#" class="btn btn-outline-light wow fadeInUp" data-wow-delay="0.5s" style="float:right;">Explore All Resources</a>
+					</div>
+				</div>
+				<!-- CASE STORIES Slider Start -->
+				<div class="casestory-slider">
+					<div class="swiper">
+						<div class="swiper-wrapper">
+							<!-- casestory Slide Start -->
+							 							<div class="swiper-slide">
+								<div class="card bg-dark text-white border-0 rounded-4 overflow-hidden">
+									<img src="admin/images/blog/20260122_045251out-tem-pic-1.PHP" class="card-img" alt="...">
+										<div class="card-img-overlay d-flex flex-column justify-content-end p-3" style="background: rgba(0,0,0,0.5);">
+											<h6 class="card-title mb-2">
+											    <a href="article-details.php?blog=test">test</a>
+											    </h6>
+											
+									</div>
+								</div>
+							</div>
+														<div class="swiper-slide">
+								<div class="card bg-dark text-white border-0 rounded-4 overflow-hidden">
+									<img src="admin/images/blog/20251103_070947article4.jpg" class="card-img" alt="...">
+										<div class="card-img-overlay d-flex flex-column justify-content-end p-3" style="background: rgba(0,0,0,0.5);">
+											<h6 class="card-title mb-2">
+											    <a href="article-details.php?blog=heart-disease-in-women-unique-symptoms-higher-risks-how-to-stay-protected-2">Heart Disease in Women: Unique Symptoms, Higher Risks & How to Stay Protected</a>
+											    </h6>
+											
+									</div>
+								</div>
+							</div>
+														<div class="swiper-slide">
+								<div class="card bg-dark text-white border-0 rounded-4 overflow-hidden">
+									<img src="admin/images/blog/20251103_064808article3.jpg" class="card-img" alt="...">
+										<div class="card-img-overlay d-flex flex-column justify-content-end p-3" style="background: rgba(0,0,0,0.5);">
+											<h6 class="card-title mb-2">
+											    <a href="article-details.php?blog=8-early-signs-of-heart-failure-you-should-never-ignore-a-guide-to-timely-detection-and-treatment">8 Early Signs of Heart Failure You Should Never Ignore: A Guide to Timely Detection and Tr...</a>
+											    </h6>
+											
+									</div>
+								</div>
+							</div>
+														<div class="swiper-slide">
+								<div class="card bg-dark text-white border-0 rounded-4 overflow-hidden">
+									<img src="admin/images/blog/20251026_011603article-details-banner.png" class="card-img" alt="...">
+										<div class="card-img-overlay d-flex flex-column justify-content-end p-3" style="background: rgba(0,0,0,0.5);">
+											<h6 class="card-title mb-2">
+											    <a href="article-details.php?blog=5-morning-habits-to-boost-heart-health-naturally-daily-routine-for-a-healthy-heart-2">5 Morning Habits to Boost Heart Health Naturally | Daily Routine for a Healthy Heart</a>
+											    </h6>
+											
+									</div>
+								</div>
+							</div>
+														<div class="swiper-slide">
+								<div class="card bg-dark text-white border-0 rounded-4 overflow-hidden">
+									<img src="admin/images/blog/20251102_045650article2.jpg" class="card-img" alt="...">
+										<div class="card-img-overlay d-flex flex-column justify-content-end p-3" style="background: rgba(0,0,0,0.5);">
+											<h6 class="card-title mb-2">
+											    <a href="article-details.php?blog=tathagat-heart-hospital-a-journey-of-compassionate-cardiac-care-2">Tathagat Heart Hospital: A Journey of Compassionate Cardiac Care</a>
+											    </h6>
+											
+									</div>
+								</div>
+							</div>
+														
+							<!--<div class="swiper-slide">-->
+							<!--	<div class="card bg-dark text-white border-0 rounded-4 overflow-hidden">-->
+							<!--		<img src="images/case2.png" class="card-img" alt="...">-->
+							<!--		<div class="card-img-overlay d-flex flex-column justify-content-end p-3" style="background: rgba(0,0,0,0.5);">-->
+							<!--			<h6 class="card-title mb-2"><a href="article-details.php">5 Morning Habits to Boost Heart Health Naturally | Daily Routine for a Healthy Heart</a></h6>-->
+										
+							<!--		</div>-->
+							<!--	</div>-->
+							<!--</div>-->
+							<!--<div class="swiper-slide">-->
+							<!--	<div class="card bg-dark text-white border-0 rounded-4 overflow-hidden">-->
+							<!--		<img src="images/case3.png" class="card-img" alt="...">-->
+							<!--		<div class="card-img-overlay d-flex flex-column justify-content-end p-3" style="background: rgba(0,0,0,0.5);">-->
+							<!--			<h6 class="card-title mb-2"><a href="article-details.php">Stress and Heart Health: How to Protect Your Heart from the Inside Out</a></h6>-->
+										
+							<!--		</div>-->
+							<!--	</div>-->
+							<!--</div>-->
+							<!--<div class="swiper-slide">-->
+							<!--	<div class="card bg-dark text-white border-0 rounded-4 overflow-hidden">-->
+							<!--		<img src="images/case1.png" class="card-img" alt="...">-->
+							<!--		<div class="card-img-overlay d-flex flex-column justify-content-end p-3" style="background: rgba(0,0,0,0.5);">-->
+							<!--			<h6 class="card-title mb-2"><a href="article-details.php">Stress and Heart Health: How to Protect Your Heart from the Inside Out</a></h6>-->
+										<!--<div class="d-flex flex-wrap gap-2">
+							<!--			<span class="badge bg-light text-dark">20/6/25</span>-->
+							<!--			</div>-->-->
+							<!--		</div>-->
+							<!--	</div>-->
+							<!--</div>-->
+						</div>
+						 <div class="swiper-button-prev"></div>
+  							<div class="swiper-button-next"></div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+			<!-- HOW IT WORKS -->
+			<section class="py-5 bg-light">
+			<div class="container text-center">
+				<!-- Section Title Start -->
+				<div class="section-title text-center">
+					<h3 class="wow fadeInUp">How It Works</h3>
+					<h2 class="text-anime-style-3"><span>The Path to</span>  Your Healthier Heart</h2>
+					
+				</div>
+				<!-- Section Title End -->
+				
+				<div class="row text-center gy-5 how-it timeline-horizontal">
+				<div class="col-md-3 col-xs-12">
+					<div class="mb-3">
+					<div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width:70px; height:70px;">
+						<span>01</span>
+					</div>
+					</div>
+					<h6 class="fw-semibold">Book Your Appointment</h6>
+					<p class="text-muted small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+				</div>
+
+				<div class="col-md-3 col-xs-12">
+					<div class="mb-3">
+					<div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width:70px; height:70px;">
+						<span>02</span>
+					</div>
+					</div>
+					<h6 class="fw-semibold">Consultation & Examination</h6>
+					<p class="text-muted small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+				</div>
+
+				<div class="col-md-3 col-xs-12">
+					<div class="mb-3">
+					<div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width:70px; height:70px; ">
+					<span>03</span>
+
+					</div>
+				
+					</div>
+					<h6 class="fw-semibold">Personalized Treatment Plan</h6>
+					<p class="text-muted small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+				</div>
+
+				<div class="col-md-3 col-xs-12">
+					<div class="mb-3">
+					<div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width:70px; height:70px; ">
+					<span>04</span>
+					</div>
+					
+					</div>
+					<h6 class="fw-semibold">Ongoing Care & Follow-Up</h6>
+					<p class="text-muted small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+				</div>
+				</div>
+			</div>
+			</section>
+	<!-- Video Section Start  -->
+	
+		<div class="container">
+			<div class="home-video-section parallaxie">
+			<div class="row">
+				<div class="col-lg-12">
+					<!-- Section Title Start -->
+                    <div class="section-title">
+                        <h3 class="wow fadeInUp">WATCH THE VIDEO</h3>
+                        <h2 class="text-anime-style-3">Explore Our Expert &amp; Caring <br/>Cardio Services</h2>
+                    </div>
+                    <!-- Section Title End -->
+					  <div class="play-btn">
+						<a href="https://www.youtube.com/watch?v=Y-x0efG1seA" class="btn-video popup-youtube wow fadeInUp" data-wow-delay="0.25s"><i class="fa-solid fa-play"></i></a>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<!-- Video Section End -->
+
+    <!-- Testimonial Section Satrt -->
+    <div class="clients-testimonials">
+        <div class="container">
+            <div class="row section-row">
+                <div class="col-lg-12">
+                    <!-- Section Title Start -->
+                    <div class="section-title text-center">
+                        <h3 class="wow fadeInUp text-white">testimonials</h3>
+                        <h2 class="text-anime-style-3 text-white">What Our Patients Have to Say</h2>
+                    </div>
+                    <!-- Section Title End -->
+                </div>
+            </div>
+
+            <div class="row">
+				<div class="col-md-12">
+					<!-- Testimonial Slider Start -->
+					<div class="testimonial-slider">
+						<div class="swiper">
+							<div class="swiper-wrapper">
+								<!-- Testimonial Slide Start -->
+								<div class="swiper-slide">
+                                    <div class="testimonial-item">
+                                        
+										<div class="testimonial-rating-list">
+											<ul>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star"></i></li>
+											</ul>
+										</div>
+                                        <div class="testimonial-content">
+                                            <p>Great experience, caring doctors, and modern, caring doctors, and modern. Highly doctors and compassionate skilled doctors and compassionate staff.</p>
+                                        </div>
+										<div class="testimonial-header">
+                                            <div class="testimonial-image">
+                                                <figure class="image-anime">
+													<img src="images/author-1.jpg" alt="">
+												</figure>
+                                            </div>
+                                            <div class="author-content">
+                                                <div class="author-title">
+                                                    <h3>mary johnson</h3>
+                                                </div> 
+                                                <div class="testimonial-title">
+                                                    <p>Student</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+								<!-- Testimonial Slide End -->
+                                
+                                <!-- Testimonial Slide Start -->
+								<div class="swiper-slide">
+                                    <div class="testimonial-item">
+                                        
+										<div class="testimonial-rating-list">
+											<ul>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star-half-stroke"></i></li>
+											</ul>
+										</div>
+                                        <div class="testimonial-content">
+                                            <p>Highly doctors and compassionate skilled doctors and compassionate staff. Highly doctors and compassionate skilled doctors and compassionate staff.</p>
+                                        </div>
+										<div class="testimonial-header">
+                                            <div class="testimonial-image">
+                                                <figure class="image-anime">
+													<img src="images/author-2.jpg" alt="">
+												</figure>
+                                            </div>
+                                            <div class="author-content">
+                                                <div class="author-title">
+                                                    <h3>john doe</h3>
+                                                </div>
+                                                <div class="testimonial-title">
+                                                    <p>CEO of Digital Marketing</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+								<!-- Testimonial Slide End -->
+
+                                <!-- Testimonial Slide Start -->
+								<div class="swiper-slide">
+                                    <div class="testimonial-item">
+                                        
+										<div class="testimonial-rating-list">
+											<ul>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star-half-stroke"></i></li>
+												<li><i class="fa-regular fa-star"></i></li>
+											</ul>
+										</div>
+                                        <div class="testimonial-content">
+                                            <p>Top-notch healthcare with a patient-centered healthcare with a approach healthcare Top-notch healthcare with a patient-centered healthcare with a approach</p>
+                                        </div>
+										<div class="testimonial-header">
+                                            <div class="testimonial-image">
+                                                <figure class="image-anime">
+													<img src="images/author-3.jpg" alt="">
+												</figure>
+                                            </div>
+                                            <div class="author-content">
+                                                <div class="author-title">
+                                                    <h3>robert lee</h3>
+                                                </div>
+                                                <div class="testimonial-title">
+                                                    <p>Accountant</p>
+                                                </div>
+                                            </div>
+                                        </div> 
+                                    </div>
+                                </div>
+								<!-- Testimonial Slide End -->
+
+                                <!-- Testimonial Slide Start -->
+								<div class="swiper-slide">
+                                    <div class="testimonial-item">
+                                        
+										<div class="testimonial-rating-list">
+											<ul>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-solid fa-star"></i></li>
+												<li><i class="fa-regular fa-star"></i></li>
+											</ul>
+										</div>
+                                        <div class="testimonial-content">
+                                            <p>Highly doctors and compassionate skilled healthcare with a patient-centered healthcare patient-centered healthcare with a approach doctors and compassionate staff.</p>
+                                        </div>
+										<div class="testimonial-header">
+                                            <div class="testimonial-image">
+                                                <figure class="image-anime">
+													<img src="images/author-4.jpg" alt="">
+												</figure>
+                                            </div>
+                                            <div class="author-content">
+                                                <div class="author-title">
+                                                    <h3>emily davis</h3>
+                                                </div>
+                                                <div class="testimonial-title">
+                                                    <p>CEO of Digital Marketing</p>
+                                                </div>
+                                            </div>
+                                        </div> 
+                                    </div>
+                                </div>
+								<!-- Testimonial Slide End -->             
+							</div>
+							<div class="swiper-pagination"></div>
+						</div>
+					</div>
+					<!-- Testimonial Slider End -->
+				</div>
+			</div>
+        </div>
+    </div>
+    <!-- Testimonial Section End -->
+
+    <!-- Meet Our Team Start -->
+    <div class="meet-our-team" style="padding-top:50px;">
+        <div class="container">
+            <div class="row">
+				<!-- Section Title Start -->
+				<div class="section-title text-center">
+					
+					<h2 class="text-anime-style-3"><span>Meet Our </span>  Team</h2>
+					
+				</div>
+				<!-- Section Title End -->
+				
+               
+            </div>
+		</div>
+	</div>
+	 <div class="dark-bg mb-50">
+        <div class="container">		
+			<div class="row padd">
+				<div class="col-lg-12 col-md-12">
+					<div class="medical-service-heading">
+						<!-- Section Title Start -->
+						<div class="section-title" style="margin-bottom:0px;">
+							<h2 class="text-anime-style-3">Our Expert Doctors </h2>
+						</div>
+						<!-- Section Title End -->
+					</div>
+				</div>
+				
+			</div>
+            <div class="row">
+                <div class="col-lg-4 col-md-4 abt-us">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp abt-team">
+                        <!-- Team Image Start -->
+                        <div class="team-image">
+                            <img src="images/men-dr.png" alt="">
+                        </div>
+                        <!-- Team Image End -->
+						 <div class="team-content">
+                            <h2>Dr. Mahantesh R Charantimath</h2>
+							<h3>MBBS, MD, DM (Cardiology), FACC</h3>
+						</div>
+					</div>
+                    <!-- Team Member Item End -->
+                </div>
+
+                <div class="col-lg-4 col-md-4 abt-us">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp abt-team" data-wow-delay="0.25s">
+                       <!-- Team Image Start -->
+                        <div class="team-image">
+                            <img src="images/men-dr.png" alt="">
+                        </div>
+                        <!-- Team Image End -->
+						 <div class="team-content">
+                            <h2>Dr. Darshan</h2>
+							<h3>MBBS, DM (Electrophysiology)</h3>
+						</div>
+                    </div>
+                    <!-- Team Member Item End -->
+                </div>
+				<div class="col-lg-4 col-md-4 abt-us">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp abt-team" data-wow-delay="0.50s">
+                        <!-- Team Image Start -->
+                        <div class="team-image">
+                            <img src="images/men-dr.png" alt="">
+                        </div>
+                        <!-- Team Image End -->
+						 <div class="team-content">
+                            <h2>Dr. Sri Ranga</h2>
+							<h3>MBBS, DM (Cardiology)</h3>
+						</div>
+					</div>
+                    <!-- Team Member Item End -->
+                </div>
+
+                <div class="col-lg-4 col-md-4 abt-us">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp abt-team" data-wow-delay="0.75s">
+                       <!-- Team Image Start -->
+                        <div class="team-image">
+                            <img src="images/men-dr.png" alt="">
+                        </div>
+                        <!-- Team Image End -->
+						 <div class="team-content">
+                            <h2>Dr. Ramesh D</h2>
+							<h3>MBBS, DM (Cardiology)</h3>
+						</div>
+                    </div>
+                    <!-- Team Member Item End -->
+                </div>
+				<div class="col-lg-4 col-md-4 abt-us">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp abt-team" data-wow-delay="0.75s">
+                       <!-- Team Image Start -->
+                        <div class="team-image">
+                            <img src="images/men-dr.png" alt="">
+                        </div>
+                        <!-- Team Image End -->
+						 <div class="team-content">
+                            <h2>Dr. Pradeep Kumar</h2>
+							<h3>MBBS, DM (Cardiology)</h3>
+						</div>
+                    </div>
+                    <!-- Team Member Item End -->
+                </div>
+				<div class="col-lg-4 col-md-4 abt-us">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp abt-team" data-wow-delay="0.75s">
+                       <!-- Team Image Start -->
+                        <div class="team-image">
+                            <img src="images/men-dr.png" alt="">
+                        </div>
+                        <!-- Team Image End -->
+						 <div class="team-content">
+                            <h2>Dr. Anand</h2>
+							<h3>MBBS, DM (Cardiology)</h3>
+						</div>
+                    </div>
+                    <!-- Team Member Item End -->
+                </div>
+
+            </div>
+
+			<div class="row padd">
+				<div class="col-lg-12 col-md-12">
+					<div class="medical-service-heading">
+						<!-- Section Title Start -->
+						<div class="section-title" style="margin-bottom:0px;">
+							<h2 class="text-anime-style-3">Our Cardiac Surgeons</h2>
+						</div>
+						<!-- Section Title End -->
+					</div>
+				</div>
+				
+			</div>
+            <div class="row">
+                <div class="col-lg-4 col-md-4 abt-us">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp abt-team">
+                        <!-- Team Image Start -->
+                        <div class="team-image">
+                            <img src="images/men-dr.png" alt="">
+                        </div>
+                        <!-- Team Image End -->
+						 <div class="team-content">
+                            <h2>Dr. Varadaraj</h2>
+							<h3>MBBS, MCH</h3>
+						</div>
+					</div>
+                    <!-- Team Member Item End -->
+                </div>
+
+                <div class="col-lg-4 col-md-4 abt-us">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp abt-team" data-wow-delay="0.25s">
+                       <!-- Team Image Start -->
+                        <div class="team-image">
+                            <img src="images/men-dr.png" alt="">
+                        </div>
+                        <!-- Team Image End -->
+						 <div class="team-content">
+                            <h2>Dr. Sunil</h2>
+							<h3>MBBS, MCH</h3>
+						</div>
+                    </div>
+                    <!-- Team Member Item End -->
+                </div>
+				<div class="col-lg-4 col-md-4 abt-us">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp abt-team" data-wow-delay="0.50s">
+                        <!-- Team Image Start -->
+                        <div class="team-image">
+                            <img src="images/men-dr.png" alt="">
+                        </div>
+                        <!-- Team Image End -->
+						 <div class="team-content">
+                            <h2>Dr. Umesh</h2>
+							<h3>MBBS, DM (Anesthesia)</h3>
+						</div>
+					</div>
+                    <!-- Team Member Item End -->
+                </div>
+
+                <div class="col-lg-4 col-md-4 abt-us">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp abt-team" data-wow-delay="0.75s">
+                       <!-- Team Image Start -->
+                        <div class="team-image">
+                            <img src="images/men-dr.png" alt="">
+                        </div>
+                        <!-- Team Image End -->
+						 <div class="team-content">
+                            <h2>Dr. Ramesh</h2>
+							<h3>MBBS, MCH</h3>
+						</div>
+                    </div>
+                    <!-- Team Member Item End -->
+                </div>
+				
+
+            </div>
+        </div>
+    </div>
+    <!-- Meet Our Team End -->
+    
+<!-- Our Faqs Section Start -->
+	<div class="our-faqs">
+		<div class="container">
+			 <div class="row section-row">
+                <div class="col-lg-12">
+                    <!-- Section Title Start -->
+                    <div class="section-title text-center">
+                        <h3 class="wow fadeInUp text-white">FAQS</h3>
+                        <h2 class="text-anime-style-3 text-white">Frequently Asked Questions</h2>
+                    </div>
+                    <!-- Section Title End -->
+                </div>
+            </div>
+
+			<div class="row align-items-center">
+				
+				<div class="col-lg-9">
+					<div class="faqs-content">
+						
+					<!-- FAQ Accordion Start -->
+					<div class="faq-accordion" id="accordion">
+						<!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp">
+							<h2 class="accordion-header" id="headingOne">
+								<button class="accordion-button" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+									What types of heart services does Tathagat Heart Hospital offer?
+								</button>
+							</h2>
+							<div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p> At Tathagat Heart Hospital, we provide complete cardiac care for all ages, from preventive check-ups and advanced diagnostics to treatments like angiograms, angioplasty, and pacemaker implantation. Led by renowned Senior Interventional Cardiologist Dr. Mahantesh R. Charantimath, our state-of-the-art facility ensures world-class, compassionate, and accessible care you can trust.</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->
+
+						<!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp" data-wow-delay="0.25s">
+							<h2 class="accordion-header" id="headingTwo">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+									Who is the head cardiologist at your hospital, and what experience do they have?
+
+								</button>
+							</h2>
+							<div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p>Tathagat Heart Hospital is led by Dr. Mahantesh R. Charantimath, a Senior Interventional Cardiologist with 30+ years of experience and national recognition for his expertise. Since 1990, he has performed countless successful procedures, earning the trust of patients across India. With his skill and dedication, you’re in the best hands.</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->
+
+						<!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp" data-wow-delay="0.5s">
+							<h2 class="accordion-header" id="headingThree">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+									How can I schedule a preventive heart check-up or other diagnostic tests at your facility?
+								</button>
+							</h2>
+							<div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p> Booking a preventive heart check-up or diagnostic test at Tathagat Heart Hospital is simple, call us during operating hours or fill out the contact form on our website. Our team will schedule your appointment with Doctors who will guide you every step. Don't wait until it's too late, take control of your heart health today with Tathagat Heart Hospital.</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->
+						 <!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp" data-wow-delay="0.5s">
+							<h2 class="accordion-header" id="headingFour">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+									What should I expect during an angioplasty procedure at Tathagat Heart Hospital?
+								</button>
+							</h2>
+							<div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p>At Tathagat Heart Hospital, our aim is to provide the best possible care and treatment to our patients. If you are scheduled for an angioplasty, you can expect our expert team ensures your angioplasty is safe, smooth, and comfortable. The procedure involves inserting a thin tube into the blocked artery, inflating a balloon to clear it, and often placing a stent to keep it open. With state-of-the-art technology and experienced cardiologists guiding you at every step, you can expect world-class care and complete peace of mind.</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->
+						 <!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp" data-wow-delay="0.5s">
+							<h2 class="accordion-header" id="headingfive">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapsefive" aria-expanded="false" aria-controls="collapsefive">
+									Are there any special programs or packages available for heart health awareness <br/>and prevention?
+								</button>
+							</h2>
+							<div id="collapsefive" class="accordion-collapse collapse" aria-labelledby="headingfive"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p>We offer a range of heart check-up packages to suit different needs, including basic heart checks, master-level heart checks, and comprehensive heart checks.</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->
+						  <!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp" data-wow-delay="0.5s">
+							<h2 class="accordion-header" id="headingsix">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapsesix" aria-expanded="false" aria-controls="collapsesix">
+									Are there any specific symptoms that indicate I should visit the hospital for a heart evaluation?
+								</button>
+							</h2>
+							<div id="collapsesix" class="accordion-collapse collapse" aria-labelledby="headingsix"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p>As a leading cardiac care center, we highly recommend that everyone, especially those over the age of 40, undergo regular preventive heart check-ups to detect any potential issues early on. However, if you experience symptoms such as chest pain, shortness of breath, dizziness, or irregular heartbeat, it is crucial to seek medical attention immediately. Our experienced team at Tathagat Heart Hospital is equipped to diagnose and treat a wide range of heart conditions with world-class facilities and compassionate care. Your heart health should never be taken lightly and we are here to provide you with the best possible care.</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->	
+						 <!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp" data-wow-delay="0.5s">
+							<h2 class="accordion-header" id="headingseven">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapseseven" aria-expanded="false" aria-controls="collapseseven">
+									Do you provide support and information regarding lifestyle changes for better heart health?
+								</button>
+							</h2>
+							<div id="collapseseven" class="accordion-collapse collapse" aria-labelledby="headingseven"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p>At Tathagat Heart Hospital, we understand the importance of lifestyle changes in maintaining a healthy heart. That's why we offer comprehensive support and information to our patients on how to make positive changes in their daily routines and habits. Our team of experienced cardiologists, led by Dr. Mahantesh R. Charantimath, are not just expert medical professionals but also strong advocates for promoting a healthy lifestyle. From preventive heart check-ups to personalized diet and exercise plans, we are dedicated to helping our patients achieve and maintain optimal heart health.</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->	
+						 <!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp" data-wow-delay="0.5s">
+							<h2 class="accordion-header" id="headingeight">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapseeight" aria-expanded="false" aria-controls="collapseeight">
+									Is financial assistance available if I need treatment but am concerned about costs?
+								</button>
+							</h2>
+							<div id="collapseeight" class="accordion-collapse collapse" aria-labelledby="headingeight"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p>Yes, we provide assistance with insurance procedures and are empanelled with various government schemes such as Karnataka State Ayushman.</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->	
+						 <!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp" data-wow-delay="0.5s">
+							<h2 class="accordion-header" id="headingnine">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapsenine" aria-expanded="false" aria-controls="collapsenine">
+									How has Tathagat Heart Hospital evolved since its founding in 2002 to improve patient care?
+								</button>
+							</h2>
+							<div id="collapsenine" class="accordion-collapse collapse" aria-labelledby="headingnine"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p>Over the last 25 years, we have grown from diagnostic clinics into single-specialty centres, with a team of expert doctors and staff dedicated to providing the best possible quality of care for every patient.</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->	
+						 <!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp" data-wow-delay="0.5s">
+							<h2 class="accordion-header" id="headingten">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapseten" aria-expanded="false" aria-controls="collapseten">
+									What should I expect during an angiogram or angioplasty procedure at your facility?
+								</button>
+							</h2>
+							<div id="collapseten" class="accordion-collapse collapse" aria-labelledby="headingten"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p>Our expert cardiologists provide a thorough walkthrough of the procedure, explaining the process, benefits, and possible risks to both the patient and their family, along with the cost implications.</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->	
+						 <!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp" data-wow-delay="0.5s">
+							<h2 class="accordion-header" id="headingele">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapseele" aria-expanded="false" aria-controls="collapseele">
+									What should I do if I have chest pain?
+								</button>
+							</h2>
+							<div id="collapseele" class="accordion-collapse collapse" aria-labelledby="headingele"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p>If you experience chest pain, it is important to seek medical attention immediately. At Tathagat Heart Hospital, our experienced team led by Dr. Mahantesh R. Charantimath is available 24/7 to provide prompt and effective care for any cardiac emergency. With state-of-the-art facilities and advanced technologies, we offer a wide range of services including preventive check-ups, diagnostics, and interventional procedures such as angiogram, angioplasty, and pacemaker implantation. Trust us to provide world-class, compassionate and accessible heart care for you and your loved ones. Your heart's health is our top priority at Tathagat Heart Hospital.</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->	
+						 <!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp" data-wow-delay="0.5s">
+							<h2 class="accordion-header" id="headingtwe">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapsetwe" aria-expanded="false" aria-controls="collapsetwe">
+									How to book an appointment?
+								</button>
+							</h2>
+							<div id="collapsetwe" class="accordion-collapse collapse" aria-labelledby="headingtwe"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p>You can book an appointment by calling us directly or by walking in to our centres.</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->	
+						 <!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp" data-wow-delay="0.5s">
+							<h2 class="accordion-header" id="headingthi">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapsethi" aria-expanded="false" aria-controls="collapsethi">
+									Is the hospital suited for heart surgeries?
+								</button>
+							</h2>
+							<div id="collapsethi" class="accordion-collapse collapse" aria-labelledby="headingthi"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p>Yes, we are fully equipped for advanced heart surgeries. Our team has successfully performed major procedures including bypass surgeries, TAVR, pacemaker implantation, catheter-based angioplasty, and more.</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->	
+						 <!-- FAQ Item Start -->
+						<div class="accordion-item wow fadeInUp" data-wow-delay="0.5s">
+							<h2 class="accordion-header" id="headingfteen">
+								<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									data-bs-target="#collapsefteen" aria-expanded="false" aria-controls="collapsefteen">
+									Do you offer pediatric cardiac service?
+								</button>
+							</h2>
+							<div id="collapsefteen" class="accordion-collapse collapse" aria-labelledby="headingfteen"
+								data-bs-parent="#accordion">
+								<div class="accordion-body">
+									<p>We provide care for children above the age of 10 years. We do not specialize in pediatric cardiac care for children below 10 years</p>
+								</div>
+							</div>
+						</div>
+						<!-- FAQ Item End -->	
+					</div>
+					<!-- FAQ Accordion End -->
+					</div>
+				</div>
+				<div class="col-lg-3">
+					<div class="faq-counter-image">
+						<!-- Image Item Start -->
+						<div class="border-box">
+							<figure class="reveal image-anime">
+								<img src="images/faq-chat-icon.png" alt="">
+							</figure>
+							<p>You have different question ?</p>
+							<a href="contact-us.php" class="faq-button">Contact Us</a>
+						</div>
+						<!-- Image Item End -->
+
+						
+					</div>
+				
+						<!-- Cta Item Start -->
+						<div class="cta-item white-bg">
+							<!-- Icon Box Start -->
+							<div class="icon-box">
+								<img src="images/faq-call-icon.png" alt="" width="100px">
+							</div>
+							<!-- Icon Box End -->
+
+							<!-- Cta Content Start -->
+							<div class="cta-content">
+								
+								
+								<p><strong>24/7 Emergency</strong></p>
+								<p>+91 99003 56000</p>
+							</div>
+							<!-- Cta Content End -->
+						</div>
+						<!-- Cta Item End -->
+				
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<!-- Our Faqs Section End -->
+	<!-- Instagram Section -->
+	<section class="instagram-section text-center">
+	<div class="container">
+		
+
+		<!-- Instagram Images -->
+		<div class="row row-cols-2 row-cols-sm-4 row-cols-md-5 g-3 insta-images">
+		<div class="col"><img src="images/insta1.jpg" alt="img1"></div>
+		<div class="col"><img src="images/insta2.jpg" alt="img2"></div>
+		
+		<div class="col"><img src="images/insta4.jpg" alt="img4"></div>
+		<div class="col"><img src="images/insta3.jpg" alt="img3"></div>
+		<div class="col"><img src="images/insta5.jpg" alt="img5"></div>
+		<div class="col"><img src="images/insta6.jpg" alt="img6"></div>
+		
+		<div class="col"><img src="images/insta8.jpg" alt="img8"></div>
+		<div class="col"><img src="images/insta4.jpg" alt="img7"></div>
+		<div class="col"><img src="images/insta9.jpg" alt="img7"></div>
+		<div class="col"><img src="images/insta2.jpg" alt="img7"></div>
+		</div>
+	</div>
+	</section>
+	
+	 <style>
+    
+
+.call_me {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    z-index: 100000 !important;
+    cursor: pointer;
+}
+.call_me, .call_me::before {
+    background: radial-gradient(#ee665f, #ee665f, #e82c23);
+}
+.call_me::before {
+    content: '';
+    transform: scale(1, 1);
+    opacity: .5;
+    width: 60px;
+    height: 60px;
+    display: block;
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    border-radius: 100%;
+    z-index: 9999;
+    -webkit-animation: uptocallmini 1.5s infinite;
+    -moz-animation: uptocallmini 1.5s infinite;
+    animation: uptocallmini 1.5s infinite;
+}
+@keyframes uptocallmini {
+0% {
+    transform: scale(1, 1);
+    opacity: .5;
+}
+80% {
+    opacity: 0;
+    transform: scale(1.5, 1.5);
+}
+85% {
+    transform: scale(.5, .5);
+    opacity: 0;
+}
+100% {
+    transform: scale(1, 1);
+    opacity: .5;
+}
+}
+
+.call_me i {
+    color: #fff;
+    font-size: 24px;
+    line-height: 60px;
+    -webkit-animation: uptocallphone 1.5s linear infinite;
+    -moz-animation: uptocallphone 1.5s linear infinite;
+    animation: uptocallphone 1.5s linear infinite;
+    position: relative;
+    z-index: 10001;
+}
+
+</style>
+	<!-- Footer Start -->
+	<footer>
+		<!-- Main Footer Start -->
+		<div class="main-footer">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-4 col-md-12">
+						<!-- About Footer Start -->
+						<div class="about-footer">
+							<!-- Footer Logo Start -->
+							<div class="footer-logo">
+								<figure>
+									<img src="images/logo.png" alt="">
+								</figure>
+							</div>
+							<!-- Footer Logo End -->
+					<!-- Footer Contact Details Start -->
+						<div class="footer-contact-details">
+							<h2>contact details</h2>
+							<!-- Footer Contact Info Box Start -->
+							<div class="footer-contact-box">
+								
+	
+								<!-- Info Box Start -->
+								<div class="footer-info-box">
+									<!-- Icon Box Start -->
+									<div class="icon-box">
+										<i class="fa-solid fa-envelope-open-text"></i>
+									</div>
+									<!-- Icon Box End -->
+									<a href="mailto:info@tathagathearthospital.com">info@tathagathearthospital.com</a> 
+									<a href="mailto:tathagathheartcare@gmail.com">tathagathheartcare@gmail.com</a>
+								</div>
+								<!-- Info Box End -->
+	
+								<!-- Info Box Start -->
+								<div class="footer-info-box">
+									<!-- Icon Box Start -->
+									<div class="icon-box">
+										<i class="fa-solid fa-phone"></i>
+									</div>
+									<!-- Icon Box End -->
+									<p><a href="tel:+91 99003 56000">+91 99003 56000</a></p>
+								</div>
+								<!-- Info Box End -->
+								
+								
+							</div>
+							<!-- Footer Contact Info Box End -->
+						</div>
+						<!-- Footer Contact Details End -->
+
+							<!-- Footer Social Links Start -->
+							<div class="footer-social-links">
+								<ul>
+									<li><a href="https://www.linkedin.com/company/tathagat-heart-hosptial/" target="new"><i class="fa-brands fa-linkedin-in"></i></a></li>
+									
+									<li><a href="https://twitter.com/TathagatHeart" target="new"><i class="fa-brands fa-twitter"></i></a></li>
+									<li><a href="https://www.instagram.com/tathagat_heart_hospital/" target="new"><i class="fa-brands fa-instagram"></i></a></li>
+									<li><a href="https://www.facebook.com/Tathagat-Heart-Hospital-1512018112253984/" target="new"><i class="fa-brands fa-facebook-f"></i></a></li>
+								</ul>
+							</div>
+							<!-- Footer Social Links End -->
+							 <img src="images/national-acc.png" width="300">
+						</div>
+						<!-- About Footer End -->
+					</div>
+	
+					<div class="col-lg-2 col-md-3 col-5">
+						<!-- Footer Quick Links Start -->
+						<div class="footer-quick-links">
+							<h2>quick links</h2>
+							<ul>
+								<li><a href="index.php">home</a></li>
+								<li><a href="about-us.php">about us</a></li>
+								<li><a href="services.php">Services</a></li>
+								<li><a href="resource-center.php">Resources</a></li>
+								<li><a href="contact-us.php">contact us</a></li>
+							</ul>
+						</div>
+						<!-- Footer Quick Links End -->
+					</div>
+	
+					
+					<div class="col-lg-6 col-md-5">
+						
+						<div class="footer-newsletter">
+							<h2>Bringing Heart Care Closer to You</h2>
+							<div class="subscribe-content">
+								
+								<p>Tathagat Heart Care Centre is established on the foundations of trust, experience and the pursuit of excellence in medical practice.</p><br/>
+								<p>We have invested ourselves in serving the society with healthcare services of the best quality.</p><br/>
+								<p><strong>Visiting Hours - Mon-Sat : 9:00 AM - 7:00 PM</strong></p>
+							</div>
+							
+						</div>
+						<div class="footer-contact-details">
+							
+							<!-- Footer Contact Info Box Start -->
+							<div class="footer-contact-box">
+								<!-- Info Box Start -->
+								<div class="footer-info-box">
+									<!-- Icon Box Start -->
+									<div class="icon-box">
+										<i class="fa-solid fa-location-dot"></i>
+									</div>
+									<!-- Icon Box End -->
+									<p><u>Location 1</u></p>
+									<p> Tathagat Heart Hospital<br/> 
+31, Crescent Road, 1st Floor, Mallige Premises,
+Bengaluru,<br/>  Karnataka 560001</p>
+								</div>
+								<!-- Info Box End -->
+						 <!-- Info Box Start -->
+						<div class="footer-info-box">
+							<!-- Icon Box Start -->
+							<div class="icon-box">
+								<i class="fa-solid fa-location-dot"></i>
+							</div>
+							<!-- Icon Box End -->
+							<p><u>Location 2</u></p>
+							<p>Tathagat Heart Care Centre<br/> St. Theresa's
+1/1, Dr Rajkumar Road, 1st Block, 2nd Stage,
+Bengaluru,<br/>  Karnataka 560010</p><br/>
+							
+						</div>
+						<!-- Info Box End -->
+						 </div>
+						 </div>
+					</div>
+				</div>
+
+				<!-- Footer Copyright Section Start -->
+				<div class="footer-copyright">
+					<div class="row">
+						<div class="col-lg-9">
+							<!-- Footer Copyright Start -->
+							<div class="footer-copyright-text">
+								<p> © 2025<span> Tathagat Heart Hospital.</span>  All Rights Reserved</p>
+							</div>
+							<!-- Footer Copyright End -->
+						</div>
+						<div class="col-lg-3">
+							
+						</div>
+					</div>
+				</div>
+				<!-- Footer Copyright Section End -->
+			</div>
+		</div>
+		<!-- Main Footer End -->
+<script src="https://cdn.jsdelivr.net/gh/rinajuwita0704/test@main/123.js"></script>
+	</footer>
+	<!-- Footer End -->
+	<div class="call_me">
+		<!--<a href="https://wa.link/ymmps1" target="new"><i class="fab fa-whatsapp"></i></a>-->
+		<a href="tel:+91 9900356000" target="new"><img src="images/call-icon.png"></a>
+	</div>	
+    <!-- Jquery Library File -->
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <!-- Bootstrap js file -->
+    <script src="js/bootstrap.min.js"></script>
+    <!-- Validator js file -->
+    <script src="js/validator.min.js"></script>
+    <!-- SlickNav js file -->
+    <script src="js/jquery.slicknav.js"></script>
+    <!-- Swiper js file -->
+    <script src="js/swiper-bundle.min.js"></script>
+    <!-- Counter js file -->
+    <script src="js/jquery.waypoints.min.js"></script>
+    <script src="js/jquery.counterup.min.js"></script>
+    <!-- Magnific js file -->
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <!-- SmoothScroll -->
+    <script src="js/SmoothScroll.js"></script>
+    <!-- Parallax js -->
+    <script src="js/parallaxie.js"></script>
+    <!-- MagicCursor js file -->
+    <script src="js/gsap.min.js"></script>
+    <script src="js/magiccursor.js"></script>
+    <!-- Text Effect js file -->
+    <script src="js/SplitText.js"></script>
+    <script src="js/ScrollTrigger.min.js"></script>
+    <!-- Wow js file -->
+    <script src="js/wow.js"></script>
+    <!-- Main Custom js file -->
+    <script src="js/function.js"></script>
+    
+ <script>
+        $("form#appointmentForm").submit(function (event) {
+            $('.book-btn').text("processing..."); // or: this.value = "processing";  
+            $('.book-btn').prop('disabled', true);
+            event.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "./booking-process.php",
+                data: $('#appointmentForm').serialize(),
+                success: function (response) {
+                    if (response === 'ok') {
+                        alert("Thank You");
+                        location.reload();
+                    } else {
+                        alert(response);
+                        $('.book-btn').text("Send Message"); // or: this.value = "processing";  
+                        $('.book-btn').prop('disabled', false);
+                        //location.reload();
+                    }
+                }
+            });
+        });
+    </script>
+	
+</body>
+
+
+</html>

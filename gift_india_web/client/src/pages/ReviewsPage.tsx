@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@databricks/appkit-ui/react';
-import { Trash2, ArrowRight } from 'lucide-react';
+import { Trash2, ArrowRight, PencilLine, ShieldCheck } from 'lucide-react';
 import { api, SIGNAL_META, type OverrideRecord, type TrustSignal } from '../lib/api';
 import { SignalBadge } from '../components/trust';
 
@@ -70,20 +70,36 @@ export function ReviewsPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <div className="space-y-1">
-        <h2 className="text-2xl font-bold text-foreground">My reviews</h2>
-        <p className="text-muted-foreground">
-          Assessments you overrode, with your reviewer notes. Stored in <code>app.capability_overrides</code> on
-          Lakebase and applied on top of the computed trust signals.
-        </p>
+      <div className="flex items-start gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <PencilLine className="h-6 w-6" />
+        </span>
+        <div className="space-y-1">
+          <h2 className="text-2xl font-bold text-foreground">My reviews</h2>
+          <p className="text-muted-foreground">
+            Assessments you overrode, with your reviewer notes. Stored in <code>app.capability_overrides</code> on
+            Lakebase and applied on top of the computed trust signals.
+          </p>
+        </div>
       </div>
 
       {error && <div className="rounded-md bg-destructive/10 p-3 text-destructive">{error}</div>}
 
-      <Card>
+      <Card className="gift-elevate gift-fade-in">
         <CardHeader>
-          <CardTitle>Override log</CardTitle>
-          <CardDescription>Human judgement layered over the evidence-based signals.</CardDescription>
+          <div className="flex items-center justify-between gap-2">
+            <div className="space-y-1">
+              <CardTitle className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-emerald-600" /> Override log
+              </CardTitle>
+              <CardDescription>Human judgement layered over the evidence-based signals.</CardDescription>
+            </div>
+            {!loading && reviews.length > 0 && (
+              <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+                {reviews.length} override{reviews.length === 1 ? '' : 's'}
+              </span>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -93,8 +109,11 @@ export function ReviewsPage() {
               ))}
             </div>
           ) : reviews.length === 0 ? (
-            <Empty>
+            <Empty className="gift-fade-in">
               <EmptyHeader>
+                <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <PencilLine className="h-6 w-6" />
+                </span>
                 <EmptyTitle>No reviews yet</EmptyTitle>
                 <EmptyDescription>
                   Open a facility on the Trust Desk, expand a capability, and “Override assessment”.

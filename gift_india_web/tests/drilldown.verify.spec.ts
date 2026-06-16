@@ -32,7 +32,7 @@ test('navigator drilldown: click a state zooms and shows districts', async ({ pa
   // Breadcrumb should now show a Back button (we drilled in).
   const back = page.getByRole('button', { name: /Back/i });
   await expect(back).toBeVisible();
-  await page.waitForTimeout(1100); // let van Wijk zoom + district fade-in settle
+  await page.waitForTimeout(1600); // let van Wijk zoom + district fade-in settle
 
   await page.screenshot({ path: '.smoke-test/drill-1-state.png', animations: 'disabled', timeout: 5000 }).catch(() => undefined);
 

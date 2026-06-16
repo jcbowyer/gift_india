@@ -69,6 +69,7 @@ export interface FacilitySearchResult {
 
 export interface FacilitiesResponse {
   capability: string;
+  region?: string | null;
   state: string | null;
   district: string | null;
   results: FacilityRanking[];
@@ -100,6 +101,7 @@ export interface DistrictRating extends RegionRating {
 
 export interface MapGeography {
   capability: string;
+  region?: string | null;
   states: StateRating[];
   districts: DistrictRating[];
 }
@@ -241,8 +243,11 @@ export const api = {
   stats: () => getJSON<Stats>('/api/stats'),
   capabilities: () => getJSON<Capability[]>('/api/capabilities'),
   regions: () => getJSON<RegionState[]>('/api/regions'),
-  mapGeography: (capability: string) =>
-    getJSON<MapGeography>(`/api/map/geography?capability=${encodeURIComponent(capability)}`),
+  mapGeography: (capability: string, params?: { region?: string }) => {
+    const qs = new URLSearchParams({ capability });
+    if (params?.region) qs.set('region', params.region);
+    return getJSON<MapGeography>(`/api/map/geography?${qs.toString()}`);
+  },
   metricCatalog: () => getJSON<MetricCatalog>('/api/metrics/catalog'),
   metricValues: (key: string) => getJSON<MetricValues>(`/api/metrics/values?key=${encodeURIComponent(key)}`),
   scorecard: (params: { level: ScorecardLevel; state?: string; district?: string }) => {
@@ -253,6 +258,7 @@ export const api = {
   },
   facilities: (params: {
     capability: string;
+    region?: string;
     state?: string;
     district?: string;
     signal?: TrustSignal;
@@ -261,6 +267,7 @@ export const api = {
   }) => {
     const qs = new URLSearchParams();
     qs.set('capability', params.capability);
+    if (params.region) qs.set('region', params.region);
     if (params.state) qs.set('state', params.state);
     if (params.district) qs.set('district', params.district);
     if (params.signal) qs.set('signal', params.signal);

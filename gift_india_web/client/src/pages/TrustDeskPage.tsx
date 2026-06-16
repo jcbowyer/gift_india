@@ -20,8 +20,33 @@ import {
   Input,
   ToggleGroup,
   ToggleGroupItem,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  useIsMobile,
 } from '@databricks/appkit-ui/react';
-import { ChevronDown, ChevronRight, MapPin, Building2, Search, ExternalLink } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronRight,
+  MapPin,
+  Building2,
+  Search,
+  ExternalLink,
+  ShieldCheck,
+  BadgeCheck,
+  HeartPulse,
+  Baby,
+  Siren,
+  Ribbon,
+  Bone,
+  Activity,
+  Stethoscope,
+  Info,
+  type LucideIcon,
+} from 'lucide-react';
 import {
   api,
   type Capability,
@@ -32,7 +57,16 @@ import {
   type Stats,
   formatNumber,
 } from '../lib/api';
-import { SignalBadge, TrustScoreDial, EvidenceTally, CapabilityEvidence } from '../components/trust';
+import { SignalBadge, TrustScoreDial, EvidenceTally, CapabilityEvidence, BestSourceBadge } from '../components/trust';
+import { GiftSeal } from '../components/GiftSeal';
+import {
+  INDIA_STATES,
+  INDIA_UNION_TERRITORIES,
+  ANALYZED_DISTRICTS,
+  ANALYZED_DISTRICT_COUNT,
+  ANALYZED_STATE_COUNT,
+  navigatorLinkFor,
+} from '../lib/coverage';
 
 const SIGNAL_FILTERS: { value: TrustSignal | 'all'; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -41,12 +75,97 @@ const SIGNAL_FILTERS: { value: TrustSignal | 'all'; label: string }[] = [
   { value: 'weak_suspicious', label: 'Suspicious' },
 ];
 
-function StatPill({ label, value }: { label: string; value: string }) {
+const CAP_ICON: Record<string, LucideIcon> = {
+  icu: HeartPulse,
+  maternity: Baby,
+  emergency: Siren,
+  oncology: Ribbon,
+  trauma: Bone,
+  nicu: Activity,
+};
+
+/** Hero quick-stat — big number with a trust-coloured accent. */
+function HeroStat({ value, label, accent = 'text-foreground' }: { value: string; label: string; accent?: string }) {
   return (
-    <div className="rounded-lg border bg-card px-3 py-2">
-      <div className="text-lg font-bold tabular-nums text-foreground">{value}</div>
-      <div className="text-[11px] text-muted-foreground">{label}</div>
+    <div className="flex flex-col">
+      <span className={`text-2xl font-bold tabular-nums leading-none sm:text-3xl ${accent}`}>{value}</span>
+      <span className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground sm:text-xs">{label}</span>
     </div>
+  );
+}
+
+/**
+ * Coverage stat for the hero: shows how many states *and* districts we have
+ * in-depth analysis for. Hovering (desktop) or tapping (mobile) reveals the
+ * exact states/districts behind the number.
+ */
+function AnalyzedCoverageStat() {
+  const isMobile = useIsMobile();
+
+  const trigger = (
+    <button
+      type="button"
+      className="flex flex-col rounded text-left outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    >
+      <span className="text-2xl font-bold leading-none tabular-nums text-foreground sm:text-3xl">
+        {ANALYZED_STATE_COUNT}
+        {ANALYZED_DISTRICT_COUNT !== ANALYZED_STATE_COUNT && (
+          <span className="text-base font-semibold text-muted-foreground sm:text-lg"> · {ANALYZED_DISTRICT_COUNT}</span>
+        )}
+      </span>
+      <span className="mt-1 inline-flex items-center gap-1 text-[11px] uppercase tracking-wide text-muted-foreground underline decoration-dotted underline-offset-2 sm:text-xs">
+        {ANALYZED_DISTRICT_COUNT === ANALYZED_STATE_COUNT ? 'States & districts analysed' : 'States · districts analysed'}
+        <Info className="h-3 w-3" />
+      </span>
+    </button>
+  );
+
+  const panel = (
+    <div>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {ANALYZED_STATE_COUNT} states analysed in depth
+      </p>
+      <ul className="mt-2.5 space-y-1">
+        {ANALYZED_DISTRICTS.map((d) => (
+          <li key={`${d.state}-${d.district}`}>
+            <Link
+              to={navigatorLinkFor(d)}
+              className="-mx-1.5 flex items-start gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none"
+            >
+              <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+              <span className="min-w-0 flex-1 leading-tight">
+                <span className="block text-sm font-semibold text-foreground">{d.state}</span>
+                <span className="block text-xs text-muted-foreground">{d.district}</span>
+              </span>
+              <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 border-t border-border pt-2.5 text-[11px] text-muted-foreground">
+        Open one to drill the navigator map to it. More states &amp; districts coming soon.
+      </p>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+        <PopoverContent align="start" className="w-72 p-4">
+          {panel}
+        </PopoverContent>
+      </Popover>
+    );
+  }
+
+  return (
+    <HoverCard openDelay={100} closeDelay={100}>
+      <HoverCardTrigger asChild>{trigger}</HoverCardTrigger>
+      <HoverCardContent align="start" className="w-72 p-4">
+        {panel}
+      </HoverCardContent>
+    </HoverCard>
   );
 }
 
@@ -81,7 +200,7 @@ function FacilityRow({
   const effectiveSignal = override ?? rec.trustSignal;
 
   return (
-    <Card className="overflow-hidden">
+    <Card className={`overflow-hidden ${open ? '' : 'gift-lift'}`}>
       <button
         type="button"
         onClick={() => void toggle()}
@@ -114,7 +233,10 @@ function FacilityRow({
             {rec.beds !== null && <span>{rec.beds} beds</span>}
           </div>
           <p className="text-sm text-foreground/80">{rec.summary}</p>
-          <EvidenceTally supporting={rec.supportingCount} contradicting={rec.contradictingCount} />
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <EvidenceTally supporting={rec.supportingCount} contradicting={rec.contradictingCount} />
+            {rec.bestSource && <BestSourceBadge source={rec.bestSource} />}
+          </div>
         </div>
       </button>
 
@@ -172,7 +294,9 @@ export function TrustDeskPage() {
 
   useEffect(() => {
     api.stats().then(setStats).catch(() => undefined);
-    api.capabilities().then(setCapabilities).catch(() => undefined);
+    // Exclude the synthetic "All" capability here — this is a per-capability
+    // "verify" flow (the navigator is where the aggregate "All" view lives).
+    api.capabilities().then((caps) => setCapabilities(caps.filter((c) => c.key !== 'all'))).catch(() => undefined);
     api.regions().then(setRegions).catch(() => undefined);
   }, []);
 
@@ -213,44 +337,129 @@ export function TrustDeskPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <div className="space-y-1">
-        <h2 className="text-2xl font-bold text-foreground">Governance, Integrity, & Facility Trust (GIFT) Desk</h2>
-        <p className="text-muted-foreground">
-          Pick a capability and region. Facilities are ranked by how well their claim is backed by evidence —
-          expand any facility to read the citations and override the assessment.
-        </p>
-      </div>
+      {/* ── Hero / landing ───────────────────────────────────────────── */}
+      <section
+        data-demo="hero"
+        className="gift-elevate overflow-hidden rounded-2xl border bg-gradient-to-br from-emerald-50 via-card to-amber-50"
+      >
+        <div className="flex items-start gap-6 p-5 sm:p-8">
+          <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-700">
+            <ShieldCheck className="h-4 w-4" />
+            The GIFT Gauge · Governance, Integrity &amp; Facility Trust
+          </div>
+          <h1 className="mt-3 max-w-2xl text-2xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
+            We built the GIFT Gauge so planners can finally trust facility capability data instead of guessing.
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
+            GIFT — Governance, Integrity &amp; Facility Trust — ranks every capability by how well each claim is backed by
+            citations you can actually read. Real evidence, real trust, no guesswork.
+          </p>
 
-      {stats && (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <StatPill label="Facilities profiled" value={formatNumber(stats.facilities)} />
-          <StatPill label="Capability claims assessed" value={formatNumber(stats.assessed_claims)} />
-          <StatPill label="Strong-evidence signals" value={formatNumber(stats.strong)} />
-          <StatPill label="Citations on record" value={formatNumber(stats.citations)} />
+          <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4">
+            <HeroStat
+              value={stats ? formatNumber(stats.facilities) : '—'}
+              label="Facilities profiled"
+              accent="text-emerald-700"
+            />
+            <span className="hidden h-10 w-px bg-border sm:block" />
+            <AnalyzedCoverageStat />
+            <span className="hidden h-10 w-px bg-border sm:block" />
+            <HeroStat
+              value={stats ? formatNumber(stats.citations) : '—'}
+              label="Citations on record"
+              accent="text-amber-700"
+            />
+            <span className="hidden h-10 w-px bg-border sm:block" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 px-3 py-1.5 text-xs font-semibold text-amber-800 shadow-sm">
+              <BadgeCheck className="h-4 w-4 text-amber-600" />
+              Gold-standard evidence rubric
+            </div>
+          </div>
+          </div>
+          <GiftSeal size={116} className="gift-seal-glow hidden shrink-0 self-center sm:block" />
         </div>
-      )}
+      </section>
+
+      {/* ── Coverage so far ──────────────────────────────────────────────── */}
+      <section data-demo="coverage" className="rounded-xl border bg-card p-4 sm:p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-sm font-semibold text-foreground">Detailed analysis so far</h2>
+          <p className="text-xs text-muted-foreground">
+            India has {INDIA_STATES} states and {INDIA_UNION_TERRITORIES} union territories. We currently have
+            in-depth trust analysis for just {ANALYZED_DISTRICT_COUNT} districts — more coming soon.
+          </p>
+        </div>
+        <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {ANALYZED_DISTRICTS.map((d) => (
+            <li key={`${d.state}-${d.district}`}>
+              <Link
+                to={navigatorLinkFor(d)}
+                className="group flex h-full items-start gap-2 rounded-lg border bg-background/60 px-3 py-2 transition-colors hover:border-primary/40 hover:bg-muted/50 focus-visible:border-primary/40 focus-visible:outline-none"
+              >
+                <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-medium text-foreground">
+                    {d.district} <span className="text-muted-foreground">({d.state})</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">{d.blurb}</div>
+                </div>
+                <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+              </Link>
+            </li>
+          ))}
+          <li className="flex items-center justify-center rounded-lg border border-dashed px-3 py-2 text-xs font-medium text-muted-foreground">
+            More districts coming soon
+          </li>
+        </ul>
+      </section>
 
       {/* Capability selector */}
-      <div className="space-y-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Capability</span>
-        <div className="flex flex-wrap gap-2">
-          {capabilities.map((c) => (
-            <button
-              key={c.key}
-              type="button"
-              onClick={() => setCapability(c.key)}
-              className={`rounded-lg border px-3 py-2 text-left transition-colors ${
-                capability === c.key
-                  ? 'border-primary bg-primary/10 text-foreground'
-                  : 'border-border bg-card hover:bg-muted/50'
-              }`}
-            >
-              <div className="text-sm font-medium">{c.label}</div>
-              <div className="text-[11px] text-muted-foreground">
-                {c.strong} strong · {c.weak} suspicious
-              </div>
-            </button>
-          ))}
+      <div data-demo="capabilities" className="space-y-2">
+        <div className="flex items-center gap-1.5">
+          <Stethoscope className="h-4 w-4 text-primary" />
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Choose a capability to verify
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          {capabilities.map((c) => {
+            const Icon = CAP_ICON[c.key] ?? ShieldCheck;
+            const active = capability === c.key;
+            return (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => setCapability(c.key)}
+                className={`group rounded-xl border p-3 text-left transition-all ${
+                  active
+                    ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary/30'
+                    : 'border-border bg-card hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                      active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">{c.label}</span>
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px]">
+                  <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    {c.strong} strong
+                  </span>
+                  <span className="inline-flex items-center gap-1 font-medium text-red-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                    {c.weak} suspicious
+                  </span>
+                </div>
+              </button>
+            );
+          })}
         </div>
         {activeCap && <p className="text-sm text-muted-foreground">{activeCap.description}</p>}
       </div>
@@ -341,8 +550,11 @@ export function TrustDeskPage() {
           ))}
         </div>
       ) : results.length === 0 ? (
-        <Empty>
+        <Empty className="gift-fade-in rounded-xl border border-dashed">
           <EmptyHeader>
+            <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <Search className="h-6 w-6" />
+            </span>
             <EmptyTitle>No facilities found</EmptyTitle>
             <EmptyDescription>
               No facility claims {activeCap?.label ?? 'this capability'} for the selected region and filter.
@@ -351,7 +563,7 @@ export function TrustDeskPage() {
           </EmptyHeader>
         </Empty>
       ) : (
-        <div className="space-y-3">
+        <div data-demo="results" className="gift-fade-in space-y-3">
           <p className="text-sm text-muted-foreground">
             {results.length} facilities with a <span className="font-medium text-foreground">{activeCap?.label}</span>{' '}
             claim

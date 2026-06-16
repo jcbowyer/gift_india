@@ -7,6 +7,87 @@
   --ring: oklch(0.637 0.237 29.2);
 }
 
+/* ── GIFT design-system helpers ─────────────────────────────────────────
+   Plain CSS (no @apply) so they're robust regardless of the Tailwind build.
+   Used across pages for consistent depth, motion and typography. */
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.012em;
+}
+
+/* Soft, modern elevation for key panels (hero, summary cards). */
+.gift-elevate {
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.04),
+    0 10px 30px -18px rgb(15 23 42 / 0.22);
+}
+
+/* Lift + deepen shadow on hover for interactive cards/rows. */
+.gift-lift {
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+  will-change: transform;
+}
+.gift-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px -16px rgb(15 23 42 / 0.24);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gift-lift { transition: box-shadow 0.18s ease, border-color 0.18s ease; }
+  .gift-lift:hover { transform: none; }
+}
+
+/* Gentle entrance for content that swaps in after a fetch. */
+@keyframes gift-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.gift-fade-in {
+  animation: gift-fade-in 0.35s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gift-fade-in { animation: none; }
+}
+
+/* Spotlight a target while the interactive demo walkthrough is on a step. */
+@keyframes gift-demo-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgb(245 158 11 / 0.55), 0 0 0 9px rgb(245 158 11 / 0.18); }
+  50% { box-shadow: 0 0 0 3px rgb(245 158 11 / 0.85), 0 0 0 14px rgb(245 158 11 / 0.10); }
+}
+.gift-demo-spotlight {
+  position: relative;
+  z-index: 35;
+  border-radius: 0.9rem;
+  animation: gift-demo-pulse 1.8s ease-in-out infinite;
+  scroll-margin: 6rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gift-demo-spotlight {
+    animation: none;
+    box-shadow: 0 0 0 3px rgb(245 158 11 / 0.7), 0 0 0 10px rgb(245 158 11 / 0.15);
+  }
+}
+
+/* Slow shimmer for the gold seal so it reads as a "live" accreditation mark. */
+@keyframes gift-seal-glow {
+  0%, 100% { filter: drop-shadow(0 2px 6px rgb(180 83 9 / 0.25)); }
+  50% { filter: drop-shadow(0 3px 12px rgb(245 158 11 / 0.45)); }
+}
+.gift-seal-glow {
+  animation: gift-seal-glow 4.5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gift-seal-glow { animation: none; filter: drop-shadow(0 2px 6px rgb(180 83 9 / 0.25)); }
+}
+
 :root {
   /* --radius: 0.625rem;
   --background: oklch(1 0 0);
