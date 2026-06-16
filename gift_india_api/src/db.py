@@ -1,4 +1,4 @@
-"""Database connectivity for gift_india India.
+"""Database connectivity for Governance, Integrity, & Facility Trust Desk.
 
 One code path serves two targets:
 

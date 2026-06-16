@@ -1,4 +1,4 @@
-# Local Postgres for gift_india India development.
+# Local Postgres for Governance, Integrity, & Facility Trust Desk development.
 #
 #   docker compose up -d        # start (creates the bronze schema on first run)
 #   python -m src.load_db       # land the raw dataset in bronze

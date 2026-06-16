@@ -22,7 +22,7 @@ Scrape first, then land the snapshots in local Postgres::
 Load a specific scrape directory into Lakebase::
 
     python -m src.load_crawl --target lakebase \\
-        --endpoint projects/carenavigator/branches/production/endpoints/primary \\
+        --endpoint projects/gift_india/branches/production/endpoints/primary \\
         --profile <profile> --source data/scraped
 """
 from __future__ import annotations

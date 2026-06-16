@@ -1,6 +1,6 @@
-# gift_india India — Facility Trust Desk
+# Governance, Integrity, & Facility Trust Desk
 
-> A Virtue Foundation hackathon project (**Track 1: Facility Trust Desk**) that
+> A Virtue Foundation hackathon project (**Track 1**) that
 > answers one question: **can this facility actually do what it claims?**
 
 Virtue Foundation maintains web-scraped, geotagged healthcare data describing
@@ -9,7 +9,7 @@ maternity, emergency, oncology, trauma, NICU — is not the same as that capabil
 being **real**. The hard problem: **separate trustworthy capability claims from
 unverified or contradicted ones**, with the evidence attached.
 
-GIFT India's Facility Trust Desk does exactly that. A planner picks a
+The Governance, Integrity, & Facility Trust Desk does exactly that. A planner picks a
 **capability** and a **region**, and sees facilities ranked by how strongly their
 claim is backed by evidence. Every facility carries a **trust signal** —
 `strong`, `partial`, `weak / suspicious`, or `no claim` — *computed from the
@@ -43,21 +43,23 @@ is the primary authoritative corroboration** we optimize the desk around.
 
 ## What G.I.F.T. stands for
 
-**Gold Insights & Facility Templates for India.**
+**Governance, Integrity, & Facility Trust** — the **Desk** is the planner-facing
+surface that ranks facility capability claims by evidence.
 
-**Why it works:** It is punchy, impossible to forget, and captures the exact spirit
-of a "Hackathon for Good."
+**Why it works:** The name states the mission plainly and maps cleanly to the
+Virtue Foundation hackathon brief.
 
 **How to pitch it:**
 
 > "NGO planners shouldn't have to fight 10,000 messy rows of web-scraped data to
-> save lives. We built G.I.F.T. India—a Databricks app that delivers Gold-standard
-> Insights and verified Facility Templates to map healthcare across India."
+> save lives. We built the Governance, Integrity, & Facility Trust Desk — a
+> Databricks app that separates trustworthy capability claims from unverified ones,
+> with the citations attached."
 
 ## Quick start
 
 ```bash
-databricks auth login --profile gift-india --host https://dbc-0be3157e-0574.cloud.databricks.com
+databricks auth login --profile gift-india --host https://dbc-0951416d-6d0e.cloud.databricks.com
 ./startup.sh
 ```
 
@@ -67,11 +69,11 @@ app at http://localhost:8000 (live Lakebase data). For manual steps see
 
 ## The four hackathon tracks — we built Track 1
 
-This repo focuses on **Track 1: Facility Trust Desk**.
+This repo focuses on **Track 1 — the Governance, Integrity, & Facility Trust Desk**.
 
 | Track | Question | Status here |
 |-------|----------|-------------|
-| **1 · Facility Trust Desk** | Can this facility actually do what it claims? | ✅ **Built (this repo)** |
+| **1 · Governance, Integrity, & Facility Trust Desk** | Can this facility actually do what it claims? | ✅ **Built (this repo)** |
 | 2 · Medical Desert Planner | Where are the highest-risk gaps in care? | — not built |
 | 3 · Referral Copilot | Where should a patient or coordinator actually go? | — not built |
 | 4 · Data Readiness Desk | What needs fixing before this dataset is trusted? | — not built |
@@ -102,14 +104,14 @@ The governed Virtue Foundation data lives on Databricks. Working workspaces:
 
 | Workspace | Owner | Email | URL |
 |-----------|-------|-------|-----|
-| John Bowyer's workspace | John Bowyer | jbowyer@carequest.org | https://dbc-0be3157e-0574.cloud.databricks.com/ |
+| Mason Bushyeager's workspace | Mason Bushyeager| mbushyeager@carequest.org | https://dbc-0951416d-6d0e.cloud.databricks.com/explore/data/databricks_virtue_foundation_dataset_dais_2026?o=7474648526487231 |
  
 
 **Additional contact:** kappasig@gmail.com
 
 **Governed dataset:** `databricks_virtue_foundation_dataset_dais_2026` lives in
 **John Bowyer's workspace** (shared via Delta Sharing) —
-[open in Unity Catalog](https://dbc-0be3157e-0574.cloud.databricks.com/explore/data/databricks_virtue_foundation_dataset_dais_2026?o=7474652488103392).
+[open in Unity Catalog](https://dbc-0951416d-6d0e.cloud.databricks.com/explore/data/databricks_virtue_foundation_dataset_dais_2026?o=7474648526487231).
 
 Schema `virtue_foundation_dataset` contains:
 
@@ -132,7 +134,7 @@ loaders/engine live in `gift_india_api`.
 First authenticate to the Databricks workspace, then run the dev server:
 
 ```bash
-databricks auth login --profile gift-india --host https://dbc-0be3157e-0574.cloud.databricks.com
+databricks auth login --profile gift-india --host https://dbc-0951416d-6d0e.cloud.databricks.com/
 
 cd gift_india_web
 npm install
@@ -220,12 +222,12 @@ and [object ownership](https://docs.databricks.com/aws/en/oltp/projects/transfer
 
 ```bash
 make publish \
-  ENDPOINT=projects/carenavigator/branches/production/endpoints/primary \
+  ENDPOINT=projects/gift_india/branches/production/endpoints/primary \
   PROFILE=<your-cli-profile>
 
 # equivalently (logs in as the `admins` group, loads into the gift_india catalog):
 cd gift_india_api && python -m src.load_db --target lakebase \
-  --endpoint projects/carenavigator/branches/production/endpoints/primary \
+  --endpoint projects/gift_india/branches/production/endpoints/primary \
   --profile <your-cli-profile>
 ```
 
@@ -237,7 +239,7 @@ profile at the endpoint — export `GIFT_INDIA_PGHOST` / `GIFT_INDIA_PGPASSWORD`
 `silver`/`gold` schemas are also owned by `admins`, then `make dbt`. The app
 reads `gold`, so it isn't served until dbt has run.
 
-Find the endpoint path with `databricks postgres list-endpoints projects/carenavigator/branches/production`.
+Find the endpoint path with `databricks postgres list-endpoints projects/gift_india/branches/production`.
 The bundle (`gift_india_web/databricks.yml` / `gift_india_web/app.yaml`) deploys the
 web app with a Lakebase resource pointed at the `gift_india` database; the app's
 service principal must be a member of the `admins` group to read the catalog.

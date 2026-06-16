@@ -1,4 +1,4 @@
-# gift_india India — common dev tasks.
+# Governance, Integrity, & Facility Trust Desk — common dev tasks.
 #
 #   make db-up      start local Postgres (docker compose)
 #   make load           generate + land the raw dataset into the bronze schema
