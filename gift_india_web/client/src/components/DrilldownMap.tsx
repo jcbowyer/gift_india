@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { geoMercator, geoPath, type GeoProjection } from 'd3-geo';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { geoMercator, geoPath, geoBounds, type GeoProjection } from 'd3-geo';
 import { select } from 'd3-selection';
-import { zoom as d3zoom, zoomIdentity, type ZoomBehavior, type D3ZoomEvent, ZoomTransform } from 'd3-zoom';
-import 'd3-transition'; // augments selection.prototype.transition (used by zoom.transform tweens)
+import { zoom as d3zoom, zoomIdentity, zoomTransform, type ZoomBehavior, type D3ZoomEvent, ZoomTransform } from 'd3-zoom';
 import { scaleLinear, scaleSqrt } from 'd3-scale';
 import { feature, mesh } from 'topojson-client';
 import type { Topology, GeometryCollection } from 'topojson-specification';
@@ -23,6 +22,7 @@ export interface HoverInfo {
 
 interface DrilldownMapProps {
   topology: Topology;
+  worldTopology?: Topology | null; // optional world-countries backdrop (India-corrected)
   stateRatings: StateRating[];
   districtRatings: DistrictRating[];
   facilities: FacilityRanking[];
@@ -51,6 +51,7 @@ const logT = (v: number) => Math.log10(v + 1);
 
 export function DrilldownMap({
   topology,
+  worldTopology,
   stateRatings,
   districtRatings,
   facilities,
@@ -72,6 +73,7 @@ export function DrilldownMap({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const rafRef = useRef<number | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [transform, setTransform] = useState<ZoomTransform>(zoomIdentity);
 
@@ -90,6 +92,28 @@ export function DrilldownMap({
     }
     return { statesFC: sfc, statesMesh: smesh, districtsByState: byState };
   }, [topology]);
+
+  // ── nation outline (SoI India boundary) for the floating-landmass look ───────
+  const nationFC = useMemo(() => {
+    const obj = topology.objects.nation as GeometryCollection | undefined;
+    return obj ? (feature(topology, obj) as FeatureCollection) : null;
+  }, [topology]);
+
+  // ── world-countries backdrop (India-corrected); shown only at nation level ───
+  // Keep only countries near India so the Mercator projection (fitted to India)
+  // never has to draw far-away polygons that would streak across the antimeridian.
+  const worldFC = useMemo(() => {
+    if (!worldTopology) return null;
+    const obj = worldTopology.objects.countries as GeometryCollection | undefined;
+    if (!obj) return null;
+    const fc = feature(worldTopology, obj) as FeatureCollection;
+    const [W, S, E, N] = [55, -8, 112, 46]; // generous window around the subcontinent
+    fc.features = fc.features.filter((f) => {
+      const [[w, s], [e, n]] = geoBounds(f);
+      return e >= W && w <= E && n >= S && s <= N && e - w < 120; // skip world-spanning bboxes
+    });
+    return fc;
+  }, [worldTopology]);
 
   // ── rating lookups ─────────────────────────────────────────────────────────
   const stateByNorm = useMemo(() => new Map(stateRatings.map((r) => [normName(r.state), r])), [stateRatings]);
@@ -183,28 +207,61 @@ export function DrilldownMap({
     const z = d3zoom<SVGSVGElement, unknown>()
       .scaleExtent([1, MAX_K])
       .clickDistance(4)
-      .on('zoom', (e: D3ZoomEvent<SVGSVGElement, unknown>) => setTransform(e.transform));
+      .on('zoom', (e: D3ZoomEvent<SVGSVGElement, unknown>) => {
+        // A user gesture (wheel/drag) cancels any running programmatic fly-to.
+        if (e.sourceEvent && rafRef.current !== null) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+        }
+        setTransform(e.transform);
+      });
     zoomRef.current = z;
     select(svgRef.current).call(z);
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
-  // ── smooth zoom-to-bounds on drill (van Wijk via zoom.transform transition) ─
+  // ── animated fly-to: rAF tween of the zoom transform (eased), independent of
+  //    d3-transition so it works regardless of bundler side-effect tree-shaking ─
+  const animateZoomTo = useCallback((target: ZoomTransform, duration = 750) => {
+    const svg = svgRef.current;
+    const z = zoomRef.current;
+    if (!svg || !z) return;
+    const sel = select(svg);
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    const start = zoomTransform(svg);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const setT = z.transform;
+    if (duration <= 0 || (start.k === target.k && start.x === target.x && start.y === target.y)) {
+      sel.call(setT, target);
+      return;
+    }
+    let t0: number | null = null;
+    const tick = (now: number) => {
+      if (t0 === null) t0 = now;
+      const u = Math.min(1, (now - t0) / duration);
+      const e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; // easeInOutCubic
+      const k = start.k + (target.k - start.k) * e;
+      const x = start.x + (target.x - start.x) * e;
+      const y = start.y + (target.y - start.y) * e;
+      sel.call(setT, zoomIdentity.translate(x, y).scale(k));
+      rafRef.current = u < 1 ? requestAnimationFrame(tick) : null;
+    };
+    rafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  // ── smooth zoom-to-bounds on drill ──────────────────────────────────────────
   useEffect(() => {
     const svg = svgRef.current;
     const z = zoomRef.current;
     if (!svg || !z || !path || !projection || !size.width) return;
 
-    const animate = (t: ZoomTransform) =>
-      select(svg)
-        .transition()
-        .duration(750)
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        .call(z.transform, t);
     const apply = (k: number, cx: number, cy: number) =>
-      animate(zoomIdentity.translate(size.width / 2, size.height / 2).scale(k).translate(-cx, -cy));
+      animateZoomTo(zoomIdentity.translate(size.width / 2, size.height / 2).scale(k).translate(-cx, -cy));
 
     if (level === 'nation') {
-      animate(zoomIdentity);
+      animateZoomTo(zoomIdentity);
       return;
     }
     if (level === 'state' && selectedState) {
@@ -236,23 +293,22 @@ export function DrilldownMap({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [level, selectedState, selectedDistrict, facilities, path, projection, size.width, size.height]);
+  }, [level, selectedState, selectedDistrict, facilities, path, projection, size.width, size.height, animateZoomTo]);
 
   // ── manual zoom controls (in / out / reset) ────────────────────────────────
   const zoomBy = (factor: number) => {
     const svg = svgRef.current;
-    const z = zoomRef.current;
-    if (!svg || !z) return;
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    select(svg).transition().duration(250).call(z.scaleBy, factor);
+    if (!svg) return;
+    const cur = zoomTransform(svg);
+    const nk = Math.max(1, Math.min(MAX_K, cur.k * factor));
+    // scale about the viewport centre
+    const cx = size.width / 2;
+    const cy = size.height / 2;
+    const nx = cx - ((cx - cur.x) * nk) / cur.k;
+    const ny = cy - ((cy - cur.y) * nk) / cur.k;
+    animateZoomTo(zoomIdentity.translate(nx, ny).scale(nk), 250);
   };
-  const resetZoom = () => {
-    const svg = svgRef.current;
-    const z = zoomRef.current;
-    if (!svg || !z) return;
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    select(svg).transition().duration(400).call(z.transform, zoomIdentity);
-  };
+  const resetZoom = () => animateZoomTo(zoomIdentity, 400);
 
   const k = transform.k;
   if (!path || !projection) return <div ref={containerRef} className="h-full w-full" />;
@@ -260,9 +316,44 @@ export function DrilldownMap({
   const districtPings = level === 'nation' ? [] : districtRatingsHere.filter((d) => d.lat != null && d.lon != null);
 
   return (
-    <div ref={containerRef} className="relative h-full w-full overflow-hidden rounded-xl border bg-[#f8fafc]">
+    <div ref={containerRef} className="relative h-full w-full overflow-hidden rounded-xl border bg-[#eef4fb]">
+      <style>{`@keyframes ddFadeIn{from{opacity:0}to{opacity:1}}.dd-fade{animation:ddFadeIn 450ms ease-out both}`}</style>
       <svg ref={svgRef} width={size.width} height={size.height} className="block touch-none">
         <g transform={transform.toString()}>
+          {/* ── world-countries backdrop (context); fades away as you drill in ── */}
+          {worldFC && (
+            <g
+              pointerEvents="none"
+              style={{ opacity: level === 'nation' ? 1 : 0, transition: 'opacity 600ms ease' }}
+            >
+              {worldFC.features.map((f) => (
+                <path
+                  key={`wc-${(f.properties?.name as string) ?? (f.properties?.iso as string)}`}
+                  d={path(f) ?? undefined}
+                  fill="#dce5ef"
+                  stroke="#cbd5e1"
+                  strokeWidth={0.4}
+                  vectorEffect="non-scaling-stroke"
+                />
+              ))}
+            </g>
+          )}
+
+          {/* ── India nation outline: soft halo under the states (floating landmass) ── */}
+          {nationFC?.features.map((f) => (
+            <path
+              key="nation-outline"
+              d={path(f) ?? undefined}
+              fill="#ffffff"
+              stroke="#64748b"
+              strokeWidth={1.1}
+              strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
+              pointerEvents="none"
+              style={{ filter: level === 'nation' ? 'drop-shadow(0 2px 3px rgba(15,23,42,0.18))' : 'none' }}
+            />
+          ))}
+
           {/* ── state polygons ── */}
           {statesFC.features.map((f) => {
             const r = stateByNorm.get(normName(f.properties.st_nm));
@@ -301,9 +392,10 @@ export function DrilldownMap({
 
           <path d={path(statesMesh) ?? undefined} fill="none" stroke="#cbd5e1" strokeWidth={0.5} vectorEffect="non-scaling-stroke" pointerEvents="none" />
 
-          {/* ── district polygons of the selected state ── */}
-          {level !== 'nation' &&
-            districtsHere.map((f) => {
+          {/* ── district polygons of the selected state (fade in on drill) ── */}
+          {level !== 'nation' && (
+            <g key={`dl-${selectedStateNorm}`} className="dd-fade">
+              {districtsHere.map((f) => {
               const dr = matchDistrictRating(f.properties.district);
               const isSelDist = dr ? dr.district === selectedDistrict : false;
               const shaded = display === 'shade';
@@ -325,8 +417,10 @@ export function DrilldownMap({
                   onClick={() => dr && onSelectDistrict(dr.district)}
                   pointerEvents={shaded ? 'auto' : 'none'}
                 />
-              );
-            })}
+                );
+              })}
+            </g>
+          )}
 
           {/* ── bubble mode: state centroids (nation) ── */}
           {level === 'nation' &&
@@ -376,11 +470,12 @@ export function DrilldownMap({
               );
             })}
 
-          {/* ── facility pins (district level) ── */}
-          {level === 'district' &&
-            facilities
-              .filter((f) => f.lat != null && f.lon != null)
-              .map((f) => {
+          {/* ── facility pins (district level; fade in on drill) ── */}
+          {level === 'district' && (
+            <g key={`fl-${selectedDistrict}`} className="dd-fade">
+              {facilities
+                .filter((f) => f.lat != null && f.lon != null)
+                .map((f) => {
                 const [cx, cy] = projection([f.lon as number, f.lat as number]) as [number, number];
                 const isHover = f.facilityId === hoveredFacilityId;
                 const isSel = f.facilityId === selectedFacilityId;
@@ -403,6 +498,8 @@ export function DrilldownMap({
                   />
                 );
               })}
+            </g>
+          )}
         </g>
       </svg>
 

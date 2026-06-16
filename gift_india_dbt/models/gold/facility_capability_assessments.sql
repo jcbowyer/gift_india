@@ -5,7 +5,7 @@
     )
 }}
 
--- Gold: per-facility × capability trust assessments for Track 1 (Governance, Integrity, & Facility Trust Desk).
+-- Gold: per-facility × capability trust assessments for Track 1 (Governance, Integrity, & Facility Trust (GIFT) Desk).
 -- Built ONLY from gold.facilities structured fields (specialties, type, beds,
 -- offers_surgery, match_confidence, website_url). No fabricated citations —
 -- evidence rows live in gold.capability_evidence.

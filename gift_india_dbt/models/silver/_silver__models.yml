@@ -46,3 +46,33 @@ models:
         tests: [not_null]
       - name: match_confidence
         description: Named-entity-resolution confidence score (0-1).
+
+  - name: silver_facility_web_crawl
+    description: >-
+      Cleaned, typed, deduped facility website crawls — one row per facility (or
+      per URL when unlinked), keeping the most recent successful crawl and
+      falling back to the latest attempt when a URL only ever failed. Derives a
+      primary contact email/phone from the boilerplate-stripped `raw_text`.
+    columns:
+      - name: crawl_id
+        description: sha256(website_url + crawled_at) of the kept crawl.
+        tests:
+          - not_null
+          - unique
+      - name: crawl_key
+        description: Grain key — facility_id, or the resolved URL when unlinked.
+        tests:
+          - not_null
+          - unique
+      - name: website_url
+        tests: [not_null]
+      - name: crawled_at
+        tests: [not_null]
+      - name: crawl_ok
+        description: True when the kept crawl succeeded (status = 'ok').
+        tests: [not_null]
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['ok', 'http_error', 'fetch_error']

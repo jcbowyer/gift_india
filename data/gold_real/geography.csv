@@ -1,0 +1,1854 @@
+district,state,lat,lon,population,urbanity,fp_unmet_pct,institutional_birth_pct,csection_pct,anaemia_pct
+Ahmedabad,Gujarat,22.93522,72.56891,null,null,null,null,null,null
+Chennai,Tamil Nadu,12.79499,79.99739,null,null,6.9,100.0,50.5,50.3
+Karnal,Haryana,29.67737,76.87059,null,null,5.4,99.0,18.7,61.9
+Kanhangad,Kerala,12.01677,75.4084,null,null,null,null,null,null
+Mumbai,Mumbai,19.08679,72.84501,null,null,null,null,null,null
+Panchkula,Haryana,29.70261,76.78374,null,null,7.0,97.0,32.7,57.1
+Latur,Latur,21.45787,80.19431,null,null,null,null,null,null
+Chennai,Chennai,13.09124,80.20105,null,null,null,null,null,null
+Hyderabad,Telengana,17.41378,78.42445,null,null,null,null,null,null
+Patti,Punjab,31.51993,75.91855,null,null,null,null,null,null
+Faridabad,Haryana,28.46604,77.23776,null,null,7.4,92.5,23.5,54.2
+Payyanur,Kerala,11.68312,75.50098,null,null,null,null,null,null
+Bareilly,Uttar Pradesh,28.16142,79.58904,null,null,5.9,75.1,15.5,60.8
+Haldwani,Uttarakhand,29.28808,79.43121,null,null,null,null,null,null
+Idar,Gujarat,23.50153,72.04372,null,null,null,null,null,null
+Secunderabad,Telangana,17.52497,78.52207,null,null,null,null,null,null
+Laheriasarai,Bihar,26.13896,85.90146,null,null,null,null,null,null
+Edavanna,Kerala,11.11139,76.11984,null,null,null,null,null,null
+Madurai East,Tamil Nadu,9.91351,78.12509,null,null,null,null,null,null
+Nagercoil,Tamil Nadu,8.40243,77.45727,null,null,null,null,null,null
+Chikhali,Maharashtra,21.11438,79.07146,null,null,null,null,null,null
+Ashoknagarh-kalyangarh Kachua More,North 24 Parganas,24.13081,88.00681,null,null,null,null,null,null
+Rahimatpur,Maharashtra,18.17128,73.00452,null,null,null,null,null,null
+Nanded,Maharashtra,19.17757,76.78302,null,null,null,null,null,null
+Rau Pusa,Bihar,25.31589,85.27495,null,null,null,null,null,null
+Narela,Delhi,28.85152,77.08685,null,null,null,null,null,null
+Mohali,Chandigarh,30.694,76.71765,null,null,null,null,null,null
+Bihta,Bihar,25.54144,84.85707,null,null,null,null,null,null
+Mangaluru,Karnataka,13.44037,74.98742,null,null,null,null,null,null
+George Town,Uttar Pradesh,26.91138,80.94778,null,null,null,null,null,null
+Dharmapuri,Tamil Nadu,12.13005,78.15141,null,null,8.5,99.6,29.1,42.5
+Pathanamthitta,Kerala,9.28032,76.75115,null,null,12.3,99.1,57.6,36.4
+Washim,Maharashtra,19.84848,76.0847,null,null,null,null,null,null
+Purnea,Bihar,26.0898,86.49137,null,null,null,null,null,null
+Sonepat,Haryana,28.92745,76.73367,null,null,null,null,null,null
+Dombivli(w),Maharashtra,19.22248,73.0842,null,null,null,null,null,null
+Chakan,Maharashtra,20.06636,78.94324,null,null,null,null,null,null
+Athani,Karnataka,16.72785,75.05983,null,null,null,null,null,null
+Boden,Odisha,21.58944,83.42685,null,null,null,null,null,null
+Gopalganj,Bihar,26.43071,84.46751,null,null,19.4,85.9,9.1,53.8
+Bayad,Gujarat,23.1594,71.67884,null,null,null,null,null,null
+Changaramkulam,Kerala,10.72823,76.01421,null,null,null,null,null,null
+Hardoi,Uttar Pradesh,27.39358,80.13559,null,null,13.4,73.9,7.0,59.7
+Amravati,Amravati,20.93645,77.77058,null,null,null,null,null,null
+Pavaratty,Kerala,10.56487,76.06201,null,null,null,null,null,null
+Ottappalam,Palakkad,10.77951,76.37881,null,null,null,null,null,null
+Kandivali West,Mumbai,19.21146,72.8407,null,null,null,null,null,null
+Dharwad,Karnataka,14.41221,75.54548,null,null,6.3,99.7,29.9,52.1
+Bijnor,Uttar Pradesh,29.38106,78.13807,null,null,5.0,83.7,22.4,46.0
+Chandannagar,West Bengal,22.76703,88.52151,null,null,null,null,null,null
+Pinjore,Haryana,30.80178,76.91651,null,null,null,null,null,null
+Sas Nagar,Punjab,30.69853,76.70901,null,null,null,null,null,null
+Greater Noida,"Ghaziabad, Uttar Pradesh",28.43328,77.48972,null,null,null,null,null,null
+Pathanapuram,Kollam,11.93912,75.34792,null,null,null,null,null,null
+Hastsal,Delhi,28.69138,77.07028,null,null,null,null,null,null
+Sirkali,Tamil Nadu,10.96225,78.0962,null,null,null,null,null,null
+Punawale,Maharashtra,19.20365,73.18629,null,null,null,null,null,null
+Jamtara,Jharkhand,23.37991,85.30955,null,null,9.9,75.4,13.4,77.7
+Iritty,Kerala,11.98267,75.67661,null,null,null,null,null,null
+Malakpet,Telangana,17.36848,78.51752,null,null,null,null,null,null
+Semmandalam,Tamil Nadu,11.76102,79.75409,null,null,null,null,null,null
+Calangute,Goa,15.53873,73.76399,null,null,null,null,null,null
+Etawah,Uttar Pradesh,26.78894,78.99627,null,null,8.3,85.2,11.2,57.4
+Palampur,Himachal Pradesh,32.10028,76.53212,null,null,null,null,null,null
+Kallakkurichi,Tamil Nadu,12.23063,79.64931,null,null,null,null,null,null
+Mainpuri,Uttar Pradesh,27.22031,78.75906,null,null,4.4,82.7,8.2,57.8
+Kanke,Jharkhand,23.43013,85.33479,null,null,null,null,null,null
+Gandhinagar,"Jammu, J&k",32.70167,74.85759,null,null,null,null,null,null
+Burhanpur,Burhanpur,21.28583,76.20188,null,null,null,null,null,null
+Mehsana,Gujarat,25.79989,71.71875,null,null,null,null,null,null
+Gonda,Uttar Pradesh,27.13947,81.97125,null,null,24.5,81.8,11.0,49.3
+Chennai,Tamil Nadu; Tamil Nadu; Karnataka; Telangana,13.06151,80.25013,null,null,null,null,null,null
+Mogra,West Bengal,22.98404,88.3709,null,null,null,null,null,null
+Gopalgarh,Rajasthan,27.22416,77.49895,null,null,null,null,null,null
+Mandsaur,Madhya Pradesh,24.07082,75.0697,null,null,8.7,99.4,18.5,56.7
+Nagar Untari,Jharkhand,23.41883,85.41132,null,null,null,null,null,null
+North Lakhimpur,Assam,27.24559,94.1054,null,null,null,null,null,null
+Ariyankuppam,Puducherry,11.89002,79.80768,null,null,null,null,null,null
+Kojra,Rajasthan,27.80099,76.63845,null,null,null,null,null,null
+Chakdaha,West Bengal,23.07352,88.53565,null,null,null,null,null,null
+Nurmahal,Punjab,31.36949,75.38422,null,null,null,null,null,null
+Mettur,Tamil Nadu,11.78739,77.80105,null,null,null,null,null,null
+Purnia,Bihar,25.78408,87.47195,null,null,20.2,68.9,7.1,66.0
+Meerut City,U.p.,28.98189,77.70842,null,null,null,null,null,null
+Mumbai,Ms,18.95855,72.80969,null,null,null,null,null,null
+Adarsh Nagar,Delhi,28.71664,77.17104,null,null,null,null,null,null
+Manganam,Kerala,9.57015,76.56311,null,null,null,null,null,null
+Puri,Odisha,19.8055,85.83741,null,null,7.3,97.7,35.3,63.3
+Obra,Bihar,25.59967,85.15939,null,null,null,null,null,null
+Nakodar,Punjab,31.22215,75.7644,null,null,null,null,null,null
+Tukum,Maharashtra,19.9738,79.30499,null,null,null,null,null,null
+Yerawada,Maharashtra,18.55321,73.89902,null,null,null,null,null,null
+Dasnagar,West Bengal,22.60163,88.3159,null,null,null,null,null,null
+Darya Ganj,Delhi,28.64432,77.23874,null,null,null,null,null,null
+Tholuzham,Kerala,9.26667,76.78329,null,null,null,null,null,null
+Murickassery Post,Idukki,9.66494,77.15872,null,null,null,null,null,null
+Mylapore,Chennai,13.03323,80.26045,null,null,null,null,null,null
+Bhadrak,Odisha,21.05332,86.49335,null,null,11.8,96.1,28.7,64.0
+Khammam Town,Telangana,17.25203,80.13872,null,null,null,null,null,null
+Brahmapuri,Maharashtra,20.60783,79.85587,null,null,null,null,null,null
+Parumala,Kerala,9.32701,76.53947,null,null,null,null,null,null
+Veraval,Gujarat,21.48083,70.17415,null,null,null,null,null,null
+Gondal,Gujarat,21.97724,70.79552,null,null,null,null,null,null
+Bilaspur,Uttar Pradesh,28.90956,79.30492,null,null,null,null,null,null
+Anantnag,Kashmir,33.73473,75.1653,null,null,null,null,null,null
+Manapparai,Tamil Nadu,10.60393,78.41696,null,null,null,null,null,null
+Kadi,Gujarat,23.30094,72.32772,null,null,null,null,null,null
+Srinagar,Kashmir,34.04022,74.78908,null,null,null,null,null,null
+Jalandhar Cantt & Jalandhar City,Punjab,30.91274,75.81496,null,null,null,null,null,null
+Khammam,Telangana,17.24993,80.14,null,null,3.3,97.9,69.2,62.4
+Najibabad,Uttar Pradesh,29.60734,78.34261,null,null,null,null,null,null
+Dankuni Chanditala,Hooghly,22.69528,88.25765,null,null,null,null,null,null
+Pallikaranai,Tamil Nadu,12.93029,80.20295,null,null,null,null,null,null
+Kanpur,Uttar Pradesh,26.58595,80.24711,null,null,null,null,null,null
+Anklav,Gujarat,20.3839,72.91209,null,null,null,null,null,null
+Bangalore,Gadag,15.4315,75.6404,null,null,null,null,null,null
+Puttaparthi,Andhra Pradesh,14.87613,78.66988,null,null,null,null,null,null
+Lalitpur,Uttar Pradesh,24.69561,78.41252,null,null,7.4,90.8,6.4,38.1
+Attur,Tamil Nadu,11.3638,78.19999,null,null,null,null,null,null
+Rajahmundry,Andhra Pradesh,17.00438,81.787,null,null,null,null,null,null
+Davanagere,Karnataka,13.98063,76.45336,null,null,11.5,98.3,39.8,51.7
+Navi Mumbai,Maharashtra,19.07755,73.26924,null,null,null,null,null,null
+Ponparappi,Tamil Nadu,10.82405,78.68387,null,null,null,null,null,null
+Punalur,Kerala,9.23349,76.66376,null,null,null,null,null,null
+Sonbhadra,Uttar Pradesh,29.35388,77.55164,null,null,11.6,76.8,11.8,44.5
+Hissar,Haryana,29.14279,75.72389,null,null,null,null,null,null
+Perumanoor,Kerala,10.76168,76.10068,null,null,null,null,null,null
+Handwara,Kupwara,34.23559,74.56023,null,null,null,null,null,null
+Kankhal,"Haridwar, Uttarakhand",29.93289,78.14812,null,null,null,null,null,null
+Belagavi,Karnataka,15.83902,74.51134,null,null,null,null,null,null
+Tirupur,Tamil Nadu,11.1636,77.31037,null,null,null,null,null,null
+Chandpur,Uttar Pradesh,26.4118,80.30478,null,null,null,null,null,null
+Azamgarh,Uttar Pradesh,26.79273,81.97142,null,null,20.7,93.2,16.8,54.3
+Ratnagiri,Maharashtra,17.49084,73.2691,null,null,null,null,null,null
+Ahmednagar,Maharashtra,18.94491,74.61935,null,null,null,null,null,null
+Muzaffarpur,Bihar,26.0617,85.27656,null,null,12.1,72.5,10.5,58.9
+Hooghly,West Bengal,22.75296,88.34017,null,null,null,null,null,null
+Kunnamkulam,Kerala,9.91706,76.36167,null,null,null,null,null,null
+Beerwah,Jammu And Kashmir,34.37675,74.30767,null,null,null,null,null,null
+Kalol,Gujarat,22.873,71.93367,null,null,null,null,null,null
+Bikaner,Rajasthan,28.02213,73.32524,null,null,4.6,90.0,8.1,58.9
+Manjeri Kla,Kerala,10.76612,76.65497,null,null,null,null,null,null
+Narnaul,Haryana,28.05578,76.1069,null,null,null,null,null,null
+Ramanathapuram,Tamil Nadu,9.55523,78.61603,null,null,7.9,99.6,47.5,53.6
+Dimapur,Nagaland,25.8925,93.72604,null,null,14.3,73.7,14.6,34.7
+Vavilalapally,Telangana,18.44901,79.12697,null,null,null,null,null,null
+Solapur,Maharashtra,17.6481,75.90502,null,null,null,null,null,null
+Moga,Punjab,30.81893,75.16193,null,null,8.0,93.0,27.3,54.4
+Idukki,Kerala,11.63773,75.58847,null,null,9.4,100.0,40.3,32.0
+Kalkaji,Delhi,28.56561,77.24434,null,null,null,null,null,null
+Ongole,Prakasam,16.26951,80.90996,null,null,null,null,null,null
+Hanumanganj,Uttar Pradesh,27.49986,77.64374,null,null,null,null,null,null
+Kalamboli,Navi Mumbai,19.01442,73.11351,null,null,null,null,null,null
+Bhavnagar,Gujarat,21.83342,71.97287,null,null,15.5,94.2,23.7,49.4
+Mallappally,Kerala,10.80427,76.18478,null,null,null,null,null,null
+Kuchaman City,Rajasthan,27.14842,74.85732,null,null,null,null,null,null
+Cuttack,Orissa,20.47124,85.89514,null,null,null,null,null,null
+Mumbai,Palghar,19.36449,72.80482,null,null,null,null,null,null
+Uttarpara,West Bengal,22.66677,88.35023,null,null,null,null,null,null
+Thiruvananthapuram,Thiruvananthapuram,8.87482,76.85223,null,null,null,null,null,null
+Neemuch,Madhya Pradesh,24.46687,74.87223,null,null,7.6,97.5,13.5,50.3
+Aundh,Maharashtra,18.5592,73.80992,null,null,null,null,null,null
+Kanpur,Azad Nagar,28.6546,77.36687,null,null,null,null,null,null
+Taloda,Maharashtra,19.07045,73.08957,null,null,null,null,null,null
+Malappuram,Kerala,11.09007,76.05812,null,null,13.8,100.0,25.5,34.7
+Tiruchendur,Tamil Nadu,8.42722,78.03094,null,null,null,null,null,null
+Nalasopara West,Maharashtra,19.42041,72.81598,null,null,null,null,null,null
+Perundurai,Tamil Nadu,11.27012,78.11221,null,null,null,null,null,null
+Medavakkam,St.thomas Mount,11.01236,76.96243,null,null,null,null,null,null
+Ettumanoor,Kerala,10.14479,76.42488,null,null,null,null,null,null
+Alathur,Kerala,12.0162,75.24895,null,null,null,null,null,null
+Adhewada,Bhavnagar,21.61601,72.13811,null,null,null,null,null,null
+Dum Dum,West Bengal,22.62394,88.4173,null,null,null,null,null,null
+Dungarpur,Rajasthan,23.84614,73.71568,null,null,5.9,94.1,5.9,72.6
+Nagpur,Nagpur,20.74116,78.59917,null,null,null,null,null,null
+Mampad,Kerala,11.24389,76.17879,null,null,null,null,null,null
+Bhiwani,Haryana,28.67652,76.27207,null,null,9.3,97.7,13.1,66.4
+Kothamangalam,Kerala,10.06459,76.62227,null,null,null,null,null,null
+Virar East,Maharashtra,19.45499,72.81966,null,null,null,null,null,null
+Khanapuram Haweli,Telangana,18.67379,78.10226,null,null,null,null,null,null
+Khanpur,Gujarat,23.03282,72.57809,null,null,null,null,null,null
+Nalgonda,Telangana,17.64683,79.47444,null,null,2.0,98.3,65.7,54.3
+Sahakaranagar,Karnataka,13.05893,77.58159,null,null,null,null,null,null
+Adimali,Kerala,10.01178,76.95794,null,null,null,null,null,null
+Trivandrum/neyyattinkara,Thiruvananthapuram,8.50516,76.95163,null,null,null,null,null,null
+Mannarkkad,Kerala,10.98378,76.42339,null,null,null,null,null,null
+Guwahati,Kamrup,26.1643,91.76907,null,null,null,null,null,null
+Goregaon East,Maharashtra,19.17331,72.87405,null,null,null,null,null,null
+Japla,Jharkhand,24.54875,84.03799,null,null,null,null,null,null
+Shamli,Uttar Pradesh,29.44565,77.31042,null,null,5.6,78.3,11.3,41.7
+Bhatinda,Bhatinda,30.21426,74.94247,null,null,null,null,null,null
+Ashoknagar,West Bengal,22.83813,88.61844,null,null,null,null,null,null
+Sayat,Maharashtra,19.08219,73.15379,null,null,null,null,null,null
+Songadh,Gujarat,21.15943,72.83128,null,null,null,null,null,null
+Tanda,Uttar Pradesh,28.64466,77.42599,null,null,null,null,null,null
+Banda,Uttar Pradesh,25.94212,80.54715,null,null,15.3,89.8,4.2,52.2
+Kunnamkulam,Thrissur,10.66007,76.0743,null,null,null,null,null,null
+Pathanapuram,Kerala,9.09286,76.8579,null,null,null,null,null,null
+Kudasan,Gandhinagar,23.18484,72.63266,null,null,null,null,null,null
+Kopaganj,Uttar Pradesh,25.93855,83.56516,null,null,null,null,null,null
+Taliparamba,Kerala,12.03853,75.38142,null,null,null,null,null,null
+Kumarakom,Kerala,9.63277,76.42987,null,null,null,null,null,null
+Pasighat,Arunachal Pradesh,28.06802,95.32212,null,null,null,null,null,null
+Thycaud,Kerala,8.50146,76.9548,null,null,null,null,null,null
+Kopar Khairane,Navi Mumbai,19.09942,73.00565,null,null,null,null,null,null
+Rudhauli,Uttar Pradesh,null,null,null,null,null,null,null,null
+Machilipatnam,Andhra Pradesh,16.18113,81.13531,null,null,null,null,null,null
+Pimpri,Maharashtra,18.6412,73.79504,null,null,null,null,null,null
+Bengaluru,Karnataka,12.97987,77.48908,null,null,null,null,null,null
+Thiruvananthapuram,Kerala,8.68264,76.91813,null,null,19.3,99.5,32.8,33.0
+Kochi,Kerala,10.0197,76.29908,null,null,null,null,null,null
+Adilabad,Andhra Pradesh,16.95616,82.23306,null,null,null,null,null,null
+Sangareddy,Telangana,17.44173,78.57295,null,null,8.5,93.0,43.2,48.3
+Kurnool,Andhra Pradesh,15.85912,79.20087,null,null,2.1,88.5,32.9,58.6
+Rasipuram,Namakkal,11.04213,78.35639,null,null,null,null,null,null
+Darjeeling,West Bengal,26.71644,88.41791,null,null,null,null,null,null
+Ichalkuranji,Maharashtra,17.28989,74.18623,null,null,null,null,null,null
+Dibrugarh,Assam,27.48935,94.97449,null,null,8.7,93.1,27.7,70.8
+Meerut,Uttar Pradesh,28.47795,78.26485,null,null,5.6,80.6,19.9,45.5
+Sion,Maharashtra,19.0383,72.8593,null,null,null,null,null,null
+Delhi,West Delhi,28.60165,77.05795,null,null,null,null,null,null
+Baner,Maharashtra,18.5604,73.7756,null,null,null,null,null,null
+Solan,Himachal Pradesh,30.93988,76.96164,null,null,2.9,90.2,25.2,47.5
+Shahbad,Haryana,30.16502,76.86635,null,null,null,null,null,null
+Koothattukulam,Kerala,10.26319,76.34929,null,null,null,null,null,null
+Tenali,Guntur,16.24315,80.64961,null,null,null,null,null,null
+Madhapur,Telangana,17.44693,78.38426,null,null,null,null,null,null
+Safdarjung Enclave,Delhi,28.56686,77.19328,null,null,null,null,null,null
+Nagole,Telangana,19.67798,78.53577,null,null,null,null,null,null
+Imphal,Manipur,24.81633,93.93494,null,null,null,null,null,null
+Hajipur,Bihar,25.75355,85.67101,null,null,null,null,null,null
+Bharuch,Gujarat,21.85852,72.89031,null,null,20.3,91.1,19.5,71.8
+Ranipet,Tamil Nadu,12.94184,79.326,null,null,null,null,null,null
+Jamalpur,Punjab,30.90726,75.8492,null,null,null,null,null,null
+Mhow,Madhya Pradesh,23.24654,77.42372,null,null,null,null,null,null
+Jhansi,Uttar Pradesh,25.69449,79.59068,null,null,13.8,92.9,12.8,41.3
+Erattupetta,Kerala,10.1037,76.35033,null,null,null,null,null,null
+Ulhasnagar,Maharashtra,19.70897,74.7764,null,null,null,null,null,null
+Korba,Chhattisgarh,22.02787,82.34775,null,null,13.4,75.4,18.1,66.4
+Rourkela,Odisha,22.24092,84.83449,null,null,null,null,null,null
+Maroli,Gujarat,21.7418,72.06385,null,null,null,null,null,null
+Navrangpura,Gujarat,21.52097,70.44904,null,null,null,null,null,null
+Jjallandhar,Punjab,31.32658,75.62148,null,null,null,null,null,null
+Bhokar,Dhule,20.91988,74.76617,null,null,null,null,null,null
+Baroda,Gujarat,22.30309,73.18586,null,null,null,null,null,null
+Aluva,Kerala,10.10876,76.3499,null,null,null,null,null,null
+Palanpur,Banas Kantha,18.64624,73.125,null,null,null,null,null,null
+Ballia,Uttar Pradesh,26.47917,80.34387,null,null,20.2,90.0,7.4,52.2
+Vennikulam,Kerala,9.39789,76.49872,null,null,null,null,null,null
+Basulia,West Bengal,23.32677,88.64176,null,null,null,null,null,null
+Chavakkad,Kerala,10.42176,76.27538,null,null,null,null,null,null
+Bardoli,Gujarat,21.03901,73.07978,null,null,null,null,null,null
+Purulia,West Bengal,23.34907,86.37848,null,null,null,null,null,null
+Shahada,Maharashtra,21.54502,74.47329,null,null,null,null,null,null
+Kochi,Ernakulam,9.98416,76.28172,null,null,null,null,null,null
+Punalur,Kollam,8.52773,76.92609,null,null,null,null,null,null
+Virugambakkam,Tamil Nadu,13.05428,80.1853,null,null,null,null,null,null
+Kongad,Kerala,11.13126,76.11394,null,null,null,null,null,null
+Swamiyarmadam,Tamil Nadu,8.29719,77.25752,null,null,null,null,null,null
+Karaikudi,Tamil Nadu,10.07891,78.77421,null,null,null,null,null,null
+Nadapuram,Kerala,11.54949,75.79691,null,null,null,null,null,null
+Sanawad,Madhya Pradesh,22.66596,76.748,null,null,null,null,null,null
+Kumarakom,Pallom,10.60029,76.48873,null,null,null,null,null,null
+Thanesar,Haryana,29.97146,76.84328,null,null,null,null,null,null
+Udaipur Surajpole,Rajasthan,24.593,73.70035,null,null,null,null,null,null
+Rampurhat,West Bengal,22.76472,88.36986,null,null,null,null,null,null
+Bhandup (w),Maharashtra,19.15842,72.93793,null,null,null,null,null,null
+Khargone,Madhya Pradesh,21.83407,75.61566,null,null,null,null,null,null
+Baridua,Meghalaya,26.09775,91.84375,null,null,null,null,null,null
+Sahnewal,Ludhiana,30.93387,75.86185,null,null,null,null,null,null
+Kandi,West Bengal,21.86716,88.18532,null,null,null,null,null,null
+Port Blair,Andaman And Nicobar Islands,11.63523,92.7239,null,null,null,null,null,null
+Pehwa,Haryana,29.96654,76.83017,null,null,null,null,null,null
+Viman Nagar,Maharashtra,18.56818,73.91479,null,null,null,null,null,null
+Kharagpur,West Bengal,22.32215,87.31186,null,null,null,null,null,null
+Ponnampet,Karnataka,16.76539,77.13029,null,null,null,null,null,null
+Dindigul,Tamil Nadu,10.1426,78.05188,null,null,6.3,97.0,33.3,42.6
+Sarkari Sidhpur,Himachal Pradesh,32.19624,76.34301,null,null,null,null,null,null
+Ulhasnagar,Thane,18.57516,73.81894,null,null,null,null,null,null
+Neyyattinkara,Kerala,8.44237,77.18802,null,null,null,null,null,null
+Avidi,Andhra Pradesh,16.82193,81.52837,null,null,null,null,null,null
+Kharar,Mohali,30.74102,76.64574,null,null,null,null,null,null
+Chakia,Uttar Pradesh,25.04841,83.22295,null,null,null,null,null,null
+Ballabgarh,Haryana,28.39359,77.305,null,null,null,null,null,null
+New Town,Telangana,16.74893,77.99642,null,null,null,null,null,null
+Simdega,Jharkhand,22.67542,84.54359,null,null,15.8,75.7,4.5,70.6
+Contai,Midnapore,21.77859,87.75634,null,null,null,null,null,null
+Nerul West,Maharashtra,19.03406,73.00839,null,null,null,null,null,null
+Boisar,Palghar District,19.80077,72.75839,null,null,null,null,null,null
+Upleta,Gujarat,21.7413,70.27708,null,null,null,null,null,null
+Vasai East,Maharashtra,19.41705,72.84375,null,null,null,null,null,null
+Tirupadiripuliyur,Cuddalore,11.73726,79.76186,null,null,null,null,null,null
+Kalpetta,Kerala,11.6045,76.08537,null,null,null,null,null,null
+Mazgaon,Maharashtra,18.9681,72.84013,null,null,null,null,null,null
+Barasat,Kolkata,22.7089,88.47481,null,null,null,null,null,null
+Yeola,Maharashtra,19.1698,72.93201,null,null,null,null,null,null
+Nowrangapur,Odisha,19.22646,82.54881,null,null,null,null,null,null
+Khed,Maharashtra,17.58518,74.15921,null,null,null,null,null,null
+Udgir,Maharashtra,18.38672,77.12789,null,null,null,null,null,null
+Madurai City,Tamil Nadu,11.79813,77.79659,null,null,null,null,null,null
+Udhampur,Jammu And Kashmir,32.66831,74.83627,null,null,null,null,null,null
+Hyderabad,Telangana,17.39612,78.48018,null,null,6.1,98.3,59.7,52.7
+Thane,Maharashtra,19.16119,73.15212,null,null,null,null,null,null
+Bangalore,Karnataka,13.05055,77.52997,null,null,4.7,99.3,30.6,35.5
+Chandrapur,Maharashtra,19.68629,78.19793,null,null,null,null,null,null
+Kottayam,Kerala,9.59056,76.55059,null,null,16.1,98.7,48.0,38.7
+Adampur,Punjab,31.36344,75.55098,null,null,null,null,null,null
+Ghaziabad,Up,28.62722,79.82146,null,null,null,null,null,null
+Sirsa,Haryana,29.13987,75.40611,null,null,8.3,99.3,27.2,61.9
+Borsad,Gujarat,22.32243,73.2123,null,null,null,null,null,null
+Jalandhar,Punjab,31.31792,75.56513,null,null,8.8,92.3,48.3,57.0
+Chikmangalore,Karnataka,12.98894,77.50781,null,null,null,null,null,null
+Osmanabad,Maharashtra,19.21932,75.20645,null,null,null,null,null,null
+Chennai,Salem,11.65858,78.14738,null,null,null,null,null,null
+Bhilwara,Rajasthan,25.34906,74.64279,null,null,7.2,95.0,5.9,50.4
+Kancheepuram,Tamil Nadu,12.92374,80.11462,null,null,7.2,100.0,40.2,57.0
+Hoshangabad,Madhya Pradesh,22.97933,77.58489,null,null,17.7,91.8,22.5,51.9
+Tiruppur,Tamil Nadu,11.10616,77.34445,null,null,4.6,100.0,46.4,55.2
+Janakpuri,Delhi,28.66126,77.14989,null,null,null,null,null,null
+Davengere,Karnataka,14.44902,75.9152,null,null,null,null,null,null
+Anand,Gujarat,22.44122,72.94634,null,null,16.5,96.0,22.4,66.4
+Mandi,Himachal Pradesh,31.69933,76.79473,null,null,7.1,86.6,16.0,48.9
+Indore,Indore,23.71278,77.47475,null,null,null,null,null,null
+Udvada,Gujarat,22.31864,73.22067,null,null,null,null,null,null
+Karipur,Kerala,12.32705,75.07146,null,null,null,null,null,null
+Kalapet,Puducherry,12.04627,79.85518,null,null,null,null,null,null
+Kadakkal,Chadayamangalam,8.82533,76.91557,null,null,null,null,null,null
+Neb Sarai,Delhi,28.49483,77.18417,null,null,null,null,null,null
+Sriperumbudur,Kanchipuram,8.3724,77.29773,null,null,null,null,null,null
+Panaji,Goa,15.48487,73.8177,null,null,null,null,null,null
+Asansol,West Bengal,23.53776,87.16571,null,null,null,null,null,null
+Kondapur,Telangana,17.44791,78.36138,null,null,null,null,null,null
+Angul,Orissa,21.47225,83.98262,null,null,null,null,null,null
+Abu Road,Rajasthan,26.93916,75.76086,null,null,null,null,null,null
+Vijayapura,Karnataka,16.83456,75.7122,null,null,null,null,null,null
+Srinagar,Jammu And Kashmir,34.07636,74.81456,null,null,null,null,null,null
+Kalyan West,Maharashtra,19.24115,73.14516,null,null,null,null,null,null
+Muvattupuzha,Kerala,9.92713,76.54112,null,null,null,null,null,null
+Adoni,Andhra Pradesh,15.63084,77.28555,null,null,null,null,null,null
+Pithoragarh,Uttarakhand,29.96044,79.11892,null,null,11.3,84.9,17.0,25.5
+Yamunanagar,Haryana,30.13854,77.28969,null,null,4.2,94.8,28.0,56.6
+Indirapuram,Ghaziabad,28.6425,77.3647,null,null,null,null,null,null
+Kompally,Telangana,17.43097,78.18507,null,null,null,null,null,null
+Barrackpore,West Bengal,22.75357,88.38042,null,null,null,null,null,null
+Malda,West Bengal,24.99093,88.14035,null,null,null,null,null,null
+Indore,Madhyapradesh,22.72612,75.88226,null,null,null,null,null,null
+Jaunpur,Uttar Pradesh,26.03547,81.69749,null,null,16.2,88.8,7.3,34.0
+Thane West,Maharashtra,19.21684,72.98307,null,null,null,null,null,null
+Irinjalakuda,Kerala,10.34035,76.21783,null,null,null,null,null,null
+Jalandhar-east,Jalandhar,31.86302,74.9584,null,null,null,null,null,null
+Chinakakani,Andhra Pradesh,16.41497,80.55757,null,null,null,null,null,null
+Roorkee,Uttarakhand,29.86566,77.87737,null,null,null,null,null,null
+Aadedeeh,Uttar Pradesh,26.01915,83.57138,null,null,null,null,null,null
+Malad East,Maharashtra,19.18559,72.8599,null,null,null,null,null,null
+Zirakpur,Punjab,30.7076,76.54815,null,null,null,null,null,null
+Tirupattur,Tamil Nadu,8.76235,77.70944,null,null,null,null,null,null
+Ichalkaranji,Maharashtra,16.68399,74.45975,null,null,null,null,null,null
+Davangere,Karnataka,14.45569,75.91937,null,null,null,null,null,null
+Bidar,Karnataka,15.40554,76.17411,null,null,8.1,99.0,21.8,55.9
+Dharmavaram,Andhra Pradesh,17.01184,81.77129,null,null,null,null,null,null
+Kothrud,Pune,18.50082,73.80898,null,null,null,null,null,null
+Rajapalayam,Tamil Nadu,10.75533,78.42391,null,null,null,null,null,null
+Ferozepur City,Punjab,29.93966,75.81731,null,null,null,null,null,null
+Dombivli,Maharashtra,19.21143,73.09446,null,null,null,null,null,null
+Moodbidri,Karnataka,13.06698,74.99651,null,null,null,null,null,null
+Goalpara,Assam,26.15604,90.61723,null,null,7.4,92.3,16.2,64.9
+Chengannur,Kerala,9.32185,76.6032,null,null,null,null,null,null
+Ezhupunna South,Kerala,9.82133,76.29852,null,null,null,null,null,null
+Chomu,Rajasthan,27.17312,75.72974,null,null,null,null,null,null
+Otur,Maharashtra,19.2705,73.99963,null,null,null,null,null,null
+Bolpur,West Bengal,23.67666,87.72447,null,null,null,null,null,null
+Chhindwara,Madhya Pradesh,22.05777,78.92379,null,null,3.6,92.2,17.1,41.7
+Koradi,Maharashtra,21.21706,79.07967,null,null,null,null,null,null
+Nagaon,Assam,26.3522,92.67547,null,null,12.3,83.7,17.9,61.0
+Amalner,Maharashtra,21.03836,75.05511,null,null,null,null,null,null
+Udumalpet,Tamil Nadu,10.58099,77.24614,null,null,null,null,null,null
+Sathyamangalam,Tamil Nadu,11.50268,77.24584,null,null,null,null,null,null
+Lunawada,Gujarat,23.12434,73.60607,null,null,null,null,null,null
+Vaishali,Ghaziabad,28.64766,77.34531,null,null,null,null,null,null
+Manesar,Haryana,28.45028,77.04813,null,null,null,null,null,null
+Hospet,Karnataka,15.30663,75.96301,null,null,null,null,null,null
+Mira Road,Mumbai,19.2817,72.86064,null,null,null,null,null,null
+Urapakkam,Tamil Nadu,12.86829,80.08279,null,null,null,null,null,null
+Mandaudih,Uttar Pradesh,25.29934,82.96938,null,null,null,null,null,null
+Navsari,Maharashtra,20.94871,72.91615,null,null,null,null,null,null
+Bhayandar (w),Maharashtra,19.29959,72.84891,null,null,null,null,null,null
+Arookutty,Kerala,9.91795,76.27522,null,null,null,null,null,null
+Meerut City,Uttar Pradesh,28.99735,77.7049,null,null,null,null,null,null
+Mulanthuruthy,Kerala,9.96744,76.30125,null,null,null,null,null,null
+Kollengode,Kerala,10.61292,76.69864,null,null,null,null,null,null
+Kamothe,Navi Mumbai,19.03405,73.02309,null,null,null,null,null,null
+Godda,Jharkhand,24.83441,87.21701,null,null,11.3,70.2,4.7,66.3
+Kanhangad,Kasaragod,12.3253,75.08907,null,null,null,null,null,null
+Kakori,Uttar Pradesh,26.04924,83.16996,null,null,null,null,null,null
+Morigaon,Assam,26.2521,92.35448,null,null,6.5,88.3,12.3,64.2
+Jagdalpur,Chhattisgarh,19.08742,82.01181,null,null,null,null,null,null
+Budgam,Jammu And Kashmir,34.03633,74.73545,null,null,null,null,null,null
+Orai,Uttar Pradesh,25.98798,79.45083,null,null,null,null,null,null
+Sangarwa,Rajasthan,25.156,75.83107,null,null,null,null,null,null
+Delhi,East Delhi,28.65262,77.30318,null,null,null,null,null,null
+Nawada,Bihar,24.91491,85.53639,null,null,6.5,79.9,12.4,70.4
+Thiruvannamalai,Tamil Nadu,12.27398,79.07835,null,null,null,null,null,null
+Varanasi,Uttar Prades H,25.3017,82.97633,null,null,null,null,null,null
+Murgod,Karnataka,17.30012,76.80988,null,null,null,null,null,null
+Tohana,Haryana,29.70886,75.90329,null,null,null,null,null,null
+Raebareli,Uttar Pradesh,26.06889,83.05392,null,null,null,null,null,null
+Sihor,Gujarat,21.71509,71.95731,null,null,null,null,null,null
+Villupuram,Tamil Nadu,10.4594,78.45768,null,null,null,null,null,null
+Jaggayyapeta,Krishna,18.45043,83.64996,null,null,null,null,null,null
+Tanuku,Andhra Pradesh,16.78783,80.85411,null,null,null,null,null,null
+Trivandrum City,Kerala,8.53023,76.95694,null,null,null,null,null,null
+Chakia,Bihar,26.41531,85.06277,null,null,null,null,null,null
+Tumkur,Karnataka,13.63494,77.18969,null,null,5.3,100.0,52.1,49.3
+Mohali,Punjab,30.73473,76.46992,null,null,null,null,null,null
+Jaipur,Rajasthan,26.82809,75.72271,null,null,5.4,97.3,18.0,54.1
+Kolenchery,Kerala,9.39334,76.57868,null,null,null,null,null,null
+Varanasi,Uttar Pradesh,25.82462,82.25006,null,null,8.7,95.2,23.0,37.6
+Cuttack,Odisha,20.52921,85.83215,null,null,3.7,98.9,34.6,64.5
+Palanpur,Gujarat,24.07172,72.01619,null,null,null,null,null,null
+Amravati,Maharashtra,20.87462,77.6857,null,null,null,null,null,null
+Madha,Maharashtra,19.375,74.38078,null,null,null,null,null,null
+Kattankulathur,Tamil Nadu,11.83966,79.37498,null,null,null,null,null,null
+Kapadvanj,Gujarat,23.58929,72.95708,null,null,null,null,null,null
+Dhanbad,Jharkhand,23.78064,86.37197,null,null,9.7,78.8,21.9,63.8
+Rishikesh,Uttarakhand,30.10751,78.29748,null,null,null,null,null,null
+Aligarh,Uttar Pradesh,28.12045,78.14943,null,null,6.4,82.6,18.7,56.5
+Nadiad,Gujarat,22.57216,72.49729,null,null,null,null,null,null
+Shirol,Kolhapur,19.11324,73.97346,null,null,null,null,null,null
+Ganapathy,Tamil Nadu,11.04422,76.98555,null,null,null,null,null,null
+Thrissur,Kerala,10.4388,76.24,null,null,10.9,100.0,45.7,44.4
+Faridkot,Punjab,30.92476,74.77793,null,null,15.7,94.3,26.0,63.2
+Gurgaon,Delhi,28.45804,77.06346,null,null,null,null,null,null
+Gurdaspur,Punjab,31.46848,75.23159,null,null,15.4,92.4,47.6,55.2
+Agra,Uttar Pradesh,27.06236,78.52605,null,null,9.0,89.1,18.8,59.4
+Rewa,Madhya Pradesh,24.86217,80.67812,null,null,8.8,80.4,9.7,61.7
+Mangalore,Karnataka,13.00607,74.91486,null,null,null,null,null,null
+Amethi,Uttar Pradesh,27.82602,79.88356,null,null,19.9,90.8,11.1,46.1
+Ujjain,Madhya Pradesh,23.17122,76.05875,null,null,6.4,97.1,14.8,54.5
+Kuruda,Odisha,21.47167,86.89078,null,null,null,null,null,null
+Thalassery,Kerala,10.69867,76.03757,null,null,null,null,null,null
+Pathankot,Punjab,32.26939,75.66153,null,null,10.5,94.8,52.9,55.0
+Bissamcuttack,Odisha,19.51688,83.50648,null,null,null,null,null,null
+Kanjirapally,Kerala,9.55807,76.81378,null,null,null,null,null,null
+Dhar,Madhya Pradesh,21.89874,77.89444,null,null,4.8,95.5,13.2,50.2
+Ghansoli,Maharashtra,18.7417,73.77657,null,null,null,null,null,null
+Jhajjar,Haryana,28.74594,76.62959,null,null,4.6,97.2,21.3,60.1
+Banga,Punjab,30.8837,75.83521,null,null,null,null,null,null
+Mangalore,Dakshin Kannad,12.8704,74.85233,null,null,null,null,null,null
+Tiuni,Uttarakhand,30.31288,78.05521,null,null,null,null,null,null
+Kadapa,Andhra Pradesh,15.8345,80.38166,null,null,null,null,null,null
+Bardhaman,West Bengal,23.27997,87.53639,null,null,null,null,null,null
+Bhusawal,Maharashtra,20.19239,75.75462,null,null,null,null,null,null
+Coimbatore North,Tamil Nadu,11.02647,76.9476,null,null,null,null,null,null
+Sawai Madhopur,Rajasthan,25.95294,76.42252,null,null,11.5,97.4,10.4,57.5
+Sodepur,West Bengal,22.58813,88.2989,null,null,null,null,null,null
+Deoria,Uttar Pradesh,26.7162,83.02075,null,null,20.4,93.4,12.7,33.8
+Purba Bardhaman,West Bengal,23.24946,87.86111,null,null,null,null,null,null
+Tura,Meghalaya,25.5184,90.2187,null,null,null,null,null,null
+Kannur,Kerala,11.879,75.36773,null,null,12.7,100.0,39.7,39.7
+Jamshedpur,East Singhbhum,22.83795,86.23079,null,null,null,null,null,null
+Nazareth,Tamil Nadu,8.55853,77.97029,null,null,null,null,null,null
+Sriganganagar,Rajasthan,29.91843,73.88405,null,null,null,null,null,null
+Dewas,Madhya Pradesh,23.83893,78.89653,null,null,7.7,92.2,13.5,51.3
+Kandivali West,Maharashtra,19.15514,72.83228,null,null,null,null,null,null
+Cochin,Kerala,10.0055,76.30196,null,null,null,null,null,null
+Kengeri,Karnataka,16.55756,74.53273,null,null,null,null,null,null
+Margao,South Goa,15.27376,73.95663,null,null,null,null,null,null
+Gaya,Bihar,25.28412,84.02986,null,null,5.9,76.6,14.4,64.3
+Raikot,Punjab,26.55323,73.40891,null,null,null,null,null,null
+Kaithal,Haryana,29.77964,76.53113,null,null,4.8,98.2,24.9,61.5
+Hanamkonda,Telangana,17.99559,79.56833,null,null,null,null,null,null
+Bhuj,Kachchh,23.20846,69.64636,null,null,null,null,null,null
+Limbasi,Gujarat,21.12072,70.11673,null,null,null,null,null,null
+Jangipara,West Bengal,22.64062,88.20334,null,null,null,null,null,null
+Chakkarpur,Haryana,28.49514,77.10678,null,null,null,null,null,null
+Hilsa,Bihar,25.3115,85.27884,null,null,null,null,null,null
+Godhra,Gujarat,22.98753,72.38901,null,null,null,null,null,null
+Vemagal,Karnataka,12.27963,76.62538,null,null,null,null,null,null
+Vasai-virar,Maharashtra,19.36881,72.81853,null,null,null,null,null,null
+Hazaribagh,Jharkhand,27.15252,88.33419,null,null,11.5,82.0,14.7,56.1
+Nanganallur,Tamil Nadu,12.98312,80.1916,null,null,null,null,null,null
+Chakan,Pune,18.75479,73.90942,null,null,null,null,null,null
+Uttarpara,Hoogly,22.70113,88.51068,null,null,null,null,null,null
+Hoshiarpur,Punjab Region,31.53291,75.91838,null,null,null,null,null,null
+Una,Himachal Pradesh,31.46621,76.26913,null,null,15.8,89.7,39.1,60.8
+Amritsar,Punjab Region,31.64058,74.87244,null,null,null,null,null,null
+Yamuna Vihar,Delhi,28.70173,77.27887,null,null,null,null,null,null
+Shirdi,Maharashtra,19.7534,74.47723,null,null,null,null,null,null
+Krishnanagar,West Bengal,23.40293,88.49042,null,null,null,null,null,null
+Bettiah,Bihar,25.69135,85.20725,null,null,null,null,null,null
+Barmer,Rajasthan,25.74194,71.39674,null,null,5.1,93.3,4.9,49.4
+Phagwara,Punjab,31.22811,75.75019,null,null,null,null,null,null
+Naroda,Gujarat,23.06193,72.64375,null,null,null,null,null,null
+Kundapura,Karnataka,13.1328,77.35766,null,null,null,null,null,null
+Laheriasarai,Darbhanga,26.16271,85.89751,null,null,null,null,null,null
+Moolamattom,Idukki,9.79932,76.84583,null,null,null,null,null,null
+Ambattur,Chennai,13.12107,80.14976,null,null,null,null,null,null
+Medchal,Hyderabad,16.59408,78.55225,null,null,null,null,null,null
+Rangia,Assam,26.04445,92.52686,null,null,null,null,null,null
+Noida,Delhi,28.5896,77.31108,null,null,null,null,null,null
+Tamluk,West Bengal,22.28081,87.92074,null,null,null,null,null,null
+Pala,Kerala,10.70815,76.23743,null,null,null,null,null,null
+Gangapur City,Rajasthan,25.76079,75.31021,null,null,null,null,null,null
+Shilphata,Maharashtra,19.1452,73.0452,null,null,null,null,null,null
+Mettupalayam,Tamil Nadu,11.16205,76.97688,null,null,null,null,null,null
+Nedumangad,Kerala,9.28034,76.45848,null,null,null,null,null,null
+Chikodi,Karnataka,17.33319,76.82944,null,null,null,null,null,null
+Jalandhar Cantt,Punjab,31.31093,75.62964,null,null,null,null,null,null
+Panjim,Goa,15.49637,73.82884,null,null,null,null,null,null
+Pedgaon,Maharashtra,19.29934,76.66499,null,null,null,null,null,null
+Cherpu,Kerala,10.44228,76.21004,null,null,null,null,null,null
+Bagdogra,West Bengal,26.69892,88.30856,null,null,null,null,null,null
+Mairwa,Bihar,25.75595,86.02771,null,null,null,null,null,null
+Dumka,Jharkhand,23.33125,85.31615,null,null,13.1,60.3,8.5,73.4
+Uttam Nagar,Delhi,28.61913,77.04678,null,null,null,null,null,null
+Mulund,Maharashtra,19.12307,72.91273,null,null,null,null,null,null
+Palitana,Bhavnagar,21.5313,71.82286,null,null,null,null,null,null
+Khamgaon,Maharashtra,20.72046,76.56931,null,null,null,null,null,null
+Sitapur,Uttar Pradesh,26.84674,80.88528,null,null,17.9,84.8,8.4,55.3
+Solapur,Solapur,17.66663,75.91075,null,null,null,null,null,null
+Navin Shahdara,Delhi,28.68378,77.31055,null,null,null,null,null,null
+Shalimar Bagh,North West Delhi,28.71935,77.15891,null,null,null,null,null,null
+Napier Town,Madhya Pradesh,23.16376,79.94238,null,null,null,null,null,null
+Safdarjung Development Area,Delhi,28.61548,77.08774,null,null,null,null,null,null
+Ahmednagar,Mh,19.0807,74.73089,null,null,null,null,null,null
+Haripal,West Bengal,22.82953,88.11528,null,null,null,null,null,null
+Kannamangala,Karnataka,13.02506,77.76128,null,null,null,null,null,null
+Loni,Maharashtra,19.11755,73.97591,null,null,null,null,null,null
+Thanjavur,Tamilnadu,10.76369,79.12861,null,null,null,null,null,null
+Nashik,Maharashtra,19.89147,74.04415,null,null,null,null,null,null
+Vadodara,Gujarat,22.30879,73.10742,null,null,11.4,95.9,29.9,72.3
+Indore,Madhya Pradesh,22.82687,76.01163,null,null,4.0,96.5,21.9,48.1
+Jamnagar,Gujarat,22.45192,70.61565,null,null,2.0,96.5,23.3,50.2
+Vijayawada,Andhra Pradesh,16.61014,80.83369,null,null,null,null,null,null
+Bhagalpur,Bihar,25.42854,86.58145,null,null,12.8,77.2,11.5,73.0
+Karad City,Maharashtra,17.98092,73.80324,null,null,null,null,null,null
+Malkangiri,Odisha,20.25157,86.17982,null,null,4.4,90.7,5.7,71.9
+Durgapur,West Bengal,23.4975,87.42205,null,null,null,null,null,null
+Wakad,Maharashtra,18.53426,74.69484,null,null,null,null,null,null
+Vijayawada,Governorpet,17.44196,78.49004,null,null,null,null,null,null
+Silvassa,Dadra And Nagar Haveli And Daman And Diu,20.27058,73.00778,null,null,null,null,null,null
+Gondavale,Maharashtra,19.57147,74.21205,null,null,null,null,null,null
+Mulund West,Maharashtra,19.17551,72.94694,null,null,null,null,null,null
+New Mumbai,Maharashtra,19.00582,73.1203,null,null,null,null,null,null
+Malad West,Maharashtra,19.47937,73.20118,null,null,null,null,null,null
+Adipur,Gandhidham,23.06966,70.08018,null,null,null,null,null,null
+Deesa,Gujarat,23.41781,72.36508,null,null,null,null,null,null
+Mal Bazar,West Bengal,26.86446,88.74355,null,null,null,null,null,null
+Motihari,Bihar,26.6413,84.9218,null,null,null,null,null,null
+Kalyan,Maharashtra,19.41801,73.34864,null,null,null,null,null,null
+Mukerian,Punjab,31.33259,75.56131,null,null,null,null,null,null
+Bhanvad,Gujarat,22.43121,73.12266,null,null,null,null,null,null
+Bharatpur,Rajasthan,27.22465,77.47849,null,null,11.3,92.1,12.2,60.8
+Maradu,Kerala,9.93781,76.32267,null,null,null,null,null,null
+Ambala City,Haryana,30.15489,76.8649,null,null,null,null,null,null
+Umerabad,Srinagar Kashmir,34.11205,74.72542,null,null,null,null,null,null
+Agroha,Haryana,29.32798,75.62847,null,null,null,null,null,null
+Hadapsar,Maharashtra,18.41877,74.09197,null,null,null,null,null,null
+Kalyan (west),Maharashtra,19.24104,73.14627,null,null,null,null,null,null
+Anandwadi,Maharashtra,19.1572,77.30824,null,null,null,null,null,null
+Marthandam,Tamil Nadu,10.15434,77.66377,null,null,null,null,null,null
+Darbhanga,Bihar,26.06065,85.85186,null,null,12.7,69.9,10.6,60.8
+Saharsa,Bihar,25.88267,86.61207,null,null,16.7,70.4,6.1,65.3
+Lucknow,U.p.,26.74857,80.94966,null,null,null,null,null,null
+Sangamner,Maharashtra,19.17765,75.00094,null,null,null,null,null,null
+Pudukottai,Tamil Nadu,10.37939,78.82195,null,null,null,null,null,null
+Dahiwadi,Maharashtra,20.38717,78.13298,null,null,null,null,null,null
+Maharajganj,Uttar Pradesh,26.91743,83.73557,null,null,null,null,null,null
+Virar,Maharashtra,19.45061,72.80876,null,null,null,null,null,null
+Mandya,Karnataka,15.04097,77.76646,null,null,3.8,99.5,39.5,47.0
+Miraj,Sangli,18.89444,74.07088,null,null,null,null,null,null
+Rajapalaiyam,Tamil Nadu,9.17226,77.86757,null,null,null,null,null,null
+Sambalpur,Orissa,21.50531,83.88728,null,null,null,null,null,null
+Lucknow,U.p,25.93969,83.56796,null,null,null,null,null,null
+Edappally,Kerala,10.0364,76.30227,null,null,null,null,null,null
+Chrompet,Tamil Nadu,12.94607,80.13666,null,null,null,null,null,null
+Delhi,Dl,28.64873,77.22757,null,null,null,null,null,null
+Amahiya,Rewa,24.5432,81.30027,null,null,null,null,null,null
+Shyamnagar,West Bengal,23.67607,88.43238,null,null,null,null,null,null
+Samalka,New Delhi,28.52969,77.08699,null,null,null,null,null,null
+Jalandhar City,Jalandhar,31.29862,75.59424,null,null,null,null,null,null
+Royapuram,Tamil Nadu,13.11223,80.29536,null,null,null,null,null,null
+Sivakasi,Tamil Nadu,9.45454,77.79561,null,null,null,null,null,null
+Trichy,Tamil Nadu,10.95548,78.60434,null,null,null,null,null,null
+Dehradun,Dehradun,30.31656,78.03215,null,null,null,null,null,null
+Raman,Punjab,30.27453,75.23036,null,null,null,null,null,null
+Jaisalmer,Rajasthan,26.9142,70.92561,null,null,5.6,90.0,9.3,44.4
+Noida,Delhi/ncr,28.54093,77.36894,null,null,null,null,null,null
+Bankura,West Bengal,24.3496,87.7136,null,null,12.0,93.3,22.7,77.0
+Kandela,Haryana,29.37771,76.33656,null,null,null,null,null,null
+Bambolim,Goa,15.46433,73.85841,null,null,null,null,null,null
+Murshidabad,West Bengal,24.10888,88.23265,null,null,3.5,87.0,29.5,77.6
+Namakkal,Tamil Nadu,11.187,78.21238,null,null,6.5,100.0,53.7,51.9
+Falta,South 24 Parganas,22.27262,88.12386,null,null,null,null,null,null
+Mapusa,Goa,15.60012,73.81846,null,null,null,null,null,null
+Pandharpur,Solapur,17.66425,75.30753,null,null,null,null,null,null
+Kailash Colony,Delhi,28.57647,77.26627,null,null,null,null,null,null
+Patna Sadar,Bihar,25.58292,85.0928,null,null,null,null,null,null
+Codacal,Kerala,10.8641,75.96938,null,null,null,null,null,null
+Mapusa,North Goa,15.60198,73.8063,null,null,null,null,null,null
+Numaligarh,Assam,26.59131,93.74949,null,null,null,null,null,null
+Model Town Jalandhar,Punjab,31.30692,75.57133,null,null,null,null,null,null
+Amalapuram,Andhra Pradesh,16.56828,81.99902,null,null,null,null,null,null
+Balrampur,Balrampur,27.41486,82.16334,null,null,null,null,null,null
+Pitampura,Delhi,28.69245,77.1168,null,null,null,null,null,null
+Kasganj,Uttar Pradesh,27.80579,78.64436,null,null,null,null,null,null
+Majgaon,Maharashtra,19.24247,73.13493,null,null,null,null,null,null
+Siwan,Bihar,26.19546,84.3447,null,null,15.4,86.4,11.3,53.1
+Dadar,Maharashtra,19.02041,72.84894,null,null,null,null,null,null
+Mulund (w),Maharashtra,19.17462,72.94237,null,null,null,null,null,null
+Hinganghat,Maharashtra,20.54822,78.83569,null,null,null,null,null,null
+Baruipur,West Bengal,22.36081,88.43221,null,null,null,null,null,null
+Vasai Road West,Maharashtra,19.38892,72.82512,null,null,null,null,null,null
+Rajnandgaon,Chhattisgarh,21.09386,81.04021,null,null,6.3,95.5,10.8,58.3
+Aizawl,Mizoram,23.68049,92.72514,null,null,24.0,97.4,18.2,31.7
+Pachora,Maharashtra,20.66507,75.34425,null,null,null,null,null,null
+Chalakudy,Kerala,10.31548,76.33068,null,null,null,null,null,null
+Srivilliputhur,Tamil Nadu,10.43799,77.20791,null,null,null,null,null,null
+Chandpatti,Bihar,26.63033,85.71027,null,null,null,null,null,null
+Panjim,North Goa,15.46032,73.81361,null,null,null,null,null,null
+Beed,Maharashtra,20.25293,75.77135,null,null,null,null,null,null
+Etah,Uttar Pradesh,27.56206,78.65385,null,null,7.0,76.7,7.5,55.4
+Warpora,Jammu And Kashmir,34.25552,74.79006,null,null,null,null,null,null
+Ramchandrapur,West Bengal,23.58264,86.80695,null,null,null,null,null,null
+Daman,Dadra & Nagar Haveli & Daman & Diu,20.41881,72.83299,null,null,null,null,null,null
+Noida,Uttar Pradesh,27.88595,78.4545,null,null,null,null,null,null
+Burdwan,West Bengal,23.11743,87.94834,null,null,null,null,null,null
+Firozabad,Uttar Pradesh,28.06642,78.62832,null,null,9.2,80.1,10.7,57.1
+Calicut,Kerala,11.1721,75.84581,null,null,null,null,null,null
+Vellor,Tamil Nadu,12.92314,79.13538,null,null,null,null,null,null
+Bhubaneswar,Odisha,20.37991,85.75112,null,null,null,null,null,null
+Delhi,Nct Delhi,28.68839,77.11784,null,null,null,null,null,null
+Katihar,Bihar,25.56862,87.55639,null,null,22.4,66.9,4.0,68.4
+Kurla,Maharashtra,20.06772,74.19815,null,null,null,null,null,null
+Whitefield,Karnataka,12.98793,77.65197,null,null,null,null,null,null
+New Delhi,Delhi,28.60101,77.18282,null,null,null,null,null,null
+Greater Noida,Uttar Pradesh,28.2695,77.93461,null,null,null,null,null,null
+Ankleshwar,Gujarat,22.00697,73.04834,null,null,null,null,null,null
+Hisar,Haryana,29.18324,75.93681,null,null,8.9,98.2,18.2,63.8
+Sultanpur,Uttar Pradesh,26.1083,82.19864,null,null,23.9,87.0,13.0,50.2
+Valsad,Gujarat,21.0736,72.33233,null,null,9.3,96.5,16.9,75.7
+Surendranagar,Gujarat,22.74198,71.62219,null,null,8.3,85.6,12.2,55.6
+Santrampur,Gujarat,21.09199,71.76665,null,null,null,null,null,null
+Talaja,Gujarat,23.05078,72.51573,null,null,null,null,null,null
+Trivandrum,Kerala,8.50978,76.94998,null,null,null,null,null,null
+Udupi,Karnataka,13.3701,74.75259,null,null,7.1,98.9,51.9,47.3
+Bilaspur,Chhattisgarh,22.07892,82.14704,null,null,10.4,79.4,19.0,58.5
+Giridih,Jharkhand,24.18828,86.30978,null,null,12.0,70.7,10.7,64.7
+Angamaly,Kerala,10.19266,76.38547,null,null,null,null,null,null
+Savli,Gujarat,22.55912,73.22426,null,null,null,null,null,null
+Karimugal,Kerala,9.97135,76.30092,null,null,null,null,null,null
+Kotputli,Rajasthan,26.51852,75.41571,null,null,null,null,null,null
+Wanaparthy,Telangana,17.24935,80.15202,null,null,3.6,99.0,50.9,58.7
+Jalgaon,Maharashtra,20.64292,75.72799,null,null,null,null,null,null
+Narsipatnam,Andhra Pradesh,15.16168,77.38383,null,null,null,null,null,null
+Muktsar,Punjab,31.07412,74.90278,null,null,6.2,96.4,18.6,61.0
+Shahdol,Madhya Pradesh,23.24891,79.39399,null,null,9.2,85.6,9.3,56.4
+Lucknow,Gomtinagar,25.30546,82.98256,null,null,null,null,null,null
+Chuttipara,Kerala,9.26713,76.78876,null,null,null,null,null,null
+Mahasamund,Chhattisgarh,21.12465,82.07705,null,null,5.5,92.9,10.2,63.0
+Supaul,Bihar,25.54809,85.93666,null,null,12.1,80.4,3.7,60.7
+Tambaram West,Tamil Nadu,12.92584,80.11247,null,null,null,null,null,null
+Aam Choumpra,Madhya Pradesh,23.33061,75.03572,null,null,null,null,null,null
+Gadarwara,Madhya Pradesh,23.18883,77.46584,null,null,null,null,null,null
+Vapi,Gujarat,20.73988,72.84808,null,null,null,null,null,null
+Sundakkamuthur,Tamil Nadu,9.92016,78.09538,null,null,null,null,null,null
+Deoghar,Jharkhand,24.40072,86.59029,null,null,11.1,61.3,7.8,70.2
+Sikar,Rajasthan,27.48156,75.08121,null,null,10.3,95.8,17.2,44.0
+Akola,Maharashtra,20.70545,77.0186,null,null,null,null,null,null
+Shahjahanpur,Uttar Pradesh,27.51451,80.47024,null,null,6.4,63.3,8.6,60.3
+Tadepalli,Andhra Pradesh,16.4795,80.61568,null,null,null,null,null,null
+Abrama,Gujarat,20.91064,70.36249,null,null,null,null,null,null
+Sampatchak,Bihar,25.5899,85.15719,null,null,null,null,null,null
+Mettupalayam-coimbatore,Tamil Nadu,11.07823,76.94098,null,null,null,null,null,null
+Sanctoria,West Bengal,23.70622,86.82803,null,null,null,null,null,null
+Farrukhabad,Uttar Pradesh,26.82696,79.99551,null,null,7.7,69.3,10.0,56.9
+Thrippunithura,Kerala,9.94995,76.34476,null,null,null,null,null,null
+Kharod,Gujarat,21.54736,73.00391,null,null,null,null,null,null
+Solur,Karnataka,13.07299,77.22414,null,null,null,null,null,null
+Beawar,Rajasthan,26.09348,74.3105,null,null,null,null,null,null
+Kulashekara,Mangalore,12.88413,74.88176,null,null,null,null,null,null
+Bhayandar East,Maharashtra,19.31666,72.85649,null,null,null,null,null,null
+Nungambakkam,Tamil Nadu,13.04205,80.2126,null,null,null,null,null,null
+Bargarh,Odisha,21.34252,83.6107,null,null,5.1,99.6,29.5,62.6
+Thuraiyur,Tamil Nadu,12.84686,78.97462,null,null,null,null,null,null
+Amroli,Gujarat,23.05369,72.5473,null,null,null,null,null,null
+Charkhi Dadri,Haryana,28.84588,76.27238,null,null,11.1,98.9,14.2,72.6
+Bulandshahr,Uttar Pradesh,28.08942,78.31682,null,null,5.1,83.5,17.0,52.0
+Shoranur,Kerala,10.7571,76.26953,null,null,null,null,null,null
+Warora,Maharashtra,20.23461,79.01276,null,null,null,null,null,null
+Sargasan,Gujarat,23.20541,72.62082,null,null,null,null,null,null
+Lamtaput,Odisha,18.59958,82.60204,null,null,null,null,null,null
+Kharar,Punjab,30.74572,76.65555,null,null,null,null,null,null
+Dehri On Sone,Bihar,24.90765,84.18459,null,null,null,null,null,null
+Borivali East,Maharashtra,18.39723,74.53996,null,null,null,null,null,null
+Vidisha,Madhya Pradesh,23.53,77.82001,null,null,5.9,90.6,7.5,38.5
+Palamu,Jharkhand,24.03748,84.06374,null,null,13.8,74.9,15.8,61.0
+Talod,Gujarat,23.06361,73.28609,null,null,null,null,null,null
+Podanur,Tamil Nadu,10.93433,76.99409,null,null,null,null,null,null
+Tarakeswar,West Bengal,22.87708,88.0189,null,null,null,null,null,null
+Vagator,Goa,15.59942,73.74573,null,null,null,null,null,null
+Thachottukavu,Kerala,8.55334,76.96216,null,null,null,null,null,null
+Kuchaman City,Gujarat,22.343,73.20078,null,null,null,null,null,null
+Maddur,Karnataka,12.59079,77.04573,null,null,null,null,null,null
+Sirsi,Karnataka,14.6181,74.83075,null,null,null,null,null,null
+Balasore,Odisha,21.63749,86.86348,null,null,null,null,null,null
+Kolkota,West Bengal,22.5447,88.38218,null,null,null,null,null,null
+Hiranagar,Jammu And Kashmir,32.47777,75.30791,null,null,null,null,null,null
+Neem Ka Thana,Rajasthan,27.74142,75.78078,null,null,null,null,null,null
+Varkala,Kerala,8.75367,76.70937,null,null,null,null,null,null
+Ahmedabad,Gj,23.03804,72.57706,null,null,null,null,null,null
+Kalpakancheri,Malappuram,10.92654,75.99726,null,null,null,null,null,null
+Jagraon,Punjab,30.80322,75.47652,null,null,null,null,null,null
+Kosamba,Gujarat,21.23564,72.85576,null,null,null,null,null,null
+Madinaguda,Telangana,17.49511,78.33699,null,null,null,null,null,null
+Vrindavan,Uttar Pradesh,27.57249,77.67852,null,null,null,null,null,null
+Varanasi,Sigra,25.30964,82.99126,null,null,null,null,null,null
+Aundh,Pune,18.56056,73.81181,null,null,null,null,null,null
+Balurghat,West Bengal,22.30629,87.30161,null,null,null,null,null,null
+Khekra,Uttar Pradesh,27.90545,77.74451,null,null,null,null,null,null
+Sambhal,Uttar Pradesh,28.46653,78.782,null,null,8.5,74.2,8.1,51.3
+Andheri East,Maharashtra,19.12252,72.88689,null,null,null,null,null,null
+Isapur,Uttar Pradesh,26.87819,80.91918,null,null,null,null,null,null
+Freeganj,Madhya Pradesh,23.17202,75.79475,null,null,null,null,null,null
+Kalyani,Nadia,22.97397,88.45598,null,null,null,null,null,null
+Malom Tuliyaima,Manipur,24.71719,93.94176,null,null,null,null,null,null
+Nacharam,Telangana,17.4328,78.55386,null,null,null,null,null,null
+Islampaty Nagaon,Assam,26.34745,92.66356,null,null,null,null,null,null
+Nallasopara,Maharashtra,19.41614,72.8219,null,null,null,null,null,null
+Goregaon (e),Mumbai,19.16647,72.85781,null,null,null,null,null,null
+South Goa,Goa,14.94289,74.0685,null,null,7.2,100.0,39.4,37.6
+Bhinmal,Rajasthan,24.99699,72.26329,null,null,null,null,null,null
+Mumbra,Thane,19.16293,73.02914,null,null,null,null,null,null
+Hyderabad,Andhra Pradesh,17.18558,78.66776,null,null,null,null,null,null
+Madurai,Tamil Nadu,10.02752,78.1742,null,null,8.7,100.0,43.8,48.0
+Aurangabad,Maharashtra,19.83619,75.18268,null,null,null,null,null,null
+Parola,Maharashtra,19.401,74.94463,null,null,null,null,null,null
+Chhatrapati Sambhajinagar,Maharashtra,19.39336,75.09508,null,null,null,null,null,null
+Tirunelveli Junction,Tamil Nadu,11.03447,76.97932,null,null,null,null,null,null
+Berhampore,West Bengal,24.02598,88.26053,null,null,null,null,null,null
+Deur Bk.--,Dhule,21.00797,75.55511,null,null,null,null,null,null
+Bhimavaram,Andhra Pradesh,15.99056,80.97846,null,null,null,null,null,null
+Beas,Punjab,31.51722,75.28853,null,null,null,null,null,null
+Baranagar,West Bengal,22.58629,88.35863,null,null,null,null,null,null
+Satna,Madhya Pradesh,23.95559,79.18578,null,null,9.1,85.5,8.8,57.3
+Serampore,West Bengal,22.75274,88.33841,null,null,null,null,null,null
+Satara,Maharashtra,18.55354,74.37336,null,null,null,null,null,null
+Anchal,Kollam,10.06484,76.62706,null,null,null,null,null,null
+Sangli,Maharashtra,16.83765,74.56252,null,null,null,null,null,null
+Kuttalam,Tamil Nadu,9.3546,77.91827,null,null,null,null,null,null
+Diamond Harbour,West Bengal,22.19766,88.19119,null,null,null,null,null,null
+Pondicherry,Puducherry,11.84006,79.69281,null,null,null,null,null,null
+Tenkasi,Tamil Nadu,10.58952,78.13074,null,null,null,null,null,null
+Jorhat,Assam,26.66683,93.55675,null,null,10.4,96.5,44.4,71.8
+Basaveshwaranagar,Karnataka,12.99794,77.54048,null,null,null,null,null,null
+Madhubani,Bihar,25.94384,85.57327,null,null,17.7,73.7,13.2,61.4
+Dhampur,Uttar Pradesh,27.15804,80.531,null,null,null,null,null,null
+Varanasi,U.p.,25.30593,82.99644,null,null,null,null,null,null
+Belgaum,Karnataka,15.54859,74.84293,null,null,5.5,97.5,24.2,52.9
+Gwalior,Madhya Pradesh,26.11268,78.15498,null,null,13.4,94.8,20.3,62.5
+Hazaribag,Jharkhand,24.00373,85.35826,null,null,null,null,null,null
+Undera,Gujarat,22.30808,73.15721,null,null,null,null,null,null
+Durgapur Abl Township,West Bengal,22.85448,88.75343,null,null,null,null,null,null
+Perinthalmanna,Kerala,11.01789,76.26477,null,null,null,null,null,null
+Padrauna Ahirauli Buzurg,Kushinagar,26.39049,80.31165,null,null,null,null,null,null
+Jind,Haryana,29.22519,76.40745,null,null,5.4,98.7,14.5,59.6
+Dhule,Maharashtra,20.90388,74.78178,null,null,null,null,null,null
+Bagru,Rajasthan,26.8116,75.57366,null,null,null,null,null,null
+Supa,Maharashtra,18.99561,75.74156,null,null,null,null,null,null
+Karimnagar,Telangana,18.25735,79.06059,null,null,10.0,98.4,82.4,61.1
+Sangrur,Punjab,30.25553,75.83581,null,null,12.3,94.7,36.2,52.6
+Basti,Uttar Pradesh,26.81818,82.50639,null,null,11.1,93.2,11.6,39.9
+Pollachi,Tamil Nadu,11.00393,77.35381,null,null,null,null,null,null
+Seoni,Madhya Pradesh,22.09273,79.54002,null,null,4.4,94.8,15.9,59.9
+Sirhind,Punjab,30.61792,75.59727,null,null,null,null,null,null
+Baraut,Uttar Pradesh,29.09924,77.25771,null,null,null,null,null,null
+Bihar Sharif,Bihar,25.18702,85.51478,null,null,null,null,null,null
+Bhosari,Maharashtra,19.2078,73.0954,null,null,null,null,null,null
+Khanna,Punjab,30.87443,75.96064,null,null,null,null,null,null
+Deoli,Rajasthan,25.75742,75.37213,null,null,null,null,null,null
+Jalandhar City,Punjab,31.30554,75.58725,null,null,null,null,null,null
+Farrukhabad,Nagladeena Fatehgarh,28.98162,77.70863,null,null,null,null,null,null
+Vishrantwadi,Pune,18.57013,73.88232,null,null,null,null,null,null
+Sanjay Pally,West Bengal,22.31256,88.66286,null,null,null,null,null,null
+Sultanpur Lodhi,Punjab,31.21917,75.19599,null,null,null,null,null,null
+Palani,Tamil Nadu,10.45464,77.51913,null,null,null,null,null,null
+Sigra,Uttar Pradesh,27.14713,79.49968,null,null,null,null,null,null
+Kavital,Karnataka,12.88105,74.85313,null,null,null,null,null,null
+Ponda,Goa,15.39225,74.00517,null,null,null,null,null,null
+Wardha,Maharashtra,20.71756,78.57705,null,null,null,null,null,null
+Meerut Cantt,Uttar Pradesh,28.06602,77.87094,null,null,null,null,null,null
+Aragonda,Andhra Pradesh,13.28271,78.95566,null,null,null,null,null,null
+Nerul,Navi-mumbai,19.03022,73.02251,null,null,null,null,null,null
+Sahibzada Ajit Singh Nagar,Punjab,31.10969,76.3452,null,null,4.7,97.4,34.6,59.5
+Visavadar,Gujarat,21.38325,70.66792,null,null,null,null,null,null
+Alleppey,Kerala,9.79613,76.30229,null,null,null,null,null,null
+Niwana,Rajasthan,27.34734,74.26019,null,null,null,null,null,null
+Panchkula,Chandigarh,30.67765,76.86449,null,null,null,null,null,null
+Lucknow,Gomti Nagar,26.80488,81.00986,null,null,null,null,null,null
+Bhogpur,Punjab,31.81935,75.20557,null,null,null,null,null,null
+Navalgund,Karnataka,12.83087,75.4132,null,null,null,null,null,null
+Pandikkad,Malappuram District,10.99462,76.43854,null,null,null,null,null,null
+Ulwe,Maharashtra,18.96983,73.02262,null,null,null,null,null,null
+Kovvur,West Godavari,17.01421,81.73264,null,null,null,null,null,null
+Lakhanpur,Uttar Pradesh,26.49226,80.28403,null,null,null,null,null,null
+Kompally,Hyderabad,17.52136,78.48271,null,null,null,null,null,null
+Champhai,Mizoram,23.48079,93.30976,null,null,11.2,96.7,6.6,25.7
+Thoraipakkam,Tamil Nadu,13.10904,80.24194,null,null,null,null,null,null
+Bakloh,Himachal Pradesh,32.11097,76.55696,null,null,null,null,null,null
+Betageri,Karnataka,15.43312,75.63542,null,null,null,null,null,null
+Mohali,Punjab Region,30.73477,76.71638,null,null,null,null,null,null
+Siddipet,Telangana,17.54645,78.58405,null,null,9.6,99.7,69.0,56.7
+Airoli,Maharashtra,19.15592,72.99802,null,null,null,null,null,null
+Ananthapur,Andhra Pradesh,14.68055,77.60312,null,null,null,null,null,null
+Sheikhpura,Bihar,25.60555,85.08899,null,null,3.2,89.2,14.6,69.5
+Bahalgarh,Haryana,28.69354,76.92892,null,null,null,null,null,null
+Kanmajra,Haryana,28.20238,76.61305,null,null,null,null,null,null
+Pimple Saudagar,Maharashtra,18.59376,73.79262,null,null,null,null,null,null
+Mallikarjunpet,Andhra Pradesh,16.75534,81.68323,null,null,null,null,null,null
+Bhopal,M.p.,23.21413,77.4344,null,null,null,null,null,null
+Nalasopara East,Maharashtra,16.68633,74.46506,null,null,null,null,null,null
+Faizabad,Uttar Pradesh,26.74384,82.06557,null,null,25.9,89.1,21.2,52.3
+Indore,Madhya,22.71202,75.90613,null,null,null,null,null,null
+Ambur,Tamil Nadu,12.77742,78.71025,null,null,null,null,null,null
+Salem,Tamil Nadu,11.71314,78.26229,null,null,5.6,100.0,43.0,46.3
+Bhubaneshwar,Odisha,20.26822,85.83904,null,null,null,null,null,null
+Visakhapatnam,Andhra Pradesh,17.48418,82.87067,null,null,4.8,95.3,26.5,58.0
+Patiala,Punjab,30.33656,76.34512,null,null,7.5,97.3,48.1,65.3
+Chinchwad,Maharashtra,18.28194,73.9432,null,null,null,null,null,null
+Rewari,Haryana,28.19296,76.67177,null,null,8.5,98.7,26.0,61.8
+Thiruvalla,Kerala,9.34283,76.64131,null,null,null,null,null,null
+Anantapur,Andhra Pradesh,14.52675,77.85722,null,null,6.4,94.7,22.2,50.5
+Jeedimetla,Telangana,17.51661,78.46084,null,null,null,null,null,null
+Hanumangarh,Rajasthan,28.2429,75.08039,null,null,6.1,94.9,16.0,60.3
+Pattom,Kerala,10.00668,76.31271,null,null,null,null,null,null
+Muzaffarnagar,Uttar Pradesh,28.641,78.50575,null,null,5.0,87.0,22.4,46.0
+Nagar,Haryana,25.1573,75.85303,null,null,null,null,null,null
+Pulikkal,Malappuram,8.56954,76.87941,null,null,null,null,null,null
+Sonipat,Haryana,28.97451,77.04642,null,null,4.8,99.7,16.7,53.3
+Mysuru,Karnataka,12.31656,76.63947,null,null,null,null,null,null
+Ongole,Andhra Pradesh,15.90245,79.71539,null,null,null,null,null,null
+Sindhanur,Karnataka,15.15414,76.93088,null,null,null,null,null,null
+Saharanpur,Uttar Pradesh,28.83213,78.13544,null,null,4.3,81.7,15.4,41.4
+Rugnathpur,Khambha,22.31276,73.22314,null,null,null,null,null,null
+Sullia,Karnataka,15.43414,76.38058,null,null,null,null,null,null
+Quilon,Kerala,8.92801,76.9072,null,null,null,null,null,null
+Pudukkottai,Tamilnadu,10.37911,78.80988,null,null,null,null,null,null
+Sri Ganganagar,Rajasthan,29.41462,73.96789,null,null,null,null,null,null
+Kalamboli,Maharashtra,19.03926,73.10094,null,null,null,null,null,null
+Berhampur,Odisha,19.59489,84.87092,null,null,null,null,null,null
+Vellore,Tamil Nadu,12.69329,78.90286,null,null,6.7,99.5,42.4,50.6
+Ghatlodiya,Gujarat,23.06631,72.63388,null,null,null,null,null,null
+Kalaburagi,Karnataka,17.31522,76.85193,null,null,null,null,null,null
+Greenfields,Faridabad,28.4623,77.30214,null,null,null,null,null,null
+Nalbari,Assam,26.44166,91.43812,null,null,13.2,91.8,38.7,66.4
+Rs Puram,Tamil Nadu,11.01471,76.94879,null,null,null,null,null,null
+Jagadhri,Haryana,30.15741,77.30255,null,null,null,null,null,null
+Kuttippuram,Kerala,11.25525,75.94046,null,null,null,null,null,null
+Sakri,Bihar,26.21977,86.07963,null,null,null,null,null,null
+Anjar,"Kutch, Gujarat",23.11068,70.03458,null,null,null,null,null,null
+Bahjoi,Uttar Pradesh,28.39059,78.62383,null,null,null,null,null,null
+Palai,Kerala,9.67965,76.64394,null,null,null,null,null,null
+Latur,Maharashtra,18.60041,76.73827,null,null,null,null,null,null
+Tirumangalam,Tamil Nadu,11.00172,77.0302,null,null,null,null,null,null
+Aminjikarai Chennai,Tamil Nadu,13.06907,80.22568,null,null,null,null,null,null
+Naugarh,Uttar Pradesh,26.77685,83.05354,null,null,null,null,null,null
+Pondicherry Bazaar,Pondicherry,11.93252,79.82797,null,null,null,null,null,null
+Perumbavoor,Kerala,10.2693,76.52735,null,null,null,null,null,null
+Puthur,Kerala,10.74527,76.81611,null,null,null,null,null,null
+Gutkar,Himachal Pradesh,31.64286,76.94508,null,null,null,null,null,null
+Bhubaneswar,Khordha,20.37248,85.83109,null,null,null,null,null,null
+Balotra,Rajasthan,25.83187,72.24306,null,null,null,null,null,null
+Kelambakkam,Chennai,12.7867,80.23318,null,null,null,null,null,null
+Bidri,Maharashtra,16.7006,74.23825,null,null,null,null,null,null
+Coochbehar,West Bengal,26.31968,89.45442,null,null,null,null,null,null
+Bahadurgarh,Jhajjar,28.69037,76.94157,null,null,null,null,null,null
+Bhatinda,Punjab,30.36787,75.00381,null,null,null,null,null,null
+Bidhannagar,West Bengal,22.58291,88.40964,null,null,null,null,null,null
+Ranawas,Rajasthan,24.92455,76.29251,null,null,null,null,null,null
+Kishanganj,Bihar,26.10265,87.94313,null,null,21.7,54.6,12.1,65.1
+Bengaluru East,Karnataka,13.02024,77.72069,null,null,null,null,null,null
+Garur,Uttarakhand,32.00858,76.65371,null,null,null,null,null,null
+Kolkata,Sector 1 Salt Lake City Sector 1,22.59617,88.40822,null,null,null,null,null,null
+Shilaj,Gujarat,23.04855,72.52472,null,null,null,null,null,null
+Madanapalle,Andhra Pradesh,13.56034,78.49866,null,null,null,null,null,null
+Bhawanipatna,Odisha,19.91174,83.17174,null,null,null,null,null,null
+Kalamboli Node,Maharashtra,19.0392,73.09135,null,null,null,null,null,null
+Sankarankovil,Tamil Nadu,8.86641,77.83124,null,null,null,null,null,null
+Wagholi,Maharashtra,18.58685,73.98891,null,null,null,null,null,null
+Mahe,U.t Of Puducherry,11.72012,75.53813,null,null,null,null,null,null
+Kasaragod,Kerala,12.50955,74.99374,null,null,12.5,100.0,28.8,35.4
+Yerramukkapalli,Andhra Pradesh,14.39744,78.38196,null,null,null,null,null,null
+Sujawalpur,Bihar,25.96564,85.56439,null,null,null,null,null,null
+Ratlam,Madhya Pradesh,23.33353,75.04483,null,null,7.0,95.2,12.3,59.5
+Korattur,Tamil Nadu,13.10915,80.18289,null,null,null,null,null,null
+Jabalpur,Central India,23.17617,79.93145,null,null,null,null,null,null
+Laxmi Nagar,Delhi,28.643,77.28151,null,null,null,null,null,null
+Raigarh,Chhattisgarh,21.88936,83.40857,null,null,10.3,87.7,18.9,62.2
+Seppa,Arunachal Pradesh,27.35304,93.04319,null,null,null,null,null,null
+Nimrana,Rajasthan,27.97547,76.39139,null,null,null,null,null,null
+Berhampur,Ganjam,19.31567,84.79056,null,null,null,null,null,null
+Atmakuru,Andhra Pradesh,16.43426,80.56652,null,null,null,null,null,null
+Santalpur,Gujarat,22.7213,74.32961,null,null,null,null,null,null
+Dhulian,West Bengal,24.66238,87.94431,null,null,null,null,null,null
+Santacruz (w),Mumbai,19.07802,72.83745,null,null,null,null,null,null
+Madhepura,Bihar,25.91493,86.78669,null,null,11.1,75.0,3.0,65.7
+Sursand,Bihar,26.64996,85.71866,null,null,null,null,null,null
+Khajaguda,Telangana,17.41809,78.36563,null,null,null,null,null,null
+Kundli,Delhi Ncr,28.91023,77.12168,null,null,null,null,null,null
+Chilakaluripet,Andhra Pradesh,16.0929,80.16814,null,null,null,null,null,null
+Nerul,Maharashtra,19.03907,73.01622,null,null,null,null,null,null
+Wayanad,Kerala,11.61429,76.0789,null,null,5.6,100.0,25.7,26.9
+Ponnamaravathi West,Tamil Nadu,10.27705,78.54311,null,null,null,null,null,null
+Sultan Bathery,Kerala,11.66346,76.2538,null,null,null,null,null,null
+Kundrathur,Tamil Nadu,12.9976,80.09888,null,null,null,null,null,null
+Nandyal,Andhra Pradesh,15.83318,78.04861,null,null,null,null,null,null
+Nagpur,Maharashtra,20.74133,78.35026,null,null,null,null,null,null
+Anna Nagar,Tamil Nadu,13.08207,80.21636,null,null,null,null,null,null
+Delhi,Nct Of Delhi,28.66973,77.30891,null,null,null,null,null,null
+Mysore,Karnataka,12.4391,76.25317,null,null,5.6,100.0,43.7,48.0
+Siliguri,West Bengal,26.39029,88.37933,null,null,null,null,null,null
+Silchar,Assam,24.80072,92.79738,null,null,null,null,null,null
+Virar West,Maharashtra,19.45625,72.80458,null,null,null,null,null,null
+Kollam,Kerala,8.96277,76.62147,null,null,11.9,100.0,49.1,36.0
+Borgaon,Maharashtra,18.34387,74.02951,null,null,null,null,null,null
+Edarikode,Kerala,9.48871,76.33327,null,null,null,null,null,null
+Vadapalani,Tamil Nadu,13.06865,80.20555,null,null,null,null,null,null
+Pimpri-chinchwad,Maharashtra,18.90566,74.47129,null,null,null,null,null,null
+Amreli,Gujarat,21.60312,71.2175,null,null,9.5,90.1,18.7,50.0
+Tezpur,Assam,26.6354,92.79611,null,null,null,null,null,null
+Jalna,Maharashtra,19.47026,75.73438,null,null,null,null,null,null
+Parbhani,New Mondha,19.26148,76.77135,null,null,null,null,null,null
+Dombivli East,Thane,18.3682,73.4864,null,null,null,null,null,null
+Navsari,Gujarat,21.20198,72.73301,null,null,6.5,99.3,26.5,68.7
+Rampura Phul,Punjab,31.33434,75.58366,null,null,null,null,null,null
+Hansi,Haryana,29.34452,76.04798,null,null,null,null,null,null
+Airoli,Navi Mumbai,18.40424,76.54736,null,null,null,null,null,null
+Mandvi,Kutch,22.83615,69.36057,null,null,null,null,null,null
+Hubli,Dharwad,15.35509,75.14035,null,null,null,null,null,null
+Kalwa,Maharashtra,19.19215,72.98706,null,null,null,null,null,null
+Tinsukia,Assam,27.37942,95.21627,null,null,11.0,82.6,26.5,72.8
+Anuppur,Madhya Pradesh,23.16062,79.9286,null,null,8.2,84.8,13.7,52.6
+Srinagar,Jammu & Kashmir,29.26428,79.20182,null,null,4.7,99.2,59.4,51.7
+Channapatna,"Ramanagara District, Karnataka",12.6299,77.11516,null,null,null,null,null,null
+Puducherry,Puducherry,11.95377,79.80246,null,null,11.4,99.5,32.1,56.8
+Thiruvanathapuram,Kerala,8.51604,76.92729,null,null,null,null,null,null
+Aranthangi,Tamil Nadu,11.66118,78.19203,null,null,null,null,null,null
+Margao,Goa,15.27791,73.95915,null,null,null,null,null,null
+Manamelkudi,Tamil Nadu,9.92367,78.14359,null,null,null,null,null,null
+Salar,West Bengal,26.7089,88.43021,null,null,null,null,null,null
+Nimtita,West Bengal,22.59468,88.35703,null,null,null,null,null,null
+Rourkela,Orissa,22.22473,84.82509,null,null,null,null,null,null
+New Delhi,Nct,28.55415,77.2286,null,null,null,null,null,null
+Auraiya,Uttar Pradesh,27.93519,80.7881,null,null,18.7,90.1,8.0,39.1
+Rudrapur,Uttarakhand,28.77564,79.40196,null,null,null,null,null,null
+Dholpur,Rajasthan,26.15689,75.7784,null,null,null,null,null,null
+Badlapur West,Maharashtra,19.16813,73.237,null,null,null,null,null,null
+Bhuj,Gujarat,23.23895,69.66022,null,null,null,null,null,null
+Bhuldhana,Maharashtra,20.53613,76.17349,null,null,null,null,null,null
+Kudasan,Gujarat,23.17927,72.63268,null,null,null,null,null,null
+Ambikapur,Chhattisgarh,22.57645,82.75615,null,null,null,null,null,null
+Nathdwara,Rajasthan,24.73916,73.74356,null,null,null,null,null,null
+Allinagaram,Tamil Nadu,10.02298,77.47986,null,null,null,null,null,null
+Dadri,Uttar Pradesh,26.90889,80.25675,null,null,null,null,null,null
+Uchgaon,Maharashtra,19.99143,73.73488,null,null,null,null,null,null
+Dehradun City,Uttarakhand,30.32414,78.03335,null,null,null,null,null,null
+Kolathur,Tamil Nadu,13.12034,80.21812,null,null,null,null,null,null
+Chhatarpur,Madhya Pradesh,24.95559,79.17622,null,null,6.4,85.2,11.0,63.5
+Punit Nagar Palghar,Maharashtra,19.70023,72.77106,null,null,null,null,null,null
+Kukatpally,Hyderabad,17.50347,78.39264,null,null,null,null,null,null
+Kopargaon,Maharashtra,19.88455,74.47368,null,null,null,null,null,null
+Rasra,Uttar Pradesh,25.41281,78.56603,null,null,null,null,null,null
+Rajamahendravaram,Andhra Pradesh,16.22372,80.53605,null,null,null,null,null,null
+Tilak Nagar,Delhi,28.67178,77.11095,null,null,null,null,null,null
+Bhildar,Maharashtra,21.35975,80.38728,null,null,null,null,null,null
+Changanacherry,Kottayam,9.44936,76.54367,null,null,null,null,null,null
+Poolacode,Kerala,11.29586,75.94762,null,null,null,null,null,null
+Gautam Buddha Nagar,Uttar Pradesh,28.59591,77.33368,null,null,5.3,86.6,19.8,59.4
+Kot Kapura,Punjab,30.58579,74.82133,null,null,null,null,null,null
+Ravet,Pimpri-chinchwad,18.65708,73.75439,null,null,null,null,null,null
+Jehangirabad,Madhya Pradesh,24.64725,77.33115,null,null,null,null,null,null
+Nilanga,Latur,18.12901,76.75043,null,null,null,null,null,null
+Porbandar,Gujarat,21.52364,70.11898,null,null,7.7,100.0,19.2,47.6
+Jabalpur,M.p.,23.17443,79.94684,null,null,null,null,null,null
+Kodinar,Gujarat,20.83496,70.68169,null,null,null,null,null,null
+Sehore,Mp,23.19807,77.0832,null,null,null,null,null,null
+Lashkar,Madhya Pradesh,26.23659,78.21019,null,null,null,null,null,null
+Cheruvannur,Kerala,8.61998,76.88899,null,null,null,null,null,null
+Theni,Tamil Nadu,10.0062,77.55371,null,null,7.3,100.0,43.7,41.2
+Nullipady,Kerala,12.51159,74.99824,null,null,null,null,null,null
+Bikramganj,Bihar,25.5602,84.64941,null,null,null,null,null,null
+Mahalung,Malshiras,21.54075,74.47292,null,null,null,null,null,null
+New Town,Kolkata,22.49322,88.40028,null,null,null,null,null,null
+Padadhari,Gujarat,22.94701,73.33604,null,null,null,null,null,null
+Erode,Tamilnadu,11.38358,77.54471,null,null,null,null,null,null
+Gondia,Maharashtra,21.45293,80.19604,null,null,null,null,null,null
+Utran,Gujarat,21.22935,72.86612,null,null,null,null,null,null
+Prayagraj,Up,25.45439,81.85712,null,null,null,null,null,null
+Chirala,Andhra Pradesh,15.8251,80.35249,null,null,null,null,null,null
+Chevella,Telangana,17.32617,78.60645,null,null,null,null,null,null
+Chethalloor,Kerala,10.94073,76.33772,null,null,null,null,null,null
+Meyyanur,Tamil Nadu,11.67583,78.12973,null,null,null,null,null,null
+Pandharpur,Maharashtra,17.66869,75.31569,null,null,null,null,null,null
+Sadabad,Uttar Pradesh,27.55901,80.69617,null,null,null,null,null,null
+Kandivali (e),Mumbai,19.19947,72.85643,null,null,null,null,null,null
+Karimpanapalam,Kerala,11.58614,75.59422,null,null,null,null,null,null
+Nattakom,Kerala,9.55789,76.51287,null,null,null,null,null,null
+Mallarpur,"Birbhum, West Bengal",24.0761,87.73025,null,null,null,null,null,null
+Tosham,Haryana,28.68056,76.62254,null,null,null,null,null,null
+Vasai West,Thane,19.35,72.8,null,null,null,null,null,null
+Mancherial,Telangana,18.87146,79.44345,null,null,11.3,90.1,67.9,56.7
+Pulwama,Jammu And Kashmir,33.87842,74.8998,null,null,null,null,null,null
+Dahisar West,Mumbai,19.25485,72.85461,null,null,null,null,null,null
+Dabwali Mandi,"Sirsa, Haryana",29.96349,74.70631,null,null,null,null,null,null
+Parbhani,Maharashtra,19.26073,76.77614,null,null,null,null,null,null
+Ambawadi,Gujarat,23.02708,72.54419,null,null,null,null,null,null
+Baripada,Odisha,21.93395,86.72752,null,null,null,null,null,null
+Nizamabad,Telangana,18.43274,78.44583,null,null,9.4,97.3,66.7,57.0
+Paddar,Jammu And Kashmir,33.26791,76.17216,null,null,null,null,null,null
+Raysan,Gujarat,23.16328,72.63675,null,null,null,null,null,null
+Salem,Tamilnadu,11.62525,78.14511,null,null,null,null,null,null
+Mira Road,Maharashtra,17.66367,75.91805,null,null,null,null,null,null
+Moradabad,Uttar Prades H,28.8782,78.74002,null,null,null,null,null,null
+Puttur Town,Andhra Pradesh,13.44059,79.55028,null,null,null,null,null,null
+Hinjewadi,Maharashtra,18.5915,73.74355,null,null,null,null,null,null
+Shamshabad,Telangana,17.35133,78.38922,null,null,null,null,null,null
+Roadpali,Maharashtra,19.03935,73.09607,null,null,null,null,null,null
+Patna,Bihar,25.60452,85.12772,null,null,15.0,89.1,22.0,67.1
+Amritsar,Punjab,31.37598,74.98194,null,null,9.7,95.9,43.3,52.1
+Lucknow,Uttar Pradesh,26.15211,80.51227,null,null,15.7,91.3,36.7,55.8
+Kelambakkam,Tamil Nadu,12.79975,80.2154,null,null,null,null,null,null
+Jabalpur,Madhya Pradesh,23.20118,79.40204,null,null,2.9,94.7,7.2,48.9
+Rajkot,Gujarat,22.21941,70.95243,null,null,6.2,99.3,24.7,60.5
+Udaipur,Rajasthan,25.06602,73.91136,null,null,4.4,96.1,7.3,60.5
+"Kalyan, Bhandup, Borivali (e), Dadar (w), Ghatkopar, Panvel, Thane, Vashi, Virar",Maharashtra,17.65792,75.9055,null,null,null,null,null,null
+Panvel,Maharashtra,18.98964,73.10372,null,null,null,null,null,null
+Patan,Gujarat,23.85122,72.1282,null,null,11.2,98.6,18.9,59.8
+Karur,Tamil Nadu,11.10265,78.27215,null,null,7.5,100.0,47.8,65.0
+Nirman Vihar,Delhi,28.61298,77.28862,null,null,null,null,null,null
+Varthur,Karnataka,12.94118,77.74628,null,null,null,null,null,null
+Maninagar,Ahmedabad,21.184,72.81389,null,null,null,null,null,null
+Satellite,Gujarat,22.11462,72.66545,null,null,null,null,null,null
+Kozhikode,Kerala,11.2777,75.81066,null,null,9.6,100.0,45.7,29.8
+Erode,Erode,11.325,77.68226,null,null,null,null,null,null
+Dahegam,Gujarat,23.07058,72.5385,null,null,null,null,null,null
+Barpeta,Assam,26.3244,90.98489,null,null,12.3,87.6,12.7,64.8
+Turuvekere,Karnataka,13.04797,77.49973,null,null,null,null,null,null
+Gaighat,Uttar Pradesh,25.28736,83.00149,null,null,null,null,null,null
+Kumbakonam,Tamil Nadu,10.96075,79.38731,null,null,null,null,null,null
+Arcot,Tamil Nadu,10.35194,77.96632,null,null,null,null,null,null
+Gharunda,Haryana,30.4758,77.12207,null,null,null,null,null,null
+Vashi,Navi Mumbai,19.05909,72.94746,null,null,null,null,null,null
+Dona Paula,Goa,15.45999,73.81332,null,null,null,null,null,null
+Bela Town,Uttar Pradesh,25.91967,81.99117,null,null,null,null,null,null
+Jalandhar Cant,Punjab,31.31154,75.62969,null,null,null,null,null,null
+Shibpur,Howrah,22.56685,88.32344,null,null,null,null,null,null
+Chatrapati Sambhaji Nagar,Maharashtra,19.87787,75.34477,null,null,null,null,null,null
+Hosur,Tamil Nadu,12.54747,77.81628,null,null,null,null,null,null
+Pakho Kaichian,Punjab,30.90617,75.89505,null,null,null,null,null,null
+Arvi,Maharashtra,19.89997,75.56439,null,null,null,null,null,null
+Nikol,Ahmedabad,23.04794,72.66566,null,null,null,null,null,null
+Perintalmanna,Malappuram,10.97964,76.22601,null,null,null,null,null,null
+Sri Muktsar Sahib,Punjab,30.58915,74.75785,null,null,null,null,null,null
+Modasa,Gujarat,22.81606,70.83313,null,null,null,null,null,null
+Kamshet,Maharashtra,18.70435,73.68237,null,null,null,null,null,null
+Ghazipur,Uttar Pradesh,25.57449,83.55695,null,null,13.4,88.3,10.9,45.7
+Pune,Chikhali,18.68095,73.80809,null,null,null,null,null,null
+Cuddalore,Tamil Nadu,11.75801,79.7581,null,null,9.2,99.2,51.4,58.6
+Rupnagar,Punjab,31.05355,76.27994,null,null,10.8,97.8,39.5,64.5
+Miraj,Maharashtra,16.83326,74.63644,null,null,null,null,null,null
+Jhalawar,Rajasthan,25.49533,75.49289,null,null,6.8,98.3,8.6,51.5
+Kolar,Karnataka,13.09061,78.03434,null,null,5.1,99.6,42.1,43.6
+Ahmedgarh,Punjab,30.81235,75.17026,null,null,null,null,null,null
+Kakinada,Andhra Pradesh,16.97574,82.23306,null,null,null,null,null,null
+Bangarapet,Karnataka,12.99245,78.17808,null,null,null,null,null,null
+Ramanattukara,Kerala,10.54618,76.21454,null,null,null,null,null,null
+Belgum,Karnataka,15.85536,74.51161,null,null,null,null,null,null
+Tirur,Kerala,10.51445,76.202,null,null,null,null,null,null
+Patan,Chhattisgarh,21.53497,82.16518,null,null,null,null,null,null
+Krishnagiri,Tamil Nadu,12.43417,78.21291,null,null,4.9,99.6,31.9,44.0
+Mokokchung,Nagaland,26.32493,94.52584,null,null,6.4,51.5,3.8,25.0
+Pandalam,Kerala,9.22523,76.6772,null,null,null,null,null,null
+Nilambur,Kerala,11.27995,76.22862,null,null,null,null,null,null
+Kadugodi,Karnataka,13.00579,77.75685,null,null,null,null,null,null
+Mirzapur-cum-vindhyachal,Uttar Pradesh,25.59233,83.00092,null,null,null,null,null,null
+Naharlagun,Arunachal Pradesh,27.10401,93.69106,null,null,null,null,null,null
+Patila,Jharkhand,23.44176,84.68779,null,null,null,null,null,null
+Kakkanad,Kerala,10.01068,76.34308,null,null,null,null,null,null
+Vardhaman Manik Chowk,Ahmednagar,17.30869,76.64063,null,null,null,null,null,null
+Kyatasandra,Karnataka,13.31427,77.14401,null,null,null,null,null,null
+Yamuna Nagar,Haryana,30.14052,77.28754,null,null,null,null,null,null
+Jaipur Division,Rajasthan,26.85648,75.79723,null,null,null,null,null,null
+Chehari,Uttar Pradesh,27.14181,83.5654,null,null,null,null,null,null
+Mira Bhayandar,Maharashtra,19.28144,72.86428,null,null,null,null,null,null
+Delhi,Haryana,28.98119,77.01881,null,null,null,null,null,null
+Chakghat,Madhya Pradesh,24.92235,81.84467,null,null,null,null,null,null
+Banki,Odisha,21.76439,85.97333,null,null,null,null,null,null
+Paota - Jodhpur,Rajasthan,26.26507,73.04356,null,null,null,null,null,null
+Sawangi,Maharashtra,20.71542,78.57306,null,null,null,null,null,null
+Kishangarh,Ajmer,26.49524,74.70662,null,null,null,null,null,null
+Gachibowli,Telangana,17.40073,78.41313,null,null,null,null,null,null
+Munger,Bihar,25.37808,86.48476,null,null,10.3,93.2,21.8,71.4
+Malviya Nagar,Delhi,28.5372,77.21496,null,null,null,null,null,null
+Kondapur,Hyderabad,17.49514,78.33925,null,null,null,null,null,null
+Chaluvayal,"Pallikulam, Post Chirakkal, Kannur District, Kerala",11.9593,75.39476,null,null,null,null,null,null
+Cuddalore,Tamilnadu,8.80169,78.14188,null,null,null,null,null,null
+Kabilpore,Gujarat,20.94648,72.96516,null,null,null,null,null,null
+Kharghar,Navi Mumbai,19.04815,73.06505,null,null,null,null,null,null
+Thiruvanmiyur,Chennai,12.98615,80.26141,null,null,null,null,null,null
+Rajpura Town,Punjab,30.47909,76.5842,null,null,null,null,null,null
+Khalilabad,Uttar Pradesh,28.63073,77.42651,null,null,null,null,null,null
+Siddhpur,Gujarat,23.92074,72.36668,null,null,null,null,null,null
+Rajarhat,West Bengal,22.45447,88.3364,null,null,null,null,null,null
+Raiganj,West Bengal,25.61227,88.13391,null,null,null,null,null,null
+Kotkapura,Punjab,30.40314,74.88087,null,null,null,null,null,null
+Vallabh Vidyanagar,Gujarat,22.54825,72.9234,null,null,null,null,null,null
+Bettiah,West Champaran,26.79676,84.49504,null,null,null,null,null,null
+Changanassery,Kerala,9.44974,76.54451,null,null,null,null,null,null
+Kalyan (east),Maharashtra,19.2244,73.14349,null,null,null,null,null,null
+Gurgaon,Haryana,28.51327,76.96521,null,null,7.8,96.7,18.6,67.5
+Mumbai,Maharashtra,19.10602,73.04534,null,null,null,null,null,null
+Guwahati,Assam,26.15277,91.78963,null,null,null,null,null,null
+Unnao,Uttar Pradesh,26.70915,80.71267,null,null,19.1,80.8,18.3,48.9
+Pimpri-chinchwad,Pune,18.56434,73.7746,null,null,null,null,null,null
+Gandhidham,Gujarat,23.06639,71.32687,null,null,null,null,null,null
+Alwar,Rajasthan,27.49364,76.31307,null,null,12.0,91.3,8.8,53.2
+Pusegaon,"Satara District, Maharashtra",16.85173,74.57962,null,null,null,null,null,null
+Raipur,Chhattisgarh,21.4423,81.53086,null,null,6.1,90.7,24.3,59.1
+Delhi,Delhi,28.51276,77.16328,null,null,null,null,null,null
+Vizianagaram,Andhra Pradesh,18.06348,83.39745,null,null,6.7,99.0,41.3,64.0
+Urmar Tanda,Punjab,30.43526,75.27659,null,null,null,null,null,null
+Kolhapur,Maharashtra,16.98542,74.33755,null,null,null,null,null,null
+Hapur,Uttar Pradesh,27.11139,78.29339,null,null,4.8,83.3,16.5,50.6
+Gandhinagar,Gujarat,23.15516,72.66376,null,null,18.5,97.8,32.7,68.8
+Chandigarh,Chandigarh,30.54121,76.84943,null,null,6.9,96.9,31.3,60.3
+Pathankot,Sarna,32.26448,75.59262,null,null,null,null,null,null
+Gulbarga,Karnataka,17.44086,76.96786,null,null,12.6,88.7,22.7,56.0
+Achara,Uttar Pradesh,29.28822,77.47289,null,null,null,null,null,null
+Kodungallur,Thrissur District,10.23437,76.19031,null,null,null,null,null,null
+Kattappana,Kerala,9.74699,77.10979,null,null,null,null,null,null
+Mathura,Uttar Pradesh,27.71054,77.77295,null,null,12.9,79.5,15.7,63.0
+Garhwa,Jharkhand,24.15582,83.79984,null,null,12.3,84.0,10.2,62.7
+Thanjavur,Tamil Nadu,10.94536,79.18558,null,null,9.5,100.0,51.4,59.0
+Umreth,Gujarat,23.24516,72.49771,null,null,null,null,null,null
+Bellary,Karnataka,14.71779,76.55568,null,null,5.6,95.7,29.1,58.1
+Wankaner,Gujarat,22.70986,70.89439,null,null,null,null,null,null
+Jalpaiguri,West Bengal,25.78368,88.35967,null,null,4.0,95.8,28.7,71.4
+Karimganj,Assam,24.86763,92.36707,null,null,8.6,76.4,7.0,52.0
+Chengalpattu,Tamil Nadu,12.67201,80.00083,null,null,null,null,null,null
+Talwandi Sabo,Punjab,32.27614,75.6948,null,null,null,null,null,null
+Rajgarh,Sirmaur,22.78149,83.49554,null,null,null,null,null,null
+Hyderabad,Ts,17.42281,78.43675,null,null,null,null,null,null
+Begusarai,Bihar,25.15865,85.76978,null,null,16.0,86.0,6.3,62.9
+Bathinda,Punjab,29.29443,74.86373,null,null,17.7,93.1,29.5,59.7
+Chalisgaon,Maharashtra,19.84417,75.90883,null,null,null,null,null,null
+Tamolia,Jharkhand,22.80938,86.20259,null,null,null,null,null,null
+Dakha,Punjab,31.33474,75.55998,null,null,null,null,null,null
+Ulliyeri,Kerala,11.43523,75.7748,null,null,null,null,null,null
+Warangal,Telangana,17.98972,79.57182,null,null,null,null,null,null
+Tambaram,Chennai,12.97742,80.18602,null,null,null,null,null,null
+Siwana,Barmer,25.6518,72.42523,null,null,null,null,null,null
+Dum Dum Cantonment,West Bengal,22.84342,88.381,null,null,null,null,null,null
+Ghansawangi,Maharashtra,19.06231,72.92328,null,null,null,null,null,null
+Nanded,Nanded,18.61864,73.80038,null,null,null,null,null,null
+Belapur,Maharashtra,19.03645,73.01011,null,null,null,null,null,null
+Chapra,Bihar,25.78176,84.74767,null,null,null,null,null,null
+Ramapuram,Tamil Nadu,13.04768,80.18515,null,null,null,null,null,null
+Jia Kullu,Himachal Pradesh,31.89525,77.14989,null,null,null,null,null,null
+Shimla,Himachal Pradesh,31.20079,77.14693,null,null,3.8,92.2,12.9,46.5
+Hyderabad,Chhattisgarh,17.42469,78.43315,null,null,null,null,null,null
+Haldwani,Uttaranchal,29.22898,79.53232,null,null,null,null,null,null
+Khajipeta,Andhra Pradesh,17.72396,83.31747,null,null,null,null,null,null
+Dahod,Gujarat,23.22644,73.75664,null,null,null,null,null,null
+Colva,Goa,15.27852,73.91936,null,null,null,null,null,null
+Bhiwadi,Rajasthan,27.90944,76.762,null,null,null,null,null,null
+Ropar,Punjab,31.17013,76.4854,null,null,null,null,null,null
+Vaniyamkulam,Kerala,10.78285,76.32681,null,null,null,null,null,null
+Balrampur,Uttar Pradesh,27.33261,80.73478,null,null,22.3,69.7,5.3,53.7
+Nava Naroda,Ahmedabad,23.04092,72.67084,null,null,null,null,null,null
+Wai,Maharashtra,17.9488,73.88458,null,null,null,null,null,null
+Behala,West Bengal,22.50018,88.31791,null,null,null,null,null,null
+Indirapuram,Uttar Pradesh,28.64142,77.35958,null,null,null,null,null,null
+Raipur,Cg,21.25771,81.65511,null,null,null,null,null,null
+Nedumangadu,Trivandrum,8.60325,77.00249,null,null,null,null,null,null
+Chandrayangutta,Hyderabad,17.32607,78.47731,null,null,null,null,null,null
+Shiralakoppa,Karnataka,12.96236,77.53421,null,null,null,null,null,null
+Goregaon West,Maharashtra,19.16595,72.83836,null,null,null,null,null,null
+Mokdumpur,West Bengal,25.01417,88.11035,null,null,null,null,null,null
+Kalyan (w),Maharashtra,19.25263,73.13728,null,null,null,null,null,null
+Islampur,Maharashtra,17.03361,74.29294,null,null,null,null,null,null
+Maduravoyal,Tamil Nadu,13.06305,80.17473,null,null,null,null,null,null
+Chennimalai,Tamil Nadu,10.76279,79.13953,null,null,null,null,null,null
+Mau,Uttar Pradesh,25.92952,83.56564,null,null,16.8,94.7,14.5,44.3
+Amingaon,Assam,26.19241,91.66943,null,null,null,null,null,null
+Khambhalia,Gujarat,22.2974,70.79608,null,null,null,null,null,null
+Anantnag,Jammu And Kashmir,33.71987,75.15282,null,null,null,null,null,null
+Warangal,Andhra Pradesh,17.99395,79.60786,null,null,null,null,null,null
+Chengannur,Alappuzha,34.634,19.17421,null,null,null,null,null,null
+Arrah,Bihar,25.56008,84.66695,null,null,null,null,null,null
+Malerkotla,Punjab,30.71723,76.44932,null,null,null,null,null,null
+Malkaram,Telangana,17.25381,78.27749,null,null,null,null,null,null
+Suryapet,Telangana,16.77649,79.31812,null,null,4.0,95.9,77.0,57.5
+Balapur,Telangana,17.31398,78.50876,null,null,null,null,null,null
+Bhabua,Bihar,25.04012,83.60628,null,null,null,null,null,null
+Walajapet,Tamil Nadu,12.92564,79.36395,null,null,null,null,null,null
+Kalher,Maharashtra,19.2426,73.01726,null,null,null,null,null,null
+Dhuri,Punjab,30.37071,75.86523,null,null,null,null,null,null
+New Panvel East,Navi Mumbai,19.17267,72.96236,null,null,null,null,null,null
+Bhawanigarh,Punjab,30.26556,76.04266,null,null,null,null,null,null
+Nakur,Uttar Pradesh,29.95765,77.55621,null,null,null,null,null,null
+Chennai,Annanagar East,13.07947,80.20528,null,null,null,null,null,null
+Srinagar,Karan Nagar,34.0897,74.78999,null,null,null,null,null,null
+Green Park,Delhi,28.57018,77.22766,null,null,null,null,null,null
+Dhargal,Goa,15.68757,73.83075,null,null,null,null,null,null
+Gagret,Himachal Pradesh,31.66083,76.06004,null,null,null,null,null,null
+Rajouri Garden,Delhi,28.64737,77.12479,null,null,null,null,null,null
+Central Delhi,Delhi,28.64155,77.23634,null,null,null,null,null,null
+Pipili,Odisha,20.11773,85.84329,null,null,null,null,null,null
+Chemmad,Kerala,11.04284,75.92738,null,null,null,null,null,null
+Kozhencherry,Kerala,9.31822,76.72796,null,null,null,null,null,null
+Kuthari,Assam,26.57618,93.24754,null,null,null,null,null,null
+Buxar,Bihar,25.57152,83.99529,null,null,9.1,89.5,7.7,66.2
+Padhar,Madhya Pradesh,22.59373,78.75,null,null,null,null,null,null
+Raiganj,Uttar Dinajpur,25.63136,88.13695,null,null,null,null,null,null
+Agra,Up,27.19867,77.99976,null,null,null,null,null,null
+Ludhiana,Punjab,30.91026,75.81082,null,null,8.3,90.1,37.0,64.3
+Howrah,West Bengal,22.86326,88.21533,null,null,null,null,null,null
+Gorakhpur,Uttar Pradesh,26.73883,83.1514,null,null,14.7,91.6,15.2,52.9
+Pune,Maharashtra,18.62883,73.89372,null,null,null,null,null,null
+Ernakulam,Kerala,10.03799,76.29349,null,null,10.7,99.1,51.1,31.7
+Ghaziabad,Uttar Pradesh,28.41128,77.74628,null,null,5.3,86.4,31.8,55.2
+Durg,Chhattisgarh,23.10406,80.65756,null,null,4.9,96.7,27.5,51.7
+Old Panvel,Maharashtra,21.41307,79.92255,null,null,null,null,null,null
+Jammu,Jammu And Kashmir,32.20652,75.27097,null,null,null,null,null,null
+Mastichak,Bihar,25.86879,85.03625,null,null,null,null,null,null
+Visnagar,Gujarat,23.00789,72.51782,null,null,null,null,null,null
+Chennai,Tamilnadu,12.87875,80.00184,null,null,null,null,null,null
+Bahadurgarh,Haryana,28.85456,76.95455,null,null,null,null,null,null
+Barsana,Uttar Pradesh,25.77296,81.49329,null,null,null,null,null,null
+Vaishali,Uttar Pradesh,28.2537,78.36045,null,null,null,null,null,null
+Hubballi,Karnataka,15.37496,75.10013,null,null,null,null,null,null
+Palayamkottai,Tamil Nadu,8.70815,77.74714,null,null,null,null,null,null
+Kamrup Metro,Assam,26.14107,91.73949,null,null,null,null,null,null
+Hubli,Karnataka,15.09018,75.24361,null,null,null,null,null,null
+Sambalpur,Odisha,21.29708,84.1965,null,null,9.1,99.5,25.3,66.7
+Chapadgaon,Maharashtra,19.16432,77.30006,null,null,null,null,null,null
+Ajmer,Rajasthan,26.3883,74.6487,null,null,11.9,95.1,11.6,52.7
+Bhiwandi,Thane,21.30159,74.33414,null,null,null,null,null,null
+Nerul,Navi Mumbai,21.01099,75.55868,null,null,null,null,null,null
+Proddatur,Andhra Pradesh,16.09921,79.78977,null,null,null,null,null,null
+Dwarka,New Delhi,28.58328,77.04778,null,null,null,null,null,null
+Coonoor,Tamil Nadu,11.34441,76.79374,null,null,null,null,null,null
+Shahdara,Delhi,28.67164,77.28206,null,null,null,null,null,null
+Shillong,Meghalaya,25.56315,91.91905,null,null,null,null,null,null
+Bassian,Punjab,30.88847,75.83578,null,null,null,null,null,null
+Cherthala,Kerala,9.66856,76.34136,null,null,null,null,null,null
+Chintamani,Karnataka,16.18262,75.69809,null,null,null,null,null,null
+Kangra,Himachal Pradesh,32.116,76.28212,null,null,11.8,90.2,28.2,63.4
+Kanyakumari,Tamil Nadu,9.07592,77.78755,null,null,null,null,null,null
+Almora,Uttarakhand,29.59037,79.65007,null,null,6.4,80.1,16.3,33.4
+Arambagh,West Bengal,22.88202,87.78838,null,null,null,null,null,null
+Shadnagar,Telangana,18.45107,78.92477,null,null,null,null,null,null
+Kallai,Kerala,11.28643,75.79755,null,null,null,null,null,null
+Banarpal,Odisha,20.83313,85.23811,null,null,null,null,null,null
+Kilpauk,Tamil Nadu,12.33046,79.72242,null,null,null,null,null,null
+Trimbak,Nashik,20.95091,77.75471,null,null,null,null,null,null
+"Mira Road (east), Thane",Maharashtra,19.2701,72.8705,null,null,null,null,null,null
+Nellore,Andhra Pradesh,14.38016,79.89251,null,null,null,null,null,null
+Aruppukottai,Tamil Nadu,10.66444,78.80753,null,null,null,null,null,null
+Ulundurpet,Tamil Nadu,13.04074,80.13667,null,null,null,null,null,null
+Baddi,Himachal Pradesh,30.94757,76.81297,null,null,null,null,null,null
+Bhilai,Chhattisgarh,21.20772,81.35006,null,null,null,null,null,null
+Ramgarh Bhullar,Punjab,30.8172,75.17787,null,null,null,null,null,null
+Kulathupuzha,Anchal,9.58955,76.51953,null,null,null,null,null,null
+Vaikom,Kerala,9.74928,76.39668,null,null,null,null,null,null
+Chitradurga,Karnataka,13.96098,76.90514,null,null,5.0,98.3,42.8,44.6
+Mahendergarh,Haryana,28.25296,76.14171,null,null,null,null,null,null
+Ahmadabad,Gujarat,21.19967,72.804,null,null,6.5,94.5,32.4,63.7
+Kukatpally,Telangana,17.49417,78.40368,null,null,null,null,null,null
+Kandivali,Maharashtra,19.19779,72.84828,null,null,null,null,null,null
+Tirupathi,Andhra Pradesh,13.63663,79.42122,null,null,null,null,null,null
+Modinagar,Uttar Pradesh,25.4539,81.84305,null,null,null,null,null,null
+Haripad,Kerala,9.28136,76.45061,null,null,null,null,null,null
+Manipal,Karnataka,13.35312,74.78922,null,null,null,null,null,null
+Dharamsala,Himachal Pradesh,32.22191,76.31743,null,null,null,null,null,null
+Naini,Uttar Pradesh,25.40972,81.84505,null,null,null,null,null,null
+Palkot,Jharkhand,24.38832,85.25194,null,null,null,null,null,null
+Koothuparamba,Kerala,11.84444,75.56923,null,null,null,null,null,null
+Borivali,Maharashtra,19.19966,72.84575,null,null,null,null,null,null
+Kanjikuzhi,Kerala,9.94193,76.35093,null,null,null,null,null,null
+Pondicherry,Pondicherry,11.94108,79.82388,null,null,null,null,null,null
+Vellanguli,Ambasamudram,13.22157,80.02889,null,null,null,null,null,null
+Asaripallam,Tamil Nadu,8.17416,77.39483,null,null,null,null,null,null
+Ludhiana,Ludhiana-1,30.93111,75.85114,null,null,null,null,null,null
+Mahabhairab,Assam,25.76227,93.175,null,null,null,null,null,null
+Abohar,Punjab,30.14375,74.19772,null,null,null,null,null,null
+Patparganj,Delhi,28.62971,77.23206,null,null,null,null,null,null
+Alipurduar,West Bengal,26.48148,89.52721,null,null,null,null,null,null
+Samalkot,Andhra Pradesh,17.1139,82.254,null,null,null,null,null,null
+Chandrasekharpur,Odisha,20.32495,85.81521,null,null,null,null,null,null
+Chas,Jharkhand,23.636,86.17197,null,null,null,null,null,null
+Baramulla,Jammu And Kashmir,34.20417,74.36502,null,null,null,null,null,null
+Ambarnath,Maharashtra,18.1097,74.95955,null,null,null,null,null,null
+Nrt Nagar Theni,Tamil Nadu,10.16032,77.46669,null,null,null,null,null,null
+Chhatrapati Sambhaji Nagar,Maharashtra,19.86185,75.33583,null,null,null,null,null,null
+Belgaum Belagavi,Karnataka,15.8377,74.50586,null,null,null,null,null,null
+Kachhwa Bazaar,Uttar Pradesh,25.20945,82.71449,null,null,null,null,null,null
+Kangan,Jammu And Kashmir,34.26291,74.90291,null,null,null,null,null,null
+Thodupuzha,Kerala,9.88903,76.64484,null,null,null,null,null,null
+Deulgaon Raja,Buldhana,18.98933,75.75212,null,null,null,null,null,null
+Dhemaji,Assam,27.45854,94.57445,null,null,7.1,87.3,16.1,62.9
+East Delhi,Delhi,28.64317,77.28851,null,null,null,null,null,null
+New Panvel East,Maharashtra,19.00376,73.1221,null,null,null,null,null,null
+Tasgaon,Tasgaon,17.03621,74.59917,null,null,null,null,null,null
+Manjeri,Kerala,11.11279,76.11885,null,null,null,null,null,null
+Maria Puram,"Kadapa, Andhra Pradesh",14.47638,78.82451,null,null,null,null,null,null
+Bhavnagar City,Gujarat,21.74982,72.1358,null,null,null,null,null,null
+North 24 Parganas,West Bengal,22.67063,88.53992,null,null,null,null,null,null
+Malpura,Rajasthan,26.84736,75.76857,null,null,null,null,null,null
+Namchi,Sikkim,27.16759,88.36726,null,null,null,null,null,null
+Palsana,Rajasthan,26.95354,75.71373,null,null,null,null,null,null
+Katra,Jammu And Kashmir,32.94702,74.94757,null,null,null,null,null,null
+Trikuta Nagar,Jammu And Kashmir,18.42467,84.05049,null,null,null,null,null,null
+Udalguri,Assam,26.71982,92.07888,null,null,14.6,86.2,14.4,81.5
+Dombivli West,Maharashtra,19.22498,73.08295,null,null,null,null,null,null
+Bilaspur,Himachal Pradesh,31.34794,76.75622,null,null,7.2,91.7,19.2,53.0
+Mala,Kerala,10.23912,76.26454,null,null,null,null,null,null
+Virudhunagar,Tamilnadu,9.58935,77.96017,null,null,null,null,null,null
+Bhavani,Tamil Nadu,13.05879,80.27457,null,null,null,null,null,null
+Gobichettipalayam,Tamil Nadu,11.45053,77.43529,null,null,null,null,null,null
+Santacruz West,Maharashtra,19.07968,72.84064,null,null,null,null,null,null
+Uluberia,West Bengal,22.48087,88.11524,null,null,null,null,null,null
+Pimpri Chinchwad,Pune,18.5563,73.8045,null,null,null,null,null,null
+Barwala,Haryana,29.21256,76.01865,null,null,null,null,null,null
+Ranchi,Jharkhand,23.25,85.25542,null,null,12.0,87.3,19.8,58.9
+Rajpipla,Gujarat,22.73506,73.3028,null,null,null,null,null,null
+Nigdi,Maharashtra,18.65601,73.77328,null,null,null,null,null,null
+Sirohi,Rajasthan,24.57682,72.78102,null,null,8.9,95.7,6.6,64.0
+Panipat,Haryana,29.31957,76.95805,null,null,7.3,97.1,20.3,66.9
+Arani,Tamil Nadu,8.73,77.70001,null,null,null,null,null,null
+Badvel,Andhra Pradesh,15.62426,77.2686,null,null,null,null,null,null
+Tirupati,Andhra Pradesh,14.8852,76.15459,null,null,null,null,null,null
+Erode,Tamil Nadu,11.43569,77.83184,null,null,4.9,100.0,48.5,55.4
+Kapurthala,Punjab,30.53535,75.65081,null,null,13.4,95.0,46.0,54.5
+Fatehpur,Uttar Pradesh,25.62885,81.79783,null,null,9.7,81.4,7.0,63.0
+Tirunelveli,Tamil Nadu,9.3026,77.87259,null,null,7.1,100.0,60.2,51.0
+Ambasamudram,Tamil Nadu,11.23615,78.87195,null,null,null,null,null,null
+Kanpur Nagar,Uttar Pradesh,26.80532,79.15167,null,null,6.8,86.6,19.3,57.0
+Samba,Jammu And Kashmir,32.55208,75.13453,null,null,null,null,null,null
+Agartala,Tripura,23.84009,91.27902,null,null,null,null,null,null
+Karad,Maharashtra,18.68723,74.6782,null,null,null,null,null,null
+Greater Noida West,Uttar Pradesh,28.21807,77.59399,null,null,null,null,null,null
+Thodupuzha,Idukki,9.91212,76.73373,null,null,null,null,null,null
+Ambernath,Maharashtra,19.20687,72.86556,null,null,null,null,null,null
+Padrauna,Kushinagar,26.92431,82.48278,null,null,null,null,null,null
+Koothattukulam,Ernakulam,11.23331,75.80429,null,null,null,null,null,null
+Pilibhit,Uttar Pradesh,27.20927,78.01924,null,null,4.9,76.2,19.0,52.0
+Hoshiarpur,Punjab,31.29221,75.73213,null,null,11.9,98.3,43.8,54.1
+Kanchipuram,Tamil Nadu,12.79507,79.84268,null,null,null,null,null,null
+Tirunelvei,Tamilnadu,8.72339,77.66285,null,null,null,null,null,null
+Patel Nagar,Delhi,28.56503,77.2464,null,null,null,null,null,null
+Paliganj,Bihar,25.32702,84.80101,null,null,null,null,null,null
+Dhule,Dhule,19.52866,74.17965,null,null,null,null,null,null
+Ambala Cantt,Haryana,30.33782,76.84069,null,null,null,null,null,null
+Shimoga,Karnataka,13.99934,75.61849,null,null,5.3,99.7,43.7,41.9
+Bhayandar West,Maharashtra,19.30406,72.96027,null,null,null,null,null,null
+Rustampura,Gujarat,21.21441,72.86058,null,null,null,null,null,null
+Peddapalli,Telangana,17.3662,78.47317,null,null,8.3,96.5,71.6,64.6
+Ferozepur,Punjab,30.95058,74.61322,null,null,null,null,null,null
+Cooch Behar,West Bengal,25.53009,88.9768,null,null,null,null,null,null
+Halol,Gujarat,22.51315,73.46888,null,null,null,null,null,null
+Karkardooma,Delhi,28.64587,77.30179,null,null,null,null,null,null
+Mungeli,Chhattisgarh,22.07099,81.68764,null,null,11.4,69.8,10.8,54.5
+Ravet,Maharashtra,18.64375,73.75058,null,null,null,null,null,null
+Midnapore,West Bengal,22.53984,87.84237,null,null,null,null,null,null
+Kheda,Gujarat,22.17577,71.65974,null,null,16.5,95.2,18.9,76.1
+Bokaro Steel City,Jharkhand,23.66081,86.13897,null,null,null,null,null,null
+Adambakkam,Tamil Nadu,12.98943,80.2048,null,null,null,null,null,null
+Karukutty,Kerala,10.23965,76.37252,null,null,null,null,null,null
+Virar (w),Maharashtra,19.46288,72.7771,null,null,null,null,null,null
+Ambala,Haryana,30.35781,76.80942,null,null,7.0,97.8,34.2,46.1
+Amapara,Chhattisgarh,21.24269,81.62577,null,null,null,null,null,null
+Shivamogga,Karnataka,13.9455,75.55778,null,null,null,null,null,null
+Ranaghat,West Bengal,23.16699,88.56343,null,null,null,null,null,null
+Uddanapalli,Tamil Nadu,10.61022,78.42375,null,null,null,null,null,null
+Shivpuri,Madhya Pradesh,25.41098,77.65353,null,null,12.7,94.5,8.9,51.1
+Barabanki,Uttar Pradesh,26.9027,81.09085,null,null,null,null,null,null
+Chikmagalur,Karnataka,13.3123,75.7709,null,null,3.8,98.4,38.1,40.8
+Malout,Punjab,31.34287,75.58694,null,null,null,null,null,null
+Newtown,West Bengal,22.60156,88.45725,null,null,null,null,null,null
+Malegaon,Maharashtra,20.56032,74.52582,null,null,null,null,null,null
+Kawardha,Chhattisgarh,22.00751,81.23525,null,null,null,null,null,null
+Sahibabad,"Ghaziabad, Uttar Pradesh",28.68551,77.36009,null,null,null,null,null,null
+Edavanakkad,Kerala,10.08192,76.20978,null,null,null,null,null,null
+Jhabua,Madhya Pradesh,22.76216,74.59657,null,null,5.8,92.9,7.0,58.8
+Valancheri,Kerala,10.89349,76.0749,null,null,null,null,null,null
+Sasamusa,Bihar,25.69165,85.20695,null,null,null,null,null,null
+Baga,Goa,15.56118,73.75301,null,null,null,null,null,null
+Navi Mumbai (new Mumbai),Maharashtra,19.02104,73.01483,null,null,null,null,null,null
+Tiruchi,Tamil Nadu,10.82605,78.68195,null,null,null,null,null,null
+Chembur,Maharashtra,19.08907,73.01273,null,null,null,null,null,null
+Muzaffarnagar,U.p,29.4737,77.70488,null,null,null,null,null,null
+Mira Road East,Maharashtra,19.28201,72.87398,null,null,null,null,null,null
+Uruli Kanchan,Maharashtra,18.49309,74.13501,null,null,null,null,null,null
+Noida,Up,28.53908,77.41069,null,null,null,null,null,null
+Kadakkal,Kerala,8.8258,76.92044,null,null,null,null,null,null
+Bongaigaon,Assam,26.48934,90.54014,null,null,16.1,84.5,15.2,70.6
+Rampur,Uttar Pradesh,29.02699,79.05466,null,null,12.0,81.0,16.7,55.4
+Purnia City,Bihar,25.81071,87.51524,null,null,null,null,null,null
+Juhu,Maharashtra,19.11383,72.83012,null,null,null,null,null,null
+Changanacherry,Kerala,10.04413,76.39697,null,null,null,null,null,null
+Jammu,Samba,32.56889,75.01688,null,null,null,null,null,null
+Williamnagar,Meghalaya,25.51433,90.60496,null,null,null,null,null,null
+Ner Chowk,Himachal Pradesh,31.60861,76.91458,null,null,null,null,null,null
+Panchla,West Bengal,22.53811,88.15085,null,null,null,null,null,null
+Agartala,West Tripura,23.83398,91.27953,null,null,null,null,null,null
+Chidambaram,Tamil Nadu,11.39535,79.69876,null,null,null,null,null,null
+Savedi,Maharashtra,19.11715,74.72858,null,null,null,null,null,null
+Bopal,Gujarat,23.03028,72.47246,null,null,null,null,null,null
+Muvattupuzha,Ernakulam,9.97083,76.58572,null,null,null,null,null,null
+Thiru Nagar,Tamil Nadu,9.90771,78.10136,null,null,null,null,null,null
+Udaipur City,Rajasthan,24.59404,73.70504,null,null,null,null,null,null
+Gauhati,Assam,26.17634,91.80408,null,null,null,null,null,null
+Rasipuram,Tamil Nadu,11.45895,78.2076,null,null,null,null,null,null
+Dehradun,Uttarakhand,30.31268,78.03563,null,null,6.5,91.7,25.9,47.9
+Jamshedpur,Jharkhand,22.97721,86.25887,null,null,null,null,null,null
+Kottiyam,Kollam,8.86163,76.67342,null,null,null,null,null,null
+Nandivaram-guduvancheri,Tamil Nadu,12.92932,80.1176,null,null,null,null,null,null
+Ayodhya,Uttar Pradesh,27.29559,81.33336,null,null,null,null,null,null
+Najafgarh,Delhi,29.36518,76.81812,null,null,null,null,null,null
+Proddutur,Andhra Pradesh,16.4997,80.65501,null,null,null,null,null,null
+Guntur,Andhra Pradesh,16.31368,80.3325,null,null,3.2,98.6,53.8,59.5
+Rohtak,Haryana,28.91293,76.633,null,null,8.5,97.4,19.9,65.3
+Raipur,Chattisgarh,21.24433,81.61728,null,null,null,null,null,null
+Halvad,Gujarat,22.72238,71.64513,null,null,null,null,null,null
+Patas,Maharashtra,20.08073,74.35573,null,null,null,null,null,null
+Guruvayoor,Kerala,10.53097,76.21042,null,null,null,null,null,null
+Moinabad,Telangana,17.48221,78.32243,null,null,null,null,null,null
+Rajpura,Punjab,30.50085,76.62663,null,null,null,null,null,null
+Tumakuru,Karnataka,13.34677,77.09923,null,null,null,null,null,null
+Chamba,Himachal Pradesh,32.55868,76.12251,null,null,6.2,72.0,10.5,43.7
+Vizag,Andhra Pradesh,16.43327,80.56636,null,null,null,null,null,null
+Jambusar,Gujarat,20.76608,72.97255,null,null,null,null,null,null
+Navi Mumbai,Navi Mumbai,16.67699,74.58965,null,null,null,null,null,null
+Tiruchirappalli,Tamil Nadu,11.44444,79.12868,null,null,11.1,98.6,41.0,62.4
+Haridwar,Uttarakhand,29.94073,78.1108,null,null,null,null,null,null
+Edappal,Kerala,10.41438,76.10704,null,null,null,null,null,null
+Thane,Thane,19.18823,72.97591,null,null,null,null,null,null
+Nalanda,Bihar,25.68299,85.49588,null,null,7.5,80.3,17.1,71.0
+Prayagraj,Uttar Pradesh,25.8931,81.35603,null,null,null,null,null,null
+Gorwa,Gujarat,20.95052,72.91977,null,null,null,null,null,null
+Morbi,Gujarat,22.63485,71.31415,null,null,10.2,94.8,20.2,50.7
+Patna,Br,25.60272,85.15823,null,null,null,null,null,null
+Tharad,Gujarat,21.054,70.53001,null,null,null,null,null,null
+Kurukshetra,Haryana,29.96954,76.84029,null,null,9.5,98.4,21.9,57.1
+Sivagangai,Tamil Nadu,11.4129,79.35395,null,null,null,null,null,null
+Hassan,Karnataka,12.97288,75.7933,null,null,5.2,100.0,41.8,42.2
+"Andheri West, Mumbai",Maharashtra,19.11476,72.84312,null,null,null,null,null,null
+Betul,Madhya Pradesh,21.89967,77.90382,null,null,4.6,87.6,10.8,56.2
+Kharghar,Maharashtra,19.07815,73.01415,null,null,null,null,null,null
+Yavatmal,Maharashtra,19.96021,76.79896,null,null,null,null,null,null
+Paschim Vihar,Delhi,28.70678,77.10056,null,null,null,null,null,null
+Borivali (east),Mumbai,19.07014,72.83582,null,null,null,null,null,null
+New Rajender Nagar,Delhi,28.63577,77.18341,null,null,null,null,null,null
+Devakottai,Tamil Nadu,9.95236,78.81653,null,null,null,null,null,null
+Kalighat,West Bengal,22.51228,88.35123,null,null,null,null,null,null
+Valliyur,Tamil Nadu,11.09485,77.15053,null,null,null,null,null,null
+Pukkattupady,Kerala,10.00216,76.30634,null,null,null,null,null,null
+Thane (w),Maharashtra,19.22299,72.96953,null,null,null,null,null,null
+Jammu,Jammu & Kashmir,32.74366,74.86143,null,null,6.7,96.5,43.3,66.6
+Kamothe,Maharashtra,19.01551,73.09027,null,null,null,null,null,null
+Samrala,Punjab,30.83454,76.18976,null,null,null,null,null,null
+Kalyan City,Thane,18.56074,73.92825,null,null,null,null,null,null
+Ramnagar,Uttarakhand,29.39526,79.12569,null,null,null,null,null,null
+Candolim,Goa,15.52272,73.7666,null,null,null,null,null,null
+Anchal,Kerala,9.3484,76.6182,null,null,null,null,null,null
+Petlad,Gujarat,22.47719,72.80971,null,null,null,null,null,null
+Kullu,Himachal Pradesh,31.95044,77.11074,null,null,5.0,87.0,13.6,52.8
+Basavakalyan,Karnataka,17.86251,76.95042,null,null,null,null,null,null
+Kadaballi,Karnataka,15.46148,75.00971,null,null,null,null,null,null
+Neyyattinkara,Thiruvananthapuram,8.40158,77.0863,null,null,null,null,null,null
+Nasik,Maharashtra,20.00735,73.75845,null,null,null,null,null,null
+Dehra Dun,Uttarakhand,30.2564,78.09216,null,null,null,null,null,null
+Rohini,Delhi,28.7203,77.103,null,null,null,null,null,null
+Baramati,Maharashtra,20.11252,74.21007,null,null,null,null,null,null
+Kanpur,Up,26.48345,80.27623,null,null,null,null,null,null
+Akbarpur,Uttar Pradesh,26.42739,82.5473,null,null,null,null,null,null
+Chandigarh,Punjab,30.7424,76.79073,null,null,null,null,null,null
+Kalimpong,West Bengal,27.07214,88.47211,null,null,null,null,null,null
+Nadiad,Kheda,22.68887,72.87209,null,null,null,null,null,null
+Eluru,Andhra Pradesh,16.71424,81.09792,null,null,null,null,null,null
+Chinchwad,Pimpri-chinchwad,18.62292,73.80222,null,null,null,null,null,null
+Kannur,Kannur,11.87753,75.38248,null,null,null,null,null,null
+Moradabad,Uttarpradesh,28.8779,78.74335,null,null,null,null,null,null
+Junagadh,Gujarat,21.77063,70.40044,null,null,13.8,97.4,23.0,58.8
+Barnala,Punjab,30.74768,75.29561,null,null,9.4,96.7,37.9,55.2
+Surandai,Tenkasi,8.9772,77.42024,null,null,null,null,null,null
+Areacode,Kerala,11.22794,76.05502,null,null,null,null,null,null
+Ooty,Tamil Nadu,11.40832,76.70529,null,null,null,null,null,null
+Kachchh,Gujarat,23.06546,70.13286,null,null,7.8,97.4,15.8,57.5
+Mukherjee Nagar,Delhi,28.71066,77.21514,null,null,null,null,null,null
+Karanthur,Kerala,11.30159,75.86182,null,null,null,null,null,null
+Mumbra,Maharashtra,19.19698,73.0129,null,null,null,null,null,null
+Hodal,Haryana,27.88773,77.38197,null,null,null,null,null,null
+Patancheru,Telangana,17.52917,78.26712,null,null,null,null,null,null
+Raichur,Karnataka,15.39144,77.41231,null,null,10.0,88.9,20.0,60.4
+Nalasopara,Maharashtra,19.42208,72.82401,null,null,null,null,null,null
+Kottarakkara,Kerala,9.01258,76.80173,null,null,null,null,null,null
+Firozpur,Punjab,30.95544,74.61301,null,null,5.4,95.5,35.6,61.5
+Chandausi,Uttar Pradesh,28.44824,78.78197,null,null,null,null,null,null
+Tri Nagar,Delhi,28.68079,77.16402,null,null,null,null,null,null
+Ludhiana-1,Ludhiana,30.88387,75.88809,null,null,null,null,null,null
+Garhbeta,West Medinipur,22.85741,87.35515,null,null,null,null,null,null
+Chembur East,Maharashtra,19.0602,72.89594,null,null,null,null,null,null
+Sumerpur,Rajasthan,25.13338,73.11258,null,null,null,null,null,null
+Palghar,Maharashtra,19.70023,72.77106,null,null,null,null,null,null
+Aligarh,U.p,27.91188,78.09974,null,null,null,null,null,null
+Kazhakuttam,Kerala,8.56809,76.87289,null,null,null,null,null,null
+Jhumri Telaiya,Jharkhand,24.83056,87.20726,null,null,null,null,null,null
+Mira Road (east),Thane,19.07466,72.88,null,null,null,null,null,null
+Bhalej,Gujarat,22.6419,73.02815,null,null,null,null,null,null
+Mandi Gobindgarh,Punjab,30.66745,76.29586,null,null,null,null,null,null
+Aluva,Ernakulam,10.11105,76.35156,null,null,null,null,null,null
+Dhalpur,Himachal Pradesh,31.95625,77.11253,null,null,null,null,null,null
+Silchar,North Cachar Hills,24.77763,92.79301,null,null,null,null,null,null
+Kolkata,West Bengal,22.61014,88.33015,null,null,2.2,97.5,44.7,58.2
+Mangalwedha,Maharashtra,18.31353,74.40157,null,null,null,null,null,null
+Thoothukudi,Tamil Nadu,10.25803,77.56268,null,null,null,null,null,null
+Coimbatore,Tamil Nadu,11.00114,77.04872,null,null,9.1,100.0,50.9,48.9
+Jodhpur,Rajasthan,26.55373,73.34299,null,null,5.7,90.0,13.6,43.4
+Moradabad,Uttar Pradesh,28.33849,79.36819,null,null,6.9,80.3,22.5,44.9
+Dwarka,Delhi,28.60625,77.09641,null,null,null,null,null,null
+Gurugram,Haryana,28.41844,77.11297,null,null,null,null,null,null
+Surat,Gujarat,21.35414,72.77126,null,null,5.7,97.7,25.0,69.0
+Raisen,Madhya Pradesh,22.58102,76.70833,null,null,5.3,96.0,12.3,56.9
+Bhopal,Madhya Pradesh,23.3159,77.42337,null,null,9.6,98.3,21.9,53.5
+Lonand,Maharashtra,19.25292,73.813,null,null,null,null,null,null
+Shikrapur,Maharashtra,21.11625,79.06078,null,null,null,null,null,null
+Theni,Thanjavur,13.19884,80.18446,null,null,null,null,null,null
+Palwal,Haryana,28.2234,77.48991,null,null,8.0,78.3,11.7,57.2
+Kottakkal,Kerala,11.0715,75.92516,null,null,null,null,null,null
+Katarkhatav,Maharashtra,28.56814,77.37108,null,null,null,null,null,null
+Andheri West,Maharashtra,19.33288,73.07543,null,null,null,null,null,null
+Kota,Rajasthan,25.26463,75.84333,null,null,4.6,97.9,20.7,51.8
+Samana,Patiala,30.8975,76.41194,null,null,null,null,null,null
+Dombivli East,Maharashtra,19.20226,73.06305,null,null,null,null,null,null
+Khaga,Uttar Pradesh,28.82379,78.78236,null,null,null,null,null,null
+Tada,Madhya Pradesh,22.12515,75.04317,null,null,null,null,null,null
+Jagtial,Andhra Pradesh,16.99368,81.77647,null,null,null,null,null,null
+Allahabad,Uttar Pradesh,25.55188,81.74941,null,null,11.9,83.2,15.7,46.4
+Ganganagar,Rajasthan,25.17998,75.88239,null,null,5.1,97.7,14.3,59.0
+Hyderabad,Hyderabad,16.3938,80.15617,null,null,null,null,null,null
+Shankargarh,Uttar Pradesh,26.79514,80.91907,null,null,null,null,null,null
+Gadag,Karnataka,14.19438,76.5824,null,null,7.0,96.2,33.5,50.5
+Perintalmanna,Kerala,10.97843,76.21418,null,null,null,null,null,null
+Malshiras,Maharashtra,18.51047,73.86219,null,null,null,null,null,null
+Bhiwandi,Maharashtra,19.25148,73.00633,null,null,null,null,null,null
+Chettikulam,Valliyoor,11.33688,77.71858,null,null,null,null,null,null
+Budalur,Tamil Nadu,11.75752,79.76146,null,null,null,null,null,null
+Sahibabad,Ghaziabad,28.64544,77.37186,null,null,null,null,null,null
+Palladam,Tamil Nadu,9.89194,77.71627,null,null,null,null,null,null
+Palakkad,Kerala,10.55216,76.50726,null,null,10.8,100.0,31.2,49.6
+Dera Bassi,Mohali,30.55653,76.82776,null,null,null,null,null,null
+Nawanshahr,Punjab,31.12151,76.12913,null,null,null,null,null,null
+Pune,Pune,18.9607,74.31076,null,null,null,null,null,null
+Ajnala,Punjab,31.19686,75.58756,null,null,null,null,null,null
+Sagar,Madhya Pradesh,23.43062,79.27969,null,null,8.0,86.9,11.6,49.8
+Doraha,Punjab,30.80502,75.75437,null,null,null,null,null,null
+Jamner,Maharashtra,21.16876,75.69823,null,null,null,null,null,null
+Tuticorin,Tamil Nadu,8.80815,78.13999,null,null,null,null,null,null
+Guntur,Guntur,16.29715,80.45135,null,null,null,null,null,null
+Mandaveli,Tamil Nadu,null,null,null,null,null,null,null,null
+Khedbrahma,Gujarat,22.29529,73.15865,null,null,null,null,null,null
+Katni,Madhya Pradesh,25.0202,79.29186,null,null,6.0,91.8,5.1,58.7
+Madurai,Tamilnadu,9.93862,78.12315,null,null,null,null,null,null
+Akluj,Maharashtra,17.87687,74.96202,null,null,null,null,null,null
+Jalandhar,Jalandhar-east,31.27982,75.54848,null,null,null,null,null,null
+Jamvadi,Gujarat,22.34714,73.17451,null,null,null,null,null,null
+Sinnar,Maharashtra,19.09023,74.74248,null,null,null,null,null,null
+Sayla,Rajasthan,25.63433,72.44522,null,null,null,null,null,null
+Koregaon,Maharashtra,19.18713,72.96863,null,null,null,null,null,null
+Tarn Taran,Punjab,31.45783,74.92311,null,null,8.0,96.0,36.7,61.7
+Nesvad,Gujarat,21.07674,71.74757,null,null,null,null,null,null
+Manjeri,Malappuram,11.11662,76.13371,null,null,null,null,null,null
+Tarnaka,Telangana,17.40827,78.45045,null,null,null,null,null,null
+Alappuzha,Kerala,9.66972,76.3395,null,null,12.3,99.4,47.8,31.9
+Egmore,Tamil Nadu,13.06047,80.203,null,null,null,null,null,null
+Patpur,West Bengal,23.23066,87.06059,null,null,null,null,null,null
+Trown,Jammu And Kashmir,34.13983,74.83965,null,null,null,null,null,null
+Bhadohi,Uttar Pradesh,25.68713,82.6231,null,null,null,null,null,null
+Sircilla,Telangana,18.39081,78.80965,null,null,null,null,null,null
+Tiruvannamalai,Tamil Nadu,11.21361,78.64635,null,null,5.1,99.1,27.7,56.6
+Matunga East,Maharashtra,19.02685,72.85411,null,null,null,null,null,null
+Annanagar,Tamil Nadu,9.92341,78.14124,null,null,null,null,null,null
+Allahabad,Budaun,27.86855,78.07622,null,null,null,null,null,null
+Batala,Punjab,31.81885,75.20489,null,null,null,null,null,null
+Junagadh City,Gujarat,21.52137,70.45821,null,null,null,null,null,null
+Ariyalur,Tamil Nadu,11.14002,79.07421,null,null,7.0,100.0,57.3,62.4
+Kalyani,West Bengal,22.97096,88.48514,null,null,null,null,null,null
+Thiruvottiyur,Tamil Nadu,11.33966,77.71683,null,null,null,null,null,null
+Guntakal,Andhra Pradesh,15.1618,77.38137,null,null,null,null,null,null
+Mubarakpur Mu. Nasirpu,Uttar Pradesh,26.37195,79.94018,null,null,null,null,null,null
+Manasa,Madhya Pradesh,26.23512,78.15376,null,null,null,null,null,null
+Kodungallur,Kerala,10.2316,76.19983,null,null,null,null,null,null
+Deshmukhi,Yadadri Bhuvanagiri District,17.30164,78.72639,null,null,null,null,null,null
+Rudrapur,Bigbara,28.96048,79.41724,null,null,null,null,null,null
+New Delhi,South East Delhi Area,28.62992,77.23199,null,null,null,null,null,null
+Herbertpur,Uttarakhand,30.44827,77.75517,null,null,null,null,null,null
+Narayanguda,Telangana,17.39829,78.49124,null,null,null,null,null,null
+Kanpur,Kanpur,26.48246,80.31619,null,null,null,null,null,null
+Manimajra,Chandigarh,30.71538,76.83237,null,null,null,null,null,null
+Cumbum,Andhra Pradesh,17.68944,83.13584,null,null,null,null,null,null
+Modinagar,Ghaziabad,28.98207,77.69994,null,null,null,null,null,null
+Mundra,Gujarat,22.84195,69.73184,null,null,null,null,null,null
+Kannadi,Kerala,10.73596,76.64746,null,null,null,null,null,null
+Nayagarh,Odisha,20.46819,84.39697,null,null,4.6,98.3,28.1,62.5
+Puliyangudi,Tamil Nadu,9.18478,77.40309,null,null,null,null,null,null
+Yelahanka New Town,Karnataka,13.10342,77.5844,null,null,null,null,null,null
+Khandwa,Madhya Pradesh,21.82331,76.3499,null,null,null,null,null,null
+Mavelikara,Kerala,9.26667,76.55,null,null,null,null,null,null
+Barasat,West Bengal,22.77987,88.41439,null,null,null,null,null,null
+Junnar,Maharashtra,19.1484,72.82811,null,null,null,null,null,null
+Tamber,Himachal Pradesh,32.14284,76.41345,null,null,null,null,null,null
+Tiruvallur,Tamil Nadu,11.36122,77.70123,null,null,null,null,null,null
+Haldia,West Bengal,22.08049,88.14017,null,null,null,null,null,null
+Mirzapur,Uttar Pradesh,25.02037,83.03292,null,null,14.5,91.1,17.6,42.1
+Chittoor,Andhra Pradesh,13.10053,79.12492,null,null,6.0,97.1,26.4,51.8
+Ghodegaon,Maharashtra,19.20819,73.18672,null,null,null,null,null,null
+Vaniyambadi,Tamil Nadu,12.67628,78.61375,null,null,null,null,null,null
+Dharamshala,Himachal Pradesh,32.21306,76.31937,null,null,null,null,null,null
+Shyamnagar,North 24 Parganas,23.1096,86.80391,null,null,null,null,null,null
+Bilasipara,Assam,26.23008,90.23077,null,null,null,null,null,null
+Shahabad Markanda,Haryana,30.16242,76.8669,null,null,null,null,null,null
+Rishikesh,Uttranchal,30.10726,78.29778,null,null,null,null,null,null
+North Guwahati,Assam,26.16018,91.82697,null,null,null,null,null,null
+Dongarpada-virar West,Maharashtra,19.45969,72.81076,null,null,null,null,null,null
+Nangloi Jat-nangloi,Delhi,28.67753,77.06436,null,null,null,null,null,null
+Amloh,Punjab,30.61034,76.23016,null,null,null,null,null,null
+Porvorim,Goa,15.53344,73.82376,null,null,null,null,null,null
+Una,Gujarat,20.82845,71.04285,null,null,null,null,null,null
+Rohini Sector 3,Delhi,28.70568,77.10246,null,null,null,null,null,null
+Pampady,Kerala,9.55814,76.63838,null,null,null,null,null,null
+Virudhunagar,Tamil Nadu,9.58633,77.96044,null,null,6.4,97.8,50.0,56.9
+Hadala Bhal,Gujarat,22.24325,68.96067,null,null,null,null,null,null
+Kangra At Tanda,Himachal Pradesh,32.09917,76.29871,null,null,null,null,null,null
+Ambattur,Tamil Nadu,12.92132,80.23059,null,null,null,null,null,null
+Saravanampatti,Tamil Nadu,11.05713,76.9959,null,null,null,null,null,null
+Malerkotla,Sangrur,30.52898,75.88474,null,null,null,null,null,null
+Jhunjhunu,Rajasthan,28.11649,75.38864,null,null,null,null,null,null
+Mysore,Mysore,13.10425,77.58286,null,null,null,null,null,null
+Tadepalligudem,Andhra Pradesh,16.81473,81.52583,null,null,null,null,null,null
+Shahapur,Karnataka,15.84554,74.51559,null,null,null,null,null,null
+Paprola,Himachal Pradesh,32.06409,76.63297,null,null,null,null,null,null
+Samastipur,Bihar,25.51058,85.65579,null,null,11.1,83.4,6.2,60.5
+Annur,Tamil Nadu,11.23246,77.10125,null,null,null,null,null,null
+Zirakpur,Mohali,30.64893,76.82161,null,null,null,null,null,null
+Jamnagar,Green City,22.27327,70.78806,null,null,null,null,null,null
+New Panvel,Maharashtra,18.99627,73.12766,null,null,null,null,null,null
+Khanapur,Karnataka,19.04015,78.65042,null,null,null,null,null,null
+"Pune, Mumbai, Aurangabad, Sangamner",Maharashtra,18.52997,73.83388,null,null,null,null,null,null
+Pattukottai,Tamil Nadu,10.42112,79.31787,null,null,null,null,null,null
+Khanpur Kolian,Haryana,30.03535,76.8847,null,null,null,null,null,null
+Sunam,Punjab Region,30.14047,75.82603,null,null,null,null,null,null
+Morak,Rajasthan,25.22631,75.87898,null,null,null,null,null,null
+Madhuban,Bihar,26.44106,85.13474,null,null,null,null,null,null
+Baghpat,Uttar Pradesh,28.9428,77.22081,null,null,5.2,80.9,12.6,53.3
+Kotha Peta,Andhra Pradesh,16.29849,80.45448,null,null,null,null,null,null
+Hailakandi,Assam,24.76266,92.79572,null,null,8.6,83.0,12.8,61.4
+Ranga Reddy,Telangana,17.38544,78.33612,null,null,4.8,97.2,57.8,53.2
+Medchal,Telangana,17.63913,78.48434,null,null,null,null,null,null
+Thoppumpady,Kerala,9.93129,76.26469,null,null,null,null,null,null
+Trilanga,Madhya Pradesh,23.19186,77.43281,null,null,null,null,null,null
+Kilnathur,Tiruvannamalai,12.23612,79.07326,null,null,null,null,null,null
+Pimpri Chinchwad,Maharashtra,18.62688,73.80434,null,null,null,null,null,null
+Dehradun,U.k.,30.33648,78.05304,null,null,null,null,null,null
+Paonta Sahib,Himachal Pradesh,30.44005,77.61494,null,null,null,null,null,null
+Panvel,Navi Mumbai,20.748,78.59842,null,null,null,null,null,null
+Teliamura,West Tripura,23.84033,91.634,null,null,null,null,null,null
+Bhubaneswar,Orissa,20.31567,85.81685,null,null,null,null,null,null
+Tenali,Andhra Pradesh,16.24192,80.64594,null,null,null,null,null,null
+Bhutnal,Bijapur-karnataka,16.87456,75.72032,null,null,null,null,null,null
+Vrindavan Subcity,Uttar Pradesh,27.56098,77.66719,null,null,null,null,null,null
+Vasco Da Gama,Goa,15.3975,73.82942,null,null,null,null,null,null
+Shahpura,Rajasthan,25.61496,74.91789,null,null,null,null,null,null
+Darbe,Karnataka,12.75081,75.21436,null,null,null,null,null,null
+Dalli Rajhara,Chhattisgarh,20.5823,81.07146,null,null,null,null,null,null
+Yemmiganur,Andhra Pradesh,15.6227,77.27007,null,null,null,null,null,null
+Ghatkopar West,Maharashtra,19.08969,72.90896,null,null,null,null,null,null
+Koparkhairane,Maharashtra,19.10937,73.00308,null,null,null,null,null,null
+Guntupalli,Andhra Pradesh,16.58498,80.5525,null,null,null,null,null,null
+Kundara,Kerala,8.88767,76.58743,null,null,null,null,null,null
+Kichha,Uttarakhand,28.90934,79.51797,null,null,null,null,null,null
+Kanjirappally,Kerala,9.56291,76.78336,null,null,null,null,null,null
+Sachin,Gujarat,21.08304,72.88004,null,null,null,null,null,null
+Benipur,Darbhanga,26.05977,86.15182,null,null,null,null,null,null
+Kaminiyanagar,Gujarat,21.7373,72.14801,null,null,null,null,null,null
+Pattambi,Kerala,10.80823,76.18701,null,null,null,null,null,null
+Kashipur,Uttarakhand,29.20857,78.95342,null,null,null,null,null,null
+Jwalapur,Uttarakhand,29.9318,78.13148,null,null,null,null,null,null
+Anakapalle,Andhra Pradesh,17.6876,83.00188,null,null,null,null,null,null
+Tadepalle,Andhra Pradesh,16.48278,80.6178,null,null,null,null,null,null
+Balaghat,Madhya Pradesh,21.819,80.18456,null,null,6.5,95.1,18.3,60.6
+Vita,Maharashtra,17.27844,74.53772,null,null,null,null,null,null
+Bhandara,Maharashtra,20.16128,76.24403,null,null,null,null,null,null
+Dabwali,"Sirsa, Haryana",29.96252,74.70718,null,null,null,null,null,null
+Churachandpur,Manipur,24.34299,93.69278,null,null,8.7,72.9,9.6,32.0
+Rajam,Andhra Pradesh,18.4615,83.65833,null,null,null,null,null,null
+Ballabhgarh,Haryana,28.32839,77.33102,null,null,null,null,null,null
+Kundara,Kollam,8.95875,76.68141,null,null,null,null,null,null
+Konnagar,West Bengal,22.70246,88.34313,null,null,null,null,null,null
+Adoor,Kerala,9.13583,76.72752,null,null,null,null,null,null
+Chromepet,Tamil Nadu,12.95986,80.12975,null,null,null,null,null,null
+Kovilpatti,Tamil Nadu,9.1659,77.85117,null,null,null,null,null,null
+Rahata (shirdi),Maharashtra,19.76509,74.47574,null,null,null,null,null,null
+Phulwarisharif,Bihar,25.58137,85.07323,null,null,null,null,null,null
+Lunglei,Mizoram,22.88638,92.74422,null,null,15.4,82.7,5.4,34.9
+Attapur,Hyderabad,17.37051,78.43709,null,null,null,null,null,null
+Hojai,Assam,26.01587,92.86852,null,null,13.2,82.1,18.4,56.3
+Manesar,"Gurugram, Haryana",28.35513,76.93246,null,null,null,null,null,null
+Thakurpukur,West Bengal,22.46806,88.30926,null,null,null,null,null,null
+Panskura,West Bengal,22.75404,88.37737,null,null,null,null,null,null
+Ghaziabad,Ncr-delhi,null,null,null,null,null,null,null,null
+Bhagta Bhai Ka,Punjab,30.483,75.10004,null,null,null,null,null,null
+Surampatti,Tamil Nadu,11.33401,77.71838,null,null,null,null,null,null
+Chandigarh,Ut,30.72624,76.77901,null,null,null,null,null,null
+Kasba Narayangarh,West Bengal,22.17637,87.3873,null,null,null,null,null,null
+Nalasopara (west),Palghar,19.42417,72.78188,null,null,null,null,null,null
+Oachira,Kerala,9.12658,76.51663,null,null,null,null,null,null
+Trichur,Kerala,10.52326,76.22147,null,null,null,null,null,null
+Laxmipur,West Bengal,22.89139,88.41951,null,null,null,null,null,null
+Nagercoil,Kanyakumari District,8.19683,77.43099,null,null,null,null,null,null
+Mumbai,Mira Road,19.28248,72.87288,null,null,null,null,null,null
+Sitamarhi,Bihar,26.5797,85.50935,null,null,17.0,64.4,8.5,61.7
+Kamla Nagar,Delhi,28.6807,77.2072,null,null,null,null,null,null
+Kalamassery,Kerala,10.06238,76.323,null,null,null,null,null,null
+Cheranalloor Ernakulam,Kerala,10.02466,76.30775,null,null,null,null,null,null
+Kathua,Jammu And Kashmir,32.3897,75.52298,null,null,null,null,null,null
+Fateh Nagar,Delhi,28.63285,77.09819,null,null,null,null,null,null
+Kozhencherry,Elanthoor,9.27424,76.71037,null,null,null,null,null,null
+Gangtok,Sikkim,27.31937,88.60286,null,null,null,null,null,null
+Nidadavolu,Andhra Pradesh,17.70953,83.31029,null,null,null,null,null,null
+Safidon,Haryana,29.4054,76.66252,null,null,null,null,null,null
+Bareilly,U.p.,28.3516,79.45766,null,null,null,null,null,null
+Nidubrolu,Andhra Pradesh,16.06236,80.54988,null,null,null,null,null,null
+Dwarahat,Uttarakhand,29.77456,79.42767,null,null,null,null,null,null
+Patran,Punjab,31.63572,74.87926,null,null,null,null,null,null
+Domjur,West Bengal,22.63287,88.22453,null,null,null,null,null,null
+Bhadran,Gujarat,22.31117,73.19571,null,null,null,null,null,null
+Gorantla,Andhra Pradesh,16.33577,80.43484,null,null,null,null,null,null
+Malviya Nagar,South Delhi,28.53582,77.20905,null,null,null,null,null,null
+Mahbubnagar,Telangana,16.75454,77.99995,null,null,null,null,null,null
+Aurangabad,Bihar,24.7525,84.36907,null,null,7.2,77.5,10.2,60.5
+Shivaji Nagar,Maharashtra,18.53027,73.8475,null,null,null,null,null,null
+Sasaram,Bihar,26.10583,87.94788,null,null,null,null,null,null
+Thiruvarur,Tamil Nadu,10.77803,79.63469,null,null,9.6,100.0,60.6,58.2
+Challakere,Karnataka,14.30934,76.6409,null,null,null,null,null,null
+Danapur,Bihar,25.61598,85.05099,null,null,null,null,null,null
+Kayamkulam,Kerala,9.16702,76.50078,null,null,null,null,null,null
+Kumbakonam,Thanjavur,10.95565,79.40591,null,null,null,null,null,null
+Shankarpura,Delhi,28.76159,77.19002,null,null,null,null,null,null
+Attoor,Tamil Nadu,8.3254,77.25801,null,null,null,null,null,null
+New Katra,Uttar Pradesh,25.46878,81.85181,null,null,null,null,null,null
+Kheri,Uttar Pradesh,27.94814,80.77773,null,null,16.1,82.8,14.2,53.0
+Bundi,Rajasthan,25.43972,75.64542,null,null,7.1,95.3,10.5,55.9
+Vyara,Gujarat,21.11681,73.40402,null,null,null,null,null,null
+Wazirganj,Uttar Pradesh,28.21181,79.05331,null,null,null,null,null,null
+Ulhasnagar No 3,Maharashtra,19.23164,73.1636,null,null,null,null,null,null
+Dubrajpur,Birbhum,23.79761,87.37376,null,null,null,null,null,null
+Vasai Virar,Maharashtra,19.40571,72.82835,null,null,null,null,null,null
+Shrigonda,Ahmednagar,18.61204,74.69954,null,null,null,null,null,null
+Agra,Sikandra,27.21304,77.9584,null,null,null,null,null,null
+Vashi,Maharashtra,19.07446,72.99492,null,null,null,null,null,null
+Sanpada,Maharashtra,19.25792,72.98393,null,null,null,null,null,null
+Moothakunnam,Kerala,10.18067,76.2057,null,null,null,null,null,null
+Bahraich,Uttar Pradesh,27.57336,81.59868,null,null,27.6,67.7,5.2,48.8
+Rahata,Maharashtra,19.70962,74.47934,null,null,null,null,null,null
+Lakshmeshwar,Karnataka,16.2828,75.00728,null,null,null,null,null,null
+Barwani,Madhya Pradesh,22.02953,74.8969,null,null,6.6,85.1,10.4,58.4
+Valasaravakkam,Chennai,13.04152,80.17383,null,null,null,null,null,null
+Beliaghata,West Bengal,22.55924,88.4057,null,null,null,null,null,null
+Andheri,Maharashtra,19.13471,72.82277,null,null,null,null,null,null
+Hindaun,Rajasthan,26.80887,77.02545,null,null,null,null,null,null
+Cherpulassery,Palakkad,10.87902,76.31221,null,null,null,null,null,null
+Bagalkot,Karnataka,16.17986,75.69254,null,null,5.8,95.2,31.0,48.0
+Tenali,"Guntur District, Andhra Pradesh",16.24343,80.64784,null,null,null,null,null,null
+Belsingha,West Bengal,22.66098,87.73518,null,null,null,null,null,null
+Pudukkottai,Tamil Nadu,10.38677,78.81747,null,null,12.2,100.0,41.2,62.5
+Thiruporur,Tamil Nadu,11.66813,78.14285,null,null,null,null,null,null
+Sakchi,Jharkhand,23.36826,85.33987,null,null,null,null,null,null
+Balachaur,Punjab,31.07747,76.28431,null,null,null,null,null,null
+Muvattupuzha,"Ernakulam District, Kerala",9.94481,76.69565,null,null,null,null,null,null
+Bodwad,Maharashtra,21.00478,75.55696,null,null,null,null,null,null
+Burhanpur,Madhya Pradesh,21.30705,76.23055,null,null,6.8,90.7,14.0,57.3
+Lakhipur,Assam,26.03459,90.3018,null,null,null,null,null,null
+Chakdah,Nadia,23.07576,88.53062,null,null,null,null,null,null
+Allahpur,Uttar Pradesh,25.45373,81.86987,null,null,null,null,null,null
+Dausa,Rajasthan,25.10407,76.50375,null,null,5.2,98.2,8.8,60.3
+Kasia,Kushinagar,26.75202,83.92879,null,null,null,null,null,null
+Tirukkoyilur,Tamil Nadu,10.4393,77.95358,null,null,null,null,null,null
+Khagaria,Bihar,25.03535,84.4015,null,null,15.4,74.2,4.4,59.5
+Vallioor,Tamil Nadu,8.39825,77.61552,null,null,null,null,null,null
+Debra,Paschim Medinipur,23.04852,88.82581,null,null,null,null,null,null
+Vennala,Kerala,9.9945,76.31514,null,null,null,null,null,null
+Almora,Almora,29.59818,79.65938,null,null,null,null,null,null
+Kovalam,Thiruvananthapuram,8.35251,77.03566,null,null,null,null,null,null
+Tapa,Punjab,30.30127,75.37175,null,null,null,null,null,null
+Kollegala,Karnataka,16.2066,77.35722,null,null,null,null,null,null
+Rishra,West Bengal,22.75362,88.33958,null,null,null,null,null,null
+Habra,West Bengal,22.84343,88.65472,null,null,null,null,null,null
+Cannanore,Kerala,11.87409,75.37566,null,null,null,null,null,null
+Velachery,Tamil Nadu,12.97881,80.21788,null,null,null,null,null,null
+Banswara,Rajasthan,23.55467,74.43738,null,null,8.1,97.7,6.4,52.8
+Borivali West,Maharashtra,19.13153,72.86897,null,null,null,null,null,null
+Karunagappally,Kerala,9.4103,76.35062,null,null,null,null,null,null
+Ratangarh,Rajasthan,28.06877,74.61903,null,null,null,null,null,null
+Amta,West Bengal,22.83733,88.36927,null,null,null,null,null,null
+Koppa,Karnataka,13.53553,75.36592,null,null,null,null,null,null
+Mansa,Punjab,30.01011,75.39354,null,null,7.2,88.8,30.3,60.4
+Matigara,West Bengal,26.71524,88.3712,null,null,null,null,null,null
+Chandrakona,West Bengal,22.72157,87.50869,null,null,null,null,null,null
+Godhavi,Gujarat,22.99804,72.62587,null,null,null,null,null,null
+Virar,Palghar,19.44679,72.81433,null,null,null,null,null,null
+Rau,Madhya Pradesh,26.20529,78.14905,null,null,null,null,null,null
+Amroha,Uttar Pradesh,28.8984,78.47462,null,null,null,null,null,null
+Chandigarh,Chandigarh (ut),30.73268,76.7984,null,null,null,null,null,null
+Murud,Maharashtra,19.56711,73.1069,null,null,null,null,null,null
+Channapatna,Karnataka,12.99089,77.45396,null,null,null,null,null,null
+Vadodara,Panchvati,22.3169,73.12839,null,null,null,null,null,null
+Kokrajhar,Assam,24.7449,92.34999,null,null,10.0,81.9,12.0,59.5
+Daman,Daman And Diu,20.0,77.0,null,null,null,null,null,null
+Himatnagar,Gujarat,23.59252,72.96051,null,null,null,null,null,null
+Gozaria,Mehsana,23.47936,72.5636,null,null,null,null,null,null
+Dehu Road,Maharashtra,18.67125,73.73155,null,null,null,null,null,null
+Sanaswadi,Maharashtra,18.66895,74.10338,null,null,null,null,null,null
+Garkheda,Maharashtra,19.22745,73.10345,null,null,null,null,null,null
+Saidpur,Bihar,25.60985,85.18279,null,null,null,null,null,null
+Pokhari Nagnath,Chamoli,30.88198,78.08841,null,null,null,null,null,null
+Tiruchengode,Tamil Nadu,11.37857,77.88993,null,null,null,null,null,null
+Yerragudi,Karnataka,13.21582,77.30101,null,null,null,null,null,null
+Chiplun,Maharashtra,17.52061,73.51116,null,null,null,null,null,null
+Dhariwal,Punjab,31.9542,75.3192,null,null,null,null,null,null
+Jodhpur City,Rajasthan,26.28301,73.03156,null,null,null,null,null,null
+Kandivali East,Maharashtra,19.20843,72.87033,null,null,null,null,null,null
+Badlapur East,Maharashtra,19.17533,73.23027,null,null,null,null,null,null
+Nizampura,Gujarat,22.32887,73.18224,null,null,null,null,null,null
+Balodabazar,Chhattisgarh,21.65869,82.14391,null,null,null,null,null,null
+Dhubri,Assam,26.03131,89.96805,null,null,11.5,64.2,6.9,63.2
+Barpeta Road,Assam,26.41632,90.98402,null,null,null,null,null,null
+Robertsganj,Uttar Pradesh,24.68877,83.06455,null,null,null,null,null,null
+Makhiyala,Gujarat,21.51028,70.46815,null,null,null,null,null,null
+Barshi,Maharashtra,18.22915,75.68411,null,null,null,null,null,null
+Amtala,24pgs (s),22.36994,88.27179,null,null,null,null,null,null
+Sagwara,Rajasthan,23.66381,74.01111,null,null,null,null,null,null

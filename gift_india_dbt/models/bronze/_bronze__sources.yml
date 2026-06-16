@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: bronze
     description: >-
-      Raw landing tables for Governance, Integrity, & Facility Trust Desk. The Python loader
+      Raw landing tables for Governance, Integrity, & Facility Trust (GIFT) Desk. The Python loader
       (`gift_india_api/src/load_db.py`) writes the governed / synthetic facility
       and district records here verbatim; dbt promotes them through silver and
       gold. Defaults to the `bronze` schema where the loader writes (override
@@ -56,3 +56,29 @@ sources:
               - not_null
           - name: population
             description: District population (persons).
+
+      - name: facility_web_crawl
+        description: >-
+          Raw crawl payloads from each facility's official website
+          (`gift_india_api/src/scraper.py`), landed by `src/load_crawl.py`. One
+          row per crawl attempt (append-only, idempotent on `crawl_id`); failed
+          attempts are kept too (NULL `raw_*`) to preserve provenance. `raw_text`
+          is the replayable input to the silver extraction step.
+        columns:
+          - name: crawl_id
+            description: sha256(website_url + crawled_at) — stable per attempt.
+            tests:
+              - not_null
+              - unique
+          - name: website_url
+            description: The facility website URL that was requested.
+            tests:
+              - not_null
+          - name: crawled_at
+            description: When the crawl attempt ran (UTC).
+            tests:
+              - not_null
+          - name: status
+            description: Crawl outcome — `ok`, `http_error`, or `fetch_error`.
+            tests:
+              - not_null

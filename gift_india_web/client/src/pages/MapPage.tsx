@@ -218,6 +218,7 @@ function FacilityCard({ f, onClose }: { f: FacilityRanking; onClose: () => void 
 
 export function MapPage() {
   const [topology, setTopology] = useState<Topology | null>(null);
+  const [worldTopology, setWorldTopology] = useState<Topology | null>(null);
   const [topoError, setTopoError] = useState<string | null>(null);
   const [capabilities, setCapabilities] = useState<Capability[]>([]);
   const [geo, setGeo] = useState<MapGeography | null>(null);
@@ -251,6 +252,12 @@ export function MapPage() {
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
       .then((t: Topology) => setTopology(t))
       .catch(() => setTopoError('Could not load the India map topology.'));
+    // World-countries context backdrop (India-corrected boundaries) — optional;
+    // the map degrades gracefully to no backdrop if it fails to load.
+    fetch('/world-context-topo.json')
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
+      .then((t: Topology) => setWorldTopology(t))
+      .catch(() => undefined);
     api.capabilities().then(setCapabilities).catch(() => undefined);
     api.metricCatalog().then((c) => setGroups(c.groups)).catch(() => setGroups([]));
   }, []);
@@ -582,6 +589,7 @@ export function MapPage() {
             {topology ? (
               <DrilldownMap
                 topology={topology}
+                worldTopology={worldTopology}
                 stateRatings={stateRatings}
                 districtRatings={districtRatings}
                 facilities={filteredFacilities}

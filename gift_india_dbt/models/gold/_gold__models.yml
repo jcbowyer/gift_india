@@ -146,7 +146,8 @@ models:
   - name: capability_evidence
     description: >-
       Citations backing facility capability assessments. Snippets are built from
-      real facility-record column values — never fabricated prose.
+      real facility-record column values and real crawled website text (a quoted
+      window from silver_facility_web_crawl) — never fabricated prose.
     columns:
       - name: evidence_id
         tests:

@@ -1,4 +1,4 @@
-# Monorepo Architecture & Rules — Governance, Integrity, & Facility Trust Desk
+# Monorepo Architecture & Rules — Governance, Integrity, & Facility Trust (GIFT) Desk
 
 ## Tech Stack
 - **Backend:** FastAPI (Python 3.11+)

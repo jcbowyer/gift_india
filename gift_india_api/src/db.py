@@ -1,4 +1,4 @@
-"""Database connectivity for Governance, Integrity, & Facility Trust Desk.
+"""Database connectivity for Governance, Integrity, & Facility Trust (GIFT) Desk.
 
 One code path serves two targets:
 
@@ -24,7 +24,7 @@ import psycopg
 # which is left to the managed Postgres / Lakebase system objects). dbt promotes
 # bronze -> silver -> gold; serving reads gold.
 DEFAULT_SCHEMA = os.getenv("GIFT_INDIA_DB_SCHEMA", "bronze")
-LOCAL_DEFAULT_DSN = "postgresql://gift_india:gift_india@localhost:5432/gift_india"
+LOCAL_DEFAULT_DSN = "postgresql://postgres:password@localhost:5433/gift_india"
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 _ENV_FILE = _PROJECT_ROOT / ".env"

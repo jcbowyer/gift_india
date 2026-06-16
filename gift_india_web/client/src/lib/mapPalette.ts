@@ -24,10 +24,17 @@ export function normName(s: string): string {
   return s.toLowerCase().replace('&', 'and').replace(/[^a-z0-9]/g, '');
 }
 
+/** Spelling variants between the SoI boundaries and the data's district names. */
+const NAME_ALIASES: Record<string, string> = {
+  ahmadabad: 'ahmedabad', // SoI: AHMADABAD
+  lahulandspiti: 'lahaulspiti', // SoI: LAHUL & SPITI
+};
+const canon = (n: string): string => NAME_ALIASES[n] ?? n;
+
 /** Loose match between two place names (handles "Mumbai" vs "Mumbai Suburban"). */
 export function placeMatch(a: string, b: string): boolean {
-  const na = normName(a);
-  const nb = normName(b);
+  const na = canon(normName(a));
+  const nb = canon(normName(b));
   return na === nb || na.includes(nb) || nb.includes(na);
 }
 

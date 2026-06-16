@@ -1,4 +1,4 @@
-# Governance, Integrity, & Facility Trust Desk
+# Governance, Integrity, & Facility Trust (GIFT) Desk
 
 > A Virtue Foundation hackathon project (**Track 1**) that
 > answers one question: **can this facility actually do what it claims?**
@@ -9,7 +9,7 @@ maternity, emergency, oncology, trauma, NICU — is not the same as that capabil
 being **real**. The hard problem: **separate trustworthy capability claims from
 unverified or contradicted ones**, with the evidence attached.
 
-The Governance, Integrity, & Facility Trust Desk does exactly that. A planner picks a
+The Governance, Integrity, & Facility Trust (GIFT) Desk does exactly that. A planner picks a
 **capability** and a **region**, and sees facilities ranked by how strongly their
 claim is backed by evidence. Every facility carries a **trust signal** —
 `strong`, `partial`, `weak / suspicious`, or `no claim` — *computed from the
@@ -52,7 +52,7 @@ Virtue Foundation hackathon brief.
 **How to pitch it:**
 
 > "NGO planners shouldn't have to fight 10,000 messy rows of web-scraped data to
-> save lives. We built the Governance, Integrity, & Facility Trust Desk — a
+> save lives. We built the Governance, Integrity, & Facility Trust (GIFT) Desk — a
 > Databricks app that separates trustworthy capability claims from unverified ones,
 > with the citations attached."
 
@@ -69,11 +69,11 @@ app at http://localhost:8000 (live Lakebase data). For manual steps see
 
 ## The four hackathon tracks — we built Track 1
 
-This repo focuses on **Track 1 — the Governance, Integrity, & Facility Trust Desk**.
+This repo focuses on **Track 1 — the Governance, Integrity, & Facility Trust (GIFT) Desk**.
 
 | Track | Question | Status here |
 |-------|----------|-------------|
-| **1 · Governance, Integrity, & Facility Trust Desk** | Can this facility actually do what it claims? | ✅ **Built (this repo)** |
+| **1 · Governance, Integrity, & Facility Trust (GIFT) Desk** | Can this facility actually do what it claims? | ✅ **Built (this repo)** |
 | 2 · Medical Desert Planner | Where are the highest-risk gaps in care? | — not built |
 | 3 · Referral Copilot | Where should a patient or coordinator actually go? | — not built |
 | 4 · Data Readiness Desk | What needs fixing before this dataset is trusted? | — not built |
@@ -97,6 +97,37 @@ resolution).
 > Indian districts, coordinates, populations and specialties, so the app runs with
 > zero external dependencies. Swap `src/data.py` for the governed Virtue Foundation
 > dataset (see below) to go live.
+
+## Levels of the Indian government
+
+India is a federal union, and its administrative geography nests as a hierarchy.
+The Trust Desk's region picker and `gold.geography` table key on **states** and
+**districts** — the two levels NGO planners actually allocate against — but the
+full hierarchy is below for context:
+
+| Level | Tier | Unit | Governing body |
+|-------|------|------|----------------|
+| 1 | **National (Union)** | Republic of India | Parliament + Union Government |
+| 2 | **State / Union Territory** | 28 states, 8 UTs | State Legislature + Governor (states); LG/Administrator (UTs) |
+| 3 | **District** | ~800 districts | District Collector / District Magistrate |
+| 4 | **Sub-district** | Tehsil / Taluk / Block | Sub-Divisional / Block officers |
+| — | **Local — Urban** | Municipal Corporation, Municipality, Nagar Panchayat | Elected urban local bodies (74th Amendment) |
+| — | **Local — Rural** | Zila Parishad → Panchayat Samiti → Gram Panchayat | Panchayati Raj institutions (73rd Amendment) |
+
+The first three levels correspond directly to the **Survey of India (SOI)**
+boundary shapefiles used for GIS mapping:
+
+| SOI shapefile | Admin level | Maps to |
+|---------------|-------------|---------|
+| India Boundary | Level 1 | National outline |
+| India State Boundary | Level 2 | `state` in `gold.geography` |
+| India District Boundary | Level 3 | `district` in `gold.geography` |
+
+> SOI also publishes per-state and municipal-city boundary shapefiles. Source
+> these from the [official Survey of India](https://surveyofindia.gov.in/) and
+> respect its data-usage and copyright policies. The bundled
+> `client/public/india-topo.json` is the district/state TopoJSON the map renders
+> against; see project memory for its provenance and name-matching notes.
 
 ## Databricks workspaces & data source
 

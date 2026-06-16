@@ -1,4 +1,4 @@
--- Governance, Integrity, & Facility Trust Desk — bronze landing schema (raw tables the loader writes).
+-- Governance, Integrity, & Facility Trust (GIFT) Desk — bronze landing schema (raw tables the loader writes).
 --
 -- This is the BRONZE layer of the medallion: raw, append-target facility and
 -- district records, kept out of `public` so `public` is left to the managed

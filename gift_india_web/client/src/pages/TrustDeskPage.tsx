@@ -214,7 +214,7 @@ export function TrustDeskPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div className="space-y-1">
-        <h2 className="text-2xl font-bold text-foreground">Governance, Integrity, & Facility Trust Desk</h2>
+        <h2 className="text-2xl font-bold text-foreground">Governance, Integrity, & Facility Trust (GIFT) Desk</h2>
         <p className="text-muted-foreground">
           Pick a capability and region. Facilities are ranked by how well their claim is backed by evidence —
           expand any facility to read the citations and override the assessment.

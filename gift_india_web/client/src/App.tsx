@@ -70,7 +70,7 @@ function Layout() {
           </span>
           <div className="leading-tight max-w-[11rem] sm:max-w-none">
             <span className="block text-xs sm:text-sm font-semibold text-foreground leading-snug">
-              Governance, Integrity, & Facility Trust Desk
+              Governance, Integrity, & Facility Trust (GIFT) Desk
             </span>
           </div>
         </div>
@@ -85,7 +85,7 @@ function Layout() {
               </Button>
               <SheetContent side="left">
                 <SheetHeader>
-                  <SheetTitle>Governance, Integrity, & Facility Trust Desk</SheetTitle>
+                  <SheetTitle>Governance, Integrity, & Facility Trust (GIFT) Desk</SheetTitle>
                 </SheetHeader>
                 <NavLinks className="flex flex-col gap-1 mt-4" linkClass={mobileNavLinkClass} onClick={() => setMobileNavOpen(false)} />
               </SheetContent>

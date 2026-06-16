@@ -1,7 +1,7 @@
 ---
 title: Medallion Architecture & Metric Store Data Model
 description: >-
-  How Governance, Integrity, & Facility Trust Desk lands, refines, and serves Virtue Foundation data —
+  How Governance, Integrity, & Facility Trust (GIFT) Desk lands, refines, and serves Virtue Foundation data —
   a bronze → silver → gold medallion, a Databricks-agent free-text extraction
   step in silver, and a row-based (long-format) metric store in gold that
   correlates indicators and initiatives with surgical-care success.
@@ -10,7 +10,7 @@ sidebar_label: Medallion & Metric Store
 
 # Medallion Architecture & Metric Store Data Model
 
-Governance, Integrity, & Facility Trust Desk recommends **where to place visiting surgical teams** across
+Governance, Integrity, & Facility Trust (GIFT) Desk recommends **where to place visiting surgical teams** across
 India to close the surgical-care gap. The recommendation engine is only as good
 as the data behind it, and the source data is **web-scraped, semi-structured,
 and messy**. This document describes the data platform that turns that raw input

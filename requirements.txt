@@ -8,3 +8,4 @@ requests>=2.32
 beautifulsoup4>=4.12
 lxml>=5.2
 loguru>=0.7
+pyshp>=2.3
