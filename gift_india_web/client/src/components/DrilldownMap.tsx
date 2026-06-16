@@ -245,8 +245,8 @@ function screenPx(k: number, px: number): number {
 function clusterLabelFontPx(value: number, radiusPx: number): number {
   const label = formatClusterLabel(value);
   const digits = label.length;
-  const fit = radiusPx * (digits >= 4 ? 0.4 : digits === 3 ? 0.46 : 0.5);
-  return Math.min(11, Math.max(7, fit));
+  const fit = radiusPx * (digits >= 4 ? 0.52 : digits === 3 ? 0.6 : 0.72);
+  return Math.min(18, Math.max(13, fit));
 }
 
 /** Badge radius from the displayed count (log-scaled so 2k+ totals stay compact). */
@@ -255,8 +255,8 @@ function clusterBadgeRadiusPx(labelValue: number, memberCount = 1): number {
   const digits = label.length;
   const logMag = Math.log10(Math.max(labelValue, 1) + 1);
   return Math.min(
-    20,
-    7.5 + Math.sqrt(memberCount) * 1 + logMag * 2 + Math.max(0, digits - 2) * 1,
+    24,
+    10 + Math.sqrt(memberCount) * 1.2 + logMag * 2.2 + Math.max(0, digits - 2) * 1.2,
   );
 }
 

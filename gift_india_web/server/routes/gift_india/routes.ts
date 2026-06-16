@@ -816,15 +816,11 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
                       s.evidence_tier,
                       a.evidence_count,
                       a.supporting_count, a.contradicting_count, a.best_source, a.summary,
-                      ov.override_signal, ov.override_score, ov.note AS override_note,
-                      (ej.assessment_json->>'review_recommended')::boolean AS review_recommended,
-                      ej.assessment_json->>'review_reason' AS review_reason
+                      ov.override_signal, ov.override_score, ov.note AS override_note
                FROM gold.facility_capability_assessments a
                JOIN gold.facilities f USING (facility_id)
                LEFT JOIN gold.capability_scored s
                  ON s.facility_id = a.facility_id AND s.capability = a.capability
-               LEFT JOIN gold.capability_evidence_json ej
-                 ON ej.facility_id = f.facility_id AND ej.capability = a.capability
                LEFT JOIN LATERAL (
                  SELECT override_signal, override_score, note FROM app.capability_overrides o
                  WHERE o.facility_id = f.facility_id AND o.capability = a.capability AND o.created_by = $8
@@ -869,19 +865,15 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
         const results = rows.map((r, i) => {
           const trustSignal = txt(r.trust_signal) as TrustSignal;
           const contradictingCount = Number(r.contradicting_count);
-          const reviewFromJson = r.review_recommended === true;
-          const reviewReasonFromJson = r.review_reason ? txt(r.review_reason) : null;
           const reviewRecommended =
-            reviewFromJson ||
             contradictingCount > 0 ||
             trustSignal === 'weak_suspicious';
           const reviewReason =
-            reviewReasonFromJson ??
-            (contradictingCount > 0
+            contradictingCount > 0
               ? `${contradictingCount} contradicting evidence item${contradictingCount === 1 ? '' : 's'} on record.`
               : trustSignal === 'weak_suspicious'
                 ? 'Low trust signal — planner should confirm with local ground truth.'
-                : null);
+                : null;
           return {
             rank: i + 1,
             facilityId: txt(r.facility_id),
@@ -1211,13 +1203,19 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
                g.district
         FROM gold.geography g
         JOIN state_codes sc
-          ON sc.state = g.state OR sc.state_code = g.state_code
+          ON sc.state = g.state
       ),
       fac_by_state AS (
         SELECT map_state,
                MAX(map_state_code) AS map_state_code,
                COUNT(*)::int AS facilities,
-               COUNT(*) FILTER (WHERE geography_id IS NOT NULL)::int AS with_geography
+               COUNT(*) FILTER (
+                 WHERE EXISTS (
+                   SELECT 1 FROM gold.geography g
+                   WHERE lower(trim(g.district)) = lower(trim(facility_map_state.district))
+                     AND (g.state = facility_map_state.map_state OR g.state = facility_map_state.state)
+                 )
+               )::int AS with_geography
         FROM facility_map_state
         GROUP BY map_state
       ),
@@ -1225,9 +1223,11 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
         SELECT f.map_state,
                COALESCE(g.district, f.district) AS district,
                COUNT(*)::int AS facilities,
-               COUNT(*) FILTER (WHERE f.geography_id IS NOT NULL)::int AS with_geography
+               COUNT(*) FILTER (WHERE g.district IS NOT NULL)::int AS with_geography
         FROM facility_map_state f
-        LEFT JOIN gold.geography g ON g.geography_id = f.geography_id
+        LEFT JOIN gold.geography g
+          ON lower(trim(g.district)) = lower(trim(f.district))
+         AND (g.state = f.map_state OR g.state = f.state)
         WHERE COALESCE(g.district, f.district) IS NOT NULL
           AND TRIM(COALESCE(g.district, f.district)) != ''
         GROUP BY f.map_state, COALESCE(g.district, f.district)
@@ -1263,15 +1263,25 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
         (SELECT COUNT(*)::int FROM ref_districts) AS ref_districts,
         (SELECT COUNT(*)::int FROM district_coverage WHERE mapped) AS mapped_districts,
         (SELECT COUNT(*)::int FROM facility_map_state) AS facilities,
-        (SELECT COUNT(*)::int FROM facility_map_state WHERE geography_id IS NOT NULL) AS with_geography,
+        (SELECT COUNT(*)::int
+           FROM facility_map_state f
+          WHERE EXISTS (
+            SELECT 1 FROM gold.geography g
+            WHERE lower(trim(g.district)) = lower(trim(f.district))
+              AND (g.state = f.map_state OR g.state = f.state)
+          )) AS with_geography,
         (SELECT COUNT(*)::int FROM facility_map_state) AS total_facilities,
         (SELECT COUNT(*)::int FROM facility_map_state) AS nation_mapped_facilities,
         (SELECT COUNT(*)::int
            FROM facility_map_state f
           WHERE EXISTS (SELECT 1 FROM state_codes sc WHERE sc.state = f.map_state)) AS state_mapped_facilities,
         (SELECT COUNT(*)::int
-           FROM facility_map_state
-          WHERE geography_id IS NOT NULL) AS district_mapped_facilities
+           FROM facility_map_state f
+          WHERE EXISTS (
+            SELECT 1 FROM gold.geography g
+            WHERE lower(trim(g.district)) = lower(trim(f.district))
+              AND (g.state = f.map_state OR g.state = f.state)
+          )) AS district_mapped_facilities
     `;
 
     const GEO_STATE_COVERAGE_SQL = `
@@ -1282,13 +1292,19 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
                g.district
         FROM gold.geography g
         JOIN state_codes sc
-          ON sc.state = g.state OR sc.state_code = g.state_code
+          ON sc.state = g.state
       ),
       fac_by_state AS (
         SELECT map_state,
                MAX(map_state_code) AS map_state_code,
                COUNT(*)::int AS facilities,
-               COUNT(*) FILTER (WHERE geography_id IS NOT NULL)::int AS with_geography
+               COUNT(*) FILTER (
+                 WHERE EXISTS (
+                   SELECT 1 FROM gold.geography g
+                   WHERE lower(trim(g.district)) = lower(trim(facility_map_state.district))
+                     AND (g.state = facility_map_state.map_state OR g.state = facility_map_state.state)
+                 )
+               )::int AS with_geography
         FROM facility_map_state
         GROUP BY map_state
       ),
@@ -1296,9 +1312,11 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
         SELECT f.map_state,
                COALESCE(g.district, f.district) AS district,
                COUNT(*)::int AS facilities,
-               COUNT(*) FILTER (WHERE f.geography_id IS NOT NULL)::int AS with_geography
+               COUNT(*) FILTER (WHERE g.district IS NOT NULL)::int AS with_geography
         FROM facility_map_state f
-        LEFT JOIN gold.geography g ON g.geography_id = f.geography_id
+        LEFT JOIN gold.geography g
+          ON lower(trim(g.district)) = lower(trim(f.district))
+         AND (g.state = f.map_state OR g.state = f.state)
         WHERE COALESCE(g.district, f.district) IS NOT NULL
           AND TRIM(COALESCE(g.district, f.district)) != ''
         GROUP BY f.map_state, COALESCE(g.district, f.district)
@@ -1547,13 +1565,15 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             SELECT sc.state AS map_state, g.district
             FROM gold.geography g
             JOIN state_codes sc
-              ON sc.state = g.state OR sc.state_code = g.state_code
+              ON sc.state = g.state
             WHERE sc.state = $1
           ),
           fac_by_district AS (
             SELECT f.map_state, COALESCE(g.district, f.district) AS district
             FROM facility_map_state f
-            LEFT JOIN gold.geography g ON g.geography_id = f.geography_id
+            LEFT JOIN gold.geography g
+              ON lower(trim(g.district)) = lower(trim(f.district))
+             AND (g.state = f.map_state OR g.state = f.state)
             WHERE f.map_state = $1
               AND COALESCE(g.district, f.district) IS NOT NULL
               AND TRIM(COALESCE(g.district, f.district)) != ''

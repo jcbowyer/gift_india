@@ -130,12 +130,13 @@ export function mapStateCtes(facilityAlias = 'f', geoAlias = 'g'): string {
            COALESCE(sc_geo.state_code, sc.state_code, ${facilityAlias}.state_code) AS map_state_code
     FROM gold.facilities ${facilityAlias}
     LEFT JOIN gold.geography ${geoAlias}
-      ON ${geoAlias}.geography_id = ${facilityAlias}.geography_id
+      ON lower(trim(${geoAlias}.district)) = lower(trim(${facilityAlias}.district))
+     AND lower(trim(${geoAlias}.state)) = lower(trim(${facilityAlias}.state))
     LEFT JOIN state_codes sc_geo
-      ON ${geoAlias}.geography_id IS NOT NULL
-     AND (sc_geo.state = ${geoAlias}.state OR sc_geo.state_code = ${geoAlias}.state_code)
+      ON ${geoAlias}.district IS NOT NULL
+     AND sc_geo.state = ${geoAlias}.state
     LEFT JOIN state_codes sc
-      ON sc.state_code = COALESCE(${geoAlias}.state_code, ${facilityAlias}.state_code)
+      ON sc.state_code = ${facilityAlias}.state_code
     LEFT JOIN state_aliases sa
       ON sa.raw_norm = regexp_replace(replace(lower(${facilityAlias}.state), '&', 'and'), '[^a-z0-9]', '', 'g')
   )`;

@@ -154,14 +154,33 @@ function CapabilityGuidePanel({ cap }: { cap: Capability }) {
   );
 }
 
-/** Hero quick-stat — big number with a trust-coloured accent. */
-function HeroStat({ value, label, accent = 'text-foreground' }: { value: string; label: string; accent?: string }) {
+/** Hero quick-stat — big number with a trust-coloured accent and optional one-line context. */
+function HeroStat({
+  value,
+  label,
+  hint,
+  accent = 'text-foreground',
+}: {
+  value: string;
+  label: string;
+  hint?: string;
+  accent?: string;
+}) {
   return (
-    <div className="flex flex-col">
+    <div className="flex max-w-[11rem] flex-col">
       <span className={`text-2xl font-bold tabular-nums leading-none sm:text-3xl ${accent}`}>{value}</span>
-      <span className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground sm:text-xs">{label}</span>
+      <span className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-foreground/80 sm:text-xs">{label}</span>
+      {hint ? <span className="mt-0.5 text-[11px] leading-snug text-muted-foreground">{hint}</span> : null}
     </div>
   );
+}
+
+function strongEvidenceShare(stats: Stats): string {
+  const strong = Number(stats.strong);
+  const suspicious = Number(stats.suspicious);
+  const graded = strong + suspicious;
+  if (!graded || !Number.isFinite(strong)) return '—';
+  return `${Math.round((strong / graded) * 100)}%`;
 }
 
 /**
@@ -183,8 +202,8 @@ function AnalyzedCoverageStat() {
           <span className="text-base font-semibold text-muted-foreground sm:text-lg"> · {ANALYZED_DISTRICT_COUNT}</span>
         )}
       </span>
-      <span className="mt-1 inline-flex items-center gap-1 text-[11px] uppercase tracking-wide text-muted-foreground underline decoration-dotted underline-offset-2 sm:text-xs">
-        {ANALYZED_DISTRICT_COUNT === ANALYZED_STATE_COUNT ? 'States & districts analysed' : 'States · districts analysed'}
+      <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-foreground/80 underline decoration-dotted underline-offset-2 sm:text-xs">
+        {ANALYZED_DISTRICT_COUNT === ANALYZED_STATE_COUNT ? 'Pilot districts live' : 'Pilot states · districts live'}
         <Info className="h-3 w-3" />
       </span>
     </button>
@@ -193,7 +212,7 @@ function AnalyzedCoverageStat() {
   const panel = (
     <div>
       <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-        {ANALYZED_STATE_COUNT} states analysed in depth
+        {ANALYZED_STATE_COUNT} states · {ANALYZED_DISTRICT_COUNT} districts with full trust profiling
       </p>
       <ul className="mt-2.5 space-y-1">
         {ANALYZED_DISTRICTS.map((d) => (
@@ -570,34 +589,56 @@ export function TrustGaugePage() {
           <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-700">
             <ShieldCheck className="h-4 w-4" />
-            The GIFT Gauge · A Trust Gauge for Hospitals
+            The GIFT Gauge · Evidence-backed hospital trust
           </div>
           <h1 className="mt-3 max-w-2xl text-2xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
             Governance, Integrity, &amp; Facility Trust (GIFT) Gauge
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
-            Finally, a trust gauge that tells you which hospitals can actually deliver. Every capability claim is backed
-            by citations you can read — and you can override the assessment with a reviewer note.
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            When a patient needs an ICU tonight, directories list hundreds of hospitals that claim one — but duplicates,
+            stale rows, and unchecked website copy make many of those claims impossible to defend. GIFT grades each
+            capability against cited sources, surfaces what needs human review, and lets you override with a note when
+            ground truth differs.
+          </p>
+          <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-foreground/85 sm:text-base">
+            The numbers below are live from our gold trust layer — not marketing counts. Green is corroborated; red is
+            flagged before you route a referral.
           </p>
 
-          <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4">
+          <div className="mt-6 flex flex-wrap items-start gap-x-8 gap-y-5">
             <HeroStat
-              value={stats ? formatNumber(stats.facilities) : '—'}
-              label="Facilities profiled"
+              value={stats ? formatNumber(stats.strong) : '—'}
+              label="Strong evidence"
+              hint="Claims corroborated by sources you can open"
               accent="text-emerald-700"
             />
-            <span className="hidden h-10 w-px bg-border sm:block" />
-            <AnalyzedCoverageStat />
-            <span className="hidden h-10 w-px bg-border sm:block" />
+            <span className="hidden h-12 w-px bg-border sm:block" />
+            <HeroStat
+              value={stats ? formatNumber(stats.suspicious) : '—'}
+              label="Flagged for review"
+              hint="Thin or conflicting — don't route on these alone"
+              accent="text-red-700"
+            />
+            <span className="hidden h-12 w-px bg-border sm:block" />
+            <HeroStat
+              value={stats ? strongEvidenceShare(stats) : '—'}
+              label="Strong evidence rate"
+              hint="Of ICU–NICU claims rated strong or flagged, the % with corroborated evidence"
+              accent="text-foreground"
+            />
+            <span className="hidden h-12 w-px bg-border sm:block" />
             <HeroStat
               value={stats ? formatNumber(stats.citations) : '—'}
               label="Citations on record"
+              hint="Receipts behind every dial and override"
               accent="text-amber-700"
             />
-            <span className="hidden h-10 w-px bg-border sm:block" />
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 px-3 py-1.5 text-xs font-semibold text-amber-800 shadow-sm">
-              <BadgeCheck className="h-4 w-4 text-amber-600" />
-              Gold-standard evidence rubric
+            <span className="hidden h-12 w-px bg-border sm:block" />
+            <AnalyzedCoverageStat />
+            <span className="hidden h-12 w-px bg-border sm:block" />
+            <div className="inline-flex max-w-[12rem] items-center gap-2 rounded-full border border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 px-3 py-1.5 text-xs font-semibold text-amber-800 shadow-sm">
+              <BadgeCheck className="h-4 w-4 shrink-0 text-amber-600" />
+              SQL-graded rubric — auditable, not a chatbot guess
             </div>
           </div>
           </div>
@@ -607,11 +648,14 @@ export function TrustGaugePage() {
 
       {/* ── Coverage so far ──────────────────────────────────────────────── */}
       <section data-demo="coverage" className="rounded-xl border bg-card p-4 sm:p-5">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-sm font-semibold text-foreground">Detailed analysis so far</h2>
-          <p className="text-xs text-muted-foreground">
-            India has {INDIA_STATES} states and {INDIA_UNION_TERRITORIES} union territories. We currently have
-            in-depth trust analysis for just {ANALYZED_DISTRICT_COUNT} districts — more coming soon.
+        <div className="space-y-1">
+          <h2 className="text-sm font-semibold text-foreground">Where we&apos;ve gone deep first</h2>
+          <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            India has {INDIA_STATES} states and {INDIA_UNION_TERRITORIES} union territories —{' '}
+            {stats ? formatNumber(stats.facilities) : 'thousands of'} facilities are already in gold, but{' '}
+            <strong className="font-medium text-foreground">{ANALYZED_DISTRICT_COUNT} pilot districts</strong> have
+            full trust profiling today: live website crawls, registry cross-checks, and human-review queues. Same
+            evidence rubric everywhere; we&apos;re expanding district by district. Open a pilot to see trust on the map.
           </p>
         </div>
         <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -643,7 +687,7 @@ export function TrustGaugePage() {
         <div className="flex items-center gap-1.5">
           <Stethoscope className="h-4 w-4 text-primary" />
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Choose a capability to verify
+            Pick a capability — see who can actually deliver
           </span>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">

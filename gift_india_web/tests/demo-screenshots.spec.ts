@@ -195,7 +195,7 @@ test('capture demo walkthrough screenshots', async ({ page }) => {
     const slug = String(step.idx + 1).padStart(2, '0');
     const file = `${slug}-${step.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}.png`;
     const path = join(OUT_DIR, file);
-    await page.screenshot({ path, fullPage: true, animations: 'disabled' });
+    await page.screenshot({ path, fullPage: false, animations: 'disabled' });
     manifest.push({ ...step, file });
     console.log(`Captured step ${step.idx + 1}/${DEMO_STEPS.length}: ${file}`);
   }

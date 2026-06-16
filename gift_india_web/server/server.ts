@@ -78,9 +78,19 @@ interface DbHandle {
   query(text: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>;
 }
 
+function lakebaseHandle(appkit: { lakebase?: DbHandle }): DbHandle {
+  if (!appkit.lakebase) {
+    throw new Error('Lakebase plugin is not registered — unset GIFT_INDIA_DB_URL for deploy.');
+  }
+  return appkit.lakebase;
+}
+
 const basePlugins = useLocalDb ? [server()] : [lakebase(), server()];
-// Genie queries governed gold.* via Databricks API — independent of local Postgres vs Lakebase.
-const plugins = process.env.DATABRICKS_GENIE_SPACE_ID ? [...basePlugins, genie()] : basePlugins;
+const giftGenieSpaceId =
+  process.env.DATABRICKS_GIFT_GENIE_SPACE_ID ?? process.env.DATABRICKS_GENIE_SPACE_ID;
+const plugins = giftGenieSpaceId
+  ? [...basePlugins, genie({ spaces: { gift: giftGenieSpaceId } })]
+  : basePlugins;
 
 createApp({
   plugins,
@@ -113,7 +123,7 @@ createApp({
         parsed.pathname.replace(/^\//, '').split('?')[0],
       );
     } else {
-      db = (appkit as unknown as { lakebase: DbHandle }).lakebase;
+      db = lakebaseHandle(appkit);
       console.log('[trust-desk] serving from Lakebase');
     }
     await setupgift_indiaRoutes({ lakebase: db, server: appkit.server });

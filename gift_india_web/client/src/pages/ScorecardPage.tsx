@@ -352,7 +352,17 @@ export function ScorecardPage() {
   );
 
   const genieFacility = f
-    ? { name: f.name, district: f.district, state: f.state, facilityId: f.facilityId }
+    ? {
+        facilityId: f.facilityId,
+        name: f.name,
+        district: f.district,
+        state: f.state,
+        stateCode: f.stateCode ?? null,
+        type: f.type ?? null,
+        beds: f.beds,
+        meanTrustScore: summary.avg,
+        flaggedCapabilityCount: summary.needsReview,
+      }
     : null;
 
   return (
@@ -560,7 +570,7 @@ export function ScorecardPage() {
           <p className="px-1 text-xs text-muted-foreground">
             Grades come from the evidence-backed trust score (A ≥ 75, B ≥ 60, C ≥ 45, D ≥ 25, else F). Amber flags
             mean a planner should confirm with local ground truth before relying on the score — use Start human review
-            to log an override. Ask Genie queries governed data; it does not change scores.
+            to log an override. GIFT Genie queries governed Virtue Foundation data; it does not change Lakebase scores or flags.
           </p>
         </>
       ) : (

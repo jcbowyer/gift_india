@@ -19,6 +19,7 @@ PROFILE = "gift-india-mb"
 WAREHOUSE_ID = "234ccf680e359443"
 ENDPOINT = "projects/gift-india/branches/production/endpoints/primary"
 UC_SCHEMA = "workspace.gift_serving"
+BATCH_SIZE = 200
 
 TABLES = (
     "facilities",
@@ -58,7 +59,6 @@ def uc_conn():
     cfg = Config(profile=PROFILE)
     host = cfg.host.replace("https://", "").replace("http://", "")
     headers = cfg.authenticate()
-
     return sql.connect(
         server_hostname=host,
         http_path=f"/sql/1.0/warehouses/{WAREHOUSE_ID}",
@@ -79,149 +79,77 @@ def pg_columns(cur, table: str) -> list[tuple[str, str]]:
     return cur.fetchall()
 
 
-def pg_table_comment(cur, schema: str, table: str) -> str | None:
-    cur.execute(
-        """
-        SELECT obj_description(c.oid)
-        FROM pg_class c
-        JOIN pg_namespace n ON n.oid = c.relnamespace
-        WHERE n.nspname = %s AND c.relname = %s
-          AND c.relkind IN ('r', 'v', 'm')
-        """,
-        (schema, table),
-    )
-    row = cur.fetchone()
-    return row[0] if row and row[0] else None
-
-
-def pg_column_comments(cur, schema: str, table: str) -> list[tuple[str, str]]:
-    cur.execute(
-        """
-        SELECT a.attname, col_description(a.attrelid, a.attnum)
-        FROM pg_attribute a
-        JOIN pg_class c ON a.attrelid = c.oid
-        JOIN pg_namespace n ON c.relnamespace = n.oid
-        WHERE n.nspname = %s AND c.relname = %s
-          AND a.attnum > 0 AND NOT a.attisdropped
-        ORDER BY a.attnum
-        """,
-        (schema, table),
-    )
-    return [(name, comment) for name, comment in cur.fetchall() if comment]
-
-
-def sql_literal(value: str) -> str:
-    return "'" + value.replace("'", "''") + "'"
-
-
-def apply_uc_comments(
-    uc_cur,
-    table: str,
-    table_comment: str | None,
-    column_comments: list[tuple[str, str]],
-) -> int:
-    applied = 0
-    if table_comment:
-        uc_cur.execute(
-            f"COMMENT ON TABLE {UC_SCHEMA}.{table} IS {sql_literal(table_comment)}"
-        )
-        applied += 1
-    for col, comment in column_comments:
-        uc_cur.execute(
-            f"COMMENT ON COLUMN {UC_SCHEMA}.{table}.`{col}` IS {sql_literal(comment)}"
-        )
-        applied += 1
-    return applied
-
-
 def ddl_for(table: str, columns: list[tuple[str, str]]) -> str:
-    parts = []
-    for name, pg_type in columns:
-        sql_type = PG_TYPE_TO_SQL.get(pg_type, "STRING")
-        parts.append(f"`{name}` {sql_type}")
-    cols = ",\n  ".join(parts)
-    return f"CREATE OR REPLACE TABLE {UC_SCHEMA}.{table} (\n  {cols}\n) USING DELTA"
+    parts = [f"`{name}` {PG_TYPE_TO_SQL.get(pg_type, 'STRING')}" for name, pg_type in columns]
+    return f"CREATE OR REPLACE TABLE {UC_SCHEMA}.{table} (\n  {', '.join(parts)}\n) USING DELTA"
+
+
+def sql_value(v, pg_type: str) -> str:
+    if v is None:
+        return "NULL"
+    if pg_type == "boolean":
+        return "true" if v else "false"
+    if pg_type in ("integer", "bigint", "double precision", "numeric"):
+        return str(v)
+    if isinstance(v, (dict, list)):
+        v = json.dumps(v)
+    else:
+        v = str(v)
+    return "'" + v.replace("\\", "\\\\").replace("'", "''") + "'"
+
+
+def insert_batch(uc_cur, table: str, columns: list[tuple[str, str]], rows: list[tuple]) -> None:
+    if not rows:
+        return
+    col_sql = ", ".join(f"`{name}`" for name, _ in columns)
+    values_sql = []
+    for row in rows:
+        vals = ", ".join(sql_value(v, pg_type) for v, (_, pg_type) in zip(row, columns))
+        values_sql.append(f"({vals})")
+    uc_cur.execute(
+        f"INSERT INTO {UC_SCHEMA}.{table} ({col_sql}) VALUES {', '.join(values_sql)}"
+    )
 
 
 def main() -> int:
-    pg = lakebase_conn()
-    pg_cur = pg.cursor()
+    only = {t.strip() for t in sys.argv[1:] if t.strip()}
 
     with uc_conn() as uc:
         uc_cur = uc.cursor()
         uc_cur.execute(f"CREATE SCHEMA IF NOT EXISTS {UC_SCHEMA}")
 
         for table in TABLES:
+            if only and table not in only:
+                continue
             print(f"syncing {table}...", flush=True)
+            pg = lakebase_conn()
+            pg_cur = pg.cursor()
             pg_cur.execute(f"SELECT COUNT(*) FROM gold.{table}")
             count = pg_cur.fetchone()[0]
             if count == 0:
                 print(f"skip {table}: empty or missing")
+                pg.close()
                 continue
 
             columns = pg_columns(pg_cur, table)
-            if not columns:
-                print(f"skip {table}: no columns")
-                continue
-
             col_names = [c[0] for c in columns]
             uc_cur.execute(f"DROP TABLE IF EXISTS {UC_SCHEMA}.{table}")
             uc_cur.execute(ddl_for(table, columns))
 
-            select_cols = ", ".join(col_names)
-            pg_cur.execute(f"SELECT {select_cols} FROM gold.{table}")
-            placeholders = ", ".join(["?"] * len(col_names))
-            insert_sql = (
-                f"INSERT INTO {UC_SCHEMA}.{table} ({', '.join(f'`{c}`' for c in col_names)}) "
-                f"VALUES ({placeholders})"
-            )
-
-            batch: list[tuple] = []
+            pg_cur.execute(f"SELECT {', '.join(col_names)} FROM gold.{table}")
             written = 0
-            string_cols = {
-                i for i, (_, pg_type) in enumerate(columns) if pg_type in ("text", "character varying", "varchar", "jsonb")
-            }
-
-            def normalize(row: tuple) -> tuple:
-                out = []
-                for i, v in enumerate(row):
-                    if v is None:
-                        out.append(None)
-                    elif isinstance(v, (dict, list)):
-                        out.append(json.dumps(v))
-                    elif i in string_cols:
-                        out.append(str(v))
-                    else:
-                        out.append(v)
-                return tuple(out)
-
             while True:
-                rows = pg_cur.fetchmany(500)
+                rows = pg_cur.fetchmany(BATCH_SIZE)
                 if not rows:
                     break
-                for row in rows:
-                    batch.append(normalize(row))
-                    if len(batch) >= 500:
-                        uc_cur.executemany(insert_sql, batch)
-                        written += len(batch)
-                        batch = []
-            if batch:
-                uc_cur.executemany(insert_sql, batch)
-                written += len(batch)
+                insert_batch(uc_cur, table, columns, rows)
+                written += len(rows)
+                if written % 2000 == 0:
+                    print(f"  {table}: {written}/{count}", flush=True)
 
-            table_comment = pg_table_comment(pg_cur, "gold", table)
-            col_comments = pg_column_comments(pg_cur, "gold", table)
-            try:
-                comment_count = apply_uc_comments(
-                    uc_cur, table, table_comment, col_comments
-                )
-            except Exception as exc:  # noqa: BLE001 — log and continue data sync
-                comment_count = 0
-                print(f"warn {table}: could not apply UC comments ({exc})")
+            print(f"synced {table}: {written} rows")
+            pg.close()
 
-            print(f"synced {table}: {written} rows ({comment_count} comments)")
-
-    pg.close()
     return 0
 
 

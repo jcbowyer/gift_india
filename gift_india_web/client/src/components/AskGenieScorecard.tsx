@@ -12,43 +12,37 @@ import {
   useGenieChat,
 } from '@databricks/appkit-ui/react';
 import { ChevronDown, ChevronRight, Sparkles } from 'lucide-react';
+import {
+  GIFT_GENIE_ALIAS,
+  GIFT_GENIE_FRAMEWORK,
+  giftGenieContextualizeQuestion,
+  giftGenieFacilityPrompts,
+  giftGenieGlobalPrompts,
+  type GiftGenieFacilityContext,
+} from '../lib/giftGenie';
 
-type FacilityContext = {
-  name: string;
-  district: string;
-  state: string;
-  facilityId: string;
-};
-
-function starterPrompts(ctx: FacilityContext | null): string[] {
-  if (!ctx) {
-    return [
-      'Which districts have the most facilities with contradicting ICU evidence?',
-      'List JCI-accredited hospitals with strong emergency capability evidence.',
-      'How many facilities in Uttar Pradesh claim ICU but have weak or suspicious evidence?',
-    ];
-  }
-  return [
-    `Which capabilities at ${ctx.name} have contradicting evidence?`,
-    `How does ${ctx.name}'s mean trust score compare to other hospitals in ${ctx.district}?`,
-    `List JCI-accredited facilities in ${ctx.state} with strong ICU evidence.`,
-  ];
-}
-
-function AskGeniePanel({ facility }: { facility: FacilityContext | null }) {
+function AskGeniePanel({ facility }: { facility: GiftGenieFacilityContext | null }) {
   const { messages, status, sendMessage, error } = useGenieChat({
-    alias: 'default',
+    alias: GIFT_GENIE_ALIAS,
     persistInUrl: false,
   });
-  const prompts = useMemo(() => starterPrompts(facility), [facility]);
+  const prompts = useMemo(
+    () => (facility ? giftGenieFacilityPrompts(facility) : giftGenieGlobalPrompts()),
+    [facility],
+  );
   const busy = status === 'streaming' || status === 'loading-history';
+
+  const ask = (question: string) => {
+    sendMessage(giftGenieContextualizeQuestion(question, facility));
+  };
 
   return (
     <div className="flex h-[min(28rem,60vh)] flex-col overflow-hidden rounded-lg border bg-card">
-      <div className="shrink-0 space-y-2 border-b bg-muted/20 px-3 py-2.5">
-        <p className="text-xs text-muted-foreground">
-          Natural-language queries over governed <code className="text-[11px]">gold.*</code> tables — Genie
-          does not change trust scores or clear review flags.
+      <div className="shrink-0 space-y-2 border-b bg-gradient-to-r from-primary/5 to-amber-50/40 px-3 py-2.5">
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          <span className="font-semibold text-foreground">GIFT Genie</span> — {GIFT_GENIE_FRAMEWORK}
+          {' '}Queries governed <code className="text-[11px]">workspace.gift_serving.*</code> (synced from Lakebase{' '}
+          <code className="text-[11px]">gold.*</code>); it does not change scorecard grades or clear human-review flags.
         </p>
         <div className="flex flex-wrap gap-1.5">
           {prompts.map((q) => (
@@ -57,9 +51,9 @@ function AskGeniePanel({ facility }: { facility: FacilityContext | null }) {
               type="button"
               variant="outline"
               size="sm"
-              className="h-auto max-w-full whitespace-normal px-2.5 py-1 text-left text-[11px] font-normal leading-snug"
+              className="h-auto max-w-full whitespace-normal border-primary/20 bg-background/80 px-2.5 py-1 text-left text-[11px] font-normal leading-snug hover:border-primary/40 hover:bg-primary/5"
               disabled={busy}
-              onClick={() => sendMessage(q)}
+              onClick={() => ask(q)}
             >
               {q}
             </Button>
@@ -73,12 +67,12 @@ function AskGeniePanel({ facility }: { facility: FacilityContext | null }) {
         ) : null}
         <div className="shrink-0 border-t p-2">
           <GenieChatInput
-            onSend={sendMessage}
+            onSend={ask}
             disabled={busy}
             placeholder={
               facility
-                ? `Ask about ${facility.name} or regional facility trust data…`
-                : 'Ask about facility trust signals, evidence, or accreditation…'
+                ? `Ask GIFT Genie about ${facility.name} or ${facility.district}…`
+                : 'Ask about facility trust, capabilities, districts, or NFHS indicators…'
             }
           />
         </div>
@@ -87,11 +81,11 @@ function AskGeniePanel({ facility }: { facility: FacilityContext | null }) {
   );
 }
 
-export function AskGenieScorecard({ facility }: { facility: FacilityContext | null }) {
+export function AskGenieScorecard({ facility }: { facility: GiftGenieFacilityContext | null }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <Card className="gift-lift" data-demo="ask-genie">
+    <Card className="gift-lift border-primary/15" data-demo="ask-genie">
       <Collapsible open={open} onOpenChange={setOpen}>
         <CardHeader className="space-y-0 p-0">
           <CollapsibleTrigger asChild>
@@ -104,14 +98,14 @@ export function AskGenieScorecard({ facility }: { facility: FacilityContext | nu
               ) : (
                 <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
               )}
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary ring-1 ring-primary/20">
                 <Sparkles className="h-4 w-4" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block font-semibold text-foreground">Ask Genie</span>
+                <span className="block font-semibold text-foreground">Ask GIFT Genie</span>
                 <span className="block text-xs text-muted-foreground">
-                  Query governed facility data in plain language
-                  {facility ? ` · context: ${facility.name}` : ''}
+                  Governed facility & district analytics
+                  {facility ? ` · scorecard: ${facility.name}` : ''}
                 </span>
               </span>
             </button>
@@ -121,8 +115,9 @@ export function AskGenieScorecard({ facility }: { facility: FacilityContext | nu
           <CardContent className="space-y-2 px-4 pb-4 pt-0">
             <AskGeniePanel facility={facility} />
             <p className="text-[11px] text-muted-foreground">
-              Requires the Genie plugin and <code>DATABRICKS_GENIE_SPACE_ID</code> on the server. Answers cite SQL
-              over Unity Catalog / Lakehouse — not live website crawls.
+              Answers cite SQL over Unity Catalog (Virtue Foundation share). Scorecard grades and flags come from
+              Lakebase <code className="text-[11px]">gold.*</code> — use the capability rows above for per-facility
+              trust detail.
             </p>
           </CardContent>
         </CollapsibleContent>

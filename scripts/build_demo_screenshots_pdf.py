@@ -105,7 +105,7 @@ def build_pdf() -> Path:
     story.append(
         Paragraph(
             f"<b>{len(steps)} steps</b> from the in-app demo guide (DEMO.md). "
-            "Each page shows the step metadata, expected screen, and a full-page capture at 1280×800.",
+            "Each page shows the step metadata and a viewport capture (1280×800 — visible screen only, no scroll).",
             styles["body"],
         )
     )

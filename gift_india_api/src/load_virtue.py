@@ -183,6 +183,10 @@ def _copy_csv(
 
 def _set_owner(conn, owner: str) -> None:
     with conn.cursor() as cur:
+        cur.execute("SELECT 1 FROM pg_roles WHERE rolname = %s", (owner,))
+        if cur.fetchone() is None:
+            print(f"  skip owner transfer: role {owner!r} does not exist on Lakebase")
+            return
         cur.execute(f'ALTER SCHEMA gold OWNER TO "{owner}"')
         cur.execute(
             "SELECT 'gold.' || tablename FROM pg_tables WHERE schemaname = 'gold'"
@@ -194,7 +198,8 @@ def _set_owner(conn, owner: str) -> None:
 
 def _lakebase_dsn(args) -> str:
     creds = db.lakebase_credentials(args.endpoint, args.profile)
-    user = args.user or args.owner or db.current_user(args.profile)
+    # Authenticate as the Databricks user; --owner only sets object ownership after load.
+    user = args.user or db.current_user(args.profile)
     return (
         f"postgresql://{quote(user)}:{quote(creds['token'])}@"
         f"{creds['host']}:5432/{args.database}?sslmode=require"

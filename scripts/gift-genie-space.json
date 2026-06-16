@@ -1,0 +1,55 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "de9ed0dd9485433caa73e8ff43172613",
+        "question": [
+          "Which districts have the most facilities with contradicting ICU evidence?"
+        ]
+      },
+      {
+        "id": "45e275987824406bbc90a47703e6d772",
+        "question": [
+          "List facilities in Maharashtra with strong emergency capability evidence."
+        ]
+      },
+      {
+        "id": "bc9540d65f604e9cae5c4590e4dbb959",
+        "question": [
+          "How many facilities in Uttar Pradesh claim ICU but have weak or suspicious evidence?"
+        ]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "workspace.gift_serving.capability_scored"
+      },
+      {
+        "identifier": "workspace.gift_serving.facilities"
+      },
+      {
+        "identifier": "workspace.gift_serving.facility_capability_assessments"
+      },
+      {
+        "identifier": "workspace.gift_serving.geography"
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "14245a19513a45e9a7752a438c0812c0",
+        "content": [
+          "GIFT Gauge scores Indian healthcare facilities by evidence-backed capability claims.\n",
+          "Primary tables: facilities (entity master), facility_capability_assessments (per-capability trust signals), capability_scored (deterministic evidence_strength_score and evidence_tier), geography (district NFHS-5 context).\n",
+          "Join on facility_id. evidence_strength_score is 0-1; evidence_tier is Strong, Moderate, Weak, or Insufficient.\n",
+          "trust_signal values include strong, partial, weak_suspicious, no_claim. claimed=true means the facility asserts the capability.\n",
+          "When listing facilities, include name, district, and state. Do not invent data \u2014 query the tables."
+        ]
+      }
+    ]
+  }
+}

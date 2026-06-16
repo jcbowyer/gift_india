@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "a1b2c3d4e5f60000000000000000000a",
+        "question": [
+          "How many facilities in Uttar Pradesh claim ICU capability?"
+        ]
+      },
+      {
+        "id": "b2c3d4e5f6a70000000000000000000b",
+        "question": [
+          "Which states have the most facilities with an official website?"
+        ]
+      },
+      {
+        "id": "c3d4e5f6a7b80000000000000000000c",
+        "question": [
+          "List facilities in Mumbai with bed capacity over 100."
+        ]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "databricks_virtue_foundation_dataset_dais_2026.virtue_foundation_dataset.facilities",
+        "description": [
+          "Governed Virtue Foundation healthcare facilities in India. Key columns: unique_id (facility id), name, address_city, address_stateOrRegion, capacity (beds), latitude, longitude, officialWebsite, specialties, capability, procedure."
+        ]
+      },
+      {
+        "identifier": "databricks_virtue_foundation_dataset_dais_2026.virtue_foundation_dataset.nfhs_5_district_health_indicators",
+        "description": [
+          "NFHS-5 district health indicators for India — join to facilities on district/state for population and health context."
+        ]
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "01f0b37c378e1c9100000000000000a1",
+        "content": [
+          "You are Genie for GIFT Gauge — Governance, Integrity & Facility Trust — a Databricks for Good app that helps health planners answer: Can this hospital actually do what it claims? Use only the registered Unity Catalog tables. Never invent facilities, citations, or trust scores. When users ask about trust signals, capabilities (ICU, maternity, emergency, trauma, oncology, NICU), evidence, or accreditation, map questions to real columns in the Virtue Foundation facilities table. Filter to India where relevant (address_countryCode = 'IN' if present). GIFT trust signals are: strong, partial, weak_suspicious, no_claim. Approximate evidence quality using specialties, capability, procedure, and officialWebsite when users ask about trust. Prefer district + state geography; unique_id is the stable facility key. Per-capability trust scores and human-review flags on the scorecard come from the app's Lakebase gold tables — direct users to the scorecard UI for facility-specific grades."
+        ]
+      }
+    ],
+    "example_question_sqls": [
+      {
+        "id": "01f0821116d912db00000000000000b1",
+        "question": [
+          "How many facilities are in Maharashtra?"
+        ],
+        "sql": [
+          "SELECT COUNT(*) AS facility_count FROM databricks_virtue_foundation_dataset_dais_2026.virtue_foundation_dataset.facilities WHERE address_stateOrRegion = 'Maharashtra'"
+        ]
+      },
+      {
+        "id": "01f0821116d912db00000000000000b2",
+        "question": [
+          "Which facilities in Delhi mention ICU in specialties or capability?"
+        ],
+        "sql": [
+          "SELECT name, address_city, specialties, capability FROM databricks_virtue_foundation_dataset_dais_2026.virtue_foundation_dataset.facilities WHERE address_stateOrRegion = 'Delhi' AND (LOWER(COALESCE(specialties,'')) LIKE '%icu%' OR LOWER(COALESCE(capability,'')) LIKE '%icu%')"
+        ]
+      }
+    ]
+  }
+}

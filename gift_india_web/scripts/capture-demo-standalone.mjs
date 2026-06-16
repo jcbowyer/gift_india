@@ -137,7 +137,7 @@ async function main() {
 
     const slug = String(step.idx + 1).padStart(2, '0');
     const file = `${slug}-${step.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}.png`;
-    await page.screenshot({ path: join(OUT_DIR, file), fullPage: true, animations: 'disabled' });
+    await page.screenshot({ path: join(OUT_DIR, file), fullPage: false, animations: 'disabled' });
     manifest.push({ ...step, file });
     console.log(`Captured ${step.idx + 1}/${DEMO_STEPS.length}: ${file}`);
   }
