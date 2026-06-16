@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type MouseEvent } from 'react';
 import { Link } from 'react-router';
 import {
   Card,
   CardContent,
-  Badge,
   Skeleton,
   Alert,
   AlertTitle,
@@ -27,6 +26,12 @@ import {
   PopoverContent,
   PopoverTrigger,
   useIsMobile,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from '@databricks/appkit-ui/react';
 import {
   ChevronDown,
@@ -45,6 +50,7 @@ import {
   Activity,
   Stethoscope,
   Info,
+  PencilLine,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -169,6 +175,58 @@ function AnalyzedCoverageStat() {
   );
 }
 
+function FacilityDetailBody({
+  rec,
+  cap,
+  loading,
+  reviewOpen,
+  onReviewOpenChange,
+  onSaved,
+}: {
+  rec: FacilityRanking;
+  cap: FacilityDetail['capabilities'][number] | undefined;
+  loading: boolean;
+  reviewOpen: boolean;
+  onReviewOpenChange: (open: boolean) => void;
+  onSaved: (sig: TrustSignal | null, _note: string, score: number | null) => void;
+}) {
+  if (loading) {
+    return (
+      <div className="space-y-2">
+        <Skeleton className="h-16 w-full rounded" />
+        <Skeleton className="h-16 w-full rounded" />
+        <Skeleton className="h-24 w-full rounded" />
+      </div>
+    );
+  }
+  if (!cap) {
+    return <p className="text-sm text-muted-foreground">Could not load evidence for this facility.</p>;
+  }
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-sm font-semibold text-foreground">
+          {cap.label} evidence
+        </span>
+        <Link
+          to={`/facility/${encodeURIComponent(rec.facilityId)}`}
+          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+        >
+          Full facility record <ExternalLink className="h-3 w-3" />
+        </Link>
+      </div>
+      <CapabilityEvidence
+        cap={cap}
+        facilityId={rec.facilityId}
+        facilityName={rec.name}
+        reviewOpen={reviewOpen}
+        onReviewOpenChange={onReviewOpenChange}
+        onSaved={onSaved}
+      />
+    </div>
+  );
+}
+
 function FacilityRow({
   rec,
   capabilityKey,
@@ -176,105 +234,183 @@ function FacilityRow({
   rec: FacilityRanking;
   capabilityKey: string;
 }) {
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [detail, setDetail] = useState<FacilityDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [override, setOverride] = useState<TrustSignal | null>(rec.overrideSignal);
+  const [overrideScore, setOverrideScore] = useState<number | null>(rec.overrideScore);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [reviewPending, setReviewPending] = useState(false);
+
+  const loadDetail = async () => {
+    if (detail) return detail;
+    setLoading(true);
+    try {
+      const d = await api.facility(rec.facilityId);
+      setDetail(d);
+      return d;
+    } catch {
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openDetail = async () => {
+    setOpen(true);
+    if (!detail) await loadDetail();
+  };
 
   const toggle = async () => {
-    const next = !open;
-    setOpen(next);
-    if (next && !detail) {
-      setLoading(true);
-      try {
-        setDetail(await api.facility(rec.facilityId));
-      } catch {
-        /* surfaced by empty state below */
-      } finally {
-        setLoading(false);
-      }
+    if (open) {
+      setOpen(false);
+      setReviewOpen(false);
+      return;
     }
+    await openDetail();
   };
 
   const cap = detail?.capabilities.find((c) => c.key === capabilityKey);
   const effectiveSignal = override ?? rec.trustSignal;
+  const effectiveScore = overrideScore ?? rec.overrideScore ?? rec.trustScore;
+
+  useEffect(() => {
+    if (reviewPending && cap) {
+      setReviewOpen(true);
+      setReviewPending(false);
+    }
+  }, [reviewPending, cap]);
+
+  const queueReview = (e: MouseEvent) => {
+    e.stopPropagation();
+    setOpen(true);
+    if (cap) setReviewOpen(true);
+    else {
+      setReviewPending(true);
+      void loadDetail();
+    }
+  };
+
+  const overrideBtnClass =
+    'shrink-0 gap-1.5 border-border bg-background font-medium text-foreground shadow-sm hover:border-primary/45 hover:bg-muted/50';
+
+  const detailBody = (
+    <FacilityDetailBody
+      rec={rec}
+      cap={cap}
+      loading={loading}
+      reviewOpen={reviewOpen}
+      onReviewOpenChange={setReviewOpen}
+      onSaved={(sig, _note, score) => {
+        setOverride(sig);
+        setOverrideScore(score);
+      }}
+    />
+  );
 
   return (
-    <Card className={`overflow-hidden ${open ? '' : 'gift-lift'}`} data-demo={open ? 'facility-expanded' : undefined}>
-      <button
-        type="button"
-        onClick={() => void toggle()}
-        className="flex w-full items-stretch gap-3 text-left transition-colors hover:bg-muted/40"
+    <>
+      <Card
+        className={`overflow-hidden gift-lift ${open && !isMobile ? 'ring-1 ring-primary/25' : ''}`}
+        data-demo={open && isMobile ? 'facility-expanded' : undefined}
       >
-        <div className="flex items-center pl-3 text-muted-foreground">
-          {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </div>
-        <div className="py-3">
-          <TrustScoreDial score={rec.trustScore} signal={effectiveSignal} />
-        </div>
-        <div className="flex-1 min-w-0 space-y-1.5 py-3 pr-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground">#{rec.rank}</span>
-            <h3 className="truncate font-semibold text-foreground">{rec.name}</h3>
-            <SignalBadge signal={effectiveSignal} />
-            {override && (
-              <Badge variant="outline" className="text-[10px]">
-                planner override
-              </Badge>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" /> {rec.district}, {rec.state}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Building2 className="h-3.5 w-3.5" /> {rec.type}
-            </span>
-            {rec.beds !== null && <span>{rec.beds} beds</span>}
-          </div>
-          <p className="text-sm text-foreground/80">{rec.summary}</p>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-            <EvidenceTally supporting={rec.supportingCount} contradicting={rec.contradictingCount} />
-            {rec.bestSource && <BestSourceBadge source={rec.bestSource} />}
-          </div>
-        </div>
-      </button>
-
-      {open && (
-        <CardContent className="border-t bg-muted/20 pt-4">
-          {loading && (
-            <div className="space-y-2">
-              <Skeleton className="h-16 w-full rounded" />
-              <Skeleton className="h-16 w-full rounded" />
+        <div className="flex items-stretch">
+          <button
+            type="button"
+            onClick={() => void toggle()}
+            className="flex min-w-0 flex-1 items-stretch gap-3 text-left transition-colors hover:bg-muted/40"
+          >
+            <div className="flex items-center pl-3 text-muted-foreground">
+              {open && isMobile ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
             </div>
-          )}
-          {!loading && cap && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-foreground">
-                  {cap.label} evidence for {rec.name}
-                </span>
-                <Link
-                  to={`/facility/${encodeURIComponent(rec.facilityId)}`}
-                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                >
-                  Full facility record <ExternalLink className="h-3 w-3" />
-                </Link>
+            <div className="py-3">
+              <TrustScoreDial score={effectiveScore} signal={effectiveSignal} />
+            </div>
+            <div className="flex-1 min-w-0 space-y-1.5 py-3 pr-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-semibold text-muted-foreground">#{rec.rank}</span>
+                <h3 className="truncate font-semibold text-foreground">{rec.name}</h3>
+                <SignalBadge signal={effectiveSignal} />
               </div>
-              <CapabilityEvidence
-                cap={cap}
-                facilityId={rec.facilityId}
-                facilityName={rec.name}
-                onSaved={(sig) => setOverride(sig)}
-              />
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" /> {rec.district}, {rec.state}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <Building2 className="h-3.5 w-3.5" /> {rec.type}
+                </span>
+                {rec.beds !== null && <span>{rec.beds} beds</span>}
+              </div>
+              <p className="text-sm text-foreground/80">{rec.summary}</p>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <EvidenceTally supporting={rec.supportingCount} contradicting={rec.contradictingCount} />
+                {rec.bestSource && <BestSourceBadge source={rec.bestSource} />}
+              </div>
             </div>
-          )}
-          {!loading && !cap && (
-            <p className="text-sm text-muted-foreground">Could not load evidence for this facility.</p>
-          )}
-        </CardContent>
+          </button>
+          <div className="flex items-center pr-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className={overrideBtnClass}
+              onClick={queueReview}
+              aria-label={`Override assessment for ${rec.name}`}
+            >
+              <PencilLine className="h-4 w-4" />
+              <span className="hidden sm:inline">Override</span>
+            </Button>
+          </div>
+        </div>
+
+        {isMobile && open && <CardContent className="border-t bg-muted/20 pt-4">{detailBody}</CardContent>}
+      </Card>
+
+      {!isMobile && (
+        <Dialog
+          open={open}
+          onOpenChange={(next) => {
+            setOpen(next);
+            if (!next) setReviewOpen(false);
+          }}
+        >
+          <DialogContent
+            className="flex max-h-[min(88vh,820px)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl"
+            data-demo="facility-expanded"
+          >
+            <DialogHeader className="shrink-0 space-y-3 border-b bg-muted/20 px-6 py-5">
+              <div className="flex flex-wrap items-start gap-4 pr-6">
+                <TrustScoreDial score={effectiveScore} signal={effectiveSignal} size="lg" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <DialogTitle className="text-left text-xl leading-tight">
+                    <span className="text-muted-foreground">#{rec.rank}</span> {rec.name}
+                  </DialogTitle>
+                  <DialogDescription asChild>
+                    <div className="space-y-2 text-left">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <SignalBadge signal={effectiveSignal} size="lg" />
+                        <span className="inline-flex items-center gap-1 text-sm">
+                          <MapPin className="h-3.5 w-3.5" /> {rec.district}, {rec.state}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-sm">
+                          <Building2 className="h-3.5 w-3.5" /> {rec.type}
+                        </span>
+                      </div>
+                      <p className="text-sm text-foreground/80">{rec.summary}</p>
+                    </div>
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">{detailBody}</div>
+          </DialogContent>
+        </Dialog>
       )}
-    </Card>
+    </>
   );
 }
 

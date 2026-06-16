@@ -8,4 +8,5 @@ requests>=2.32
 beautifulsoup4>=4.12
 lxml>=5.2
 loguru>=0.7
+playwright>=1.57
 pyshp>=2.3

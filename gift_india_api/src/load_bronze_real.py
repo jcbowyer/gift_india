@@ -1,5 +1,5 @@
 """Land the REAL governed Virtue Foundation rows into the Postgres ``bronze.*``
-landing schema (``districts`` + ``facilities``) so the dbt medallion runs on real
+landing schema (``districts`` + ``facilities_virtue``) so the dbt medallion runs on real
 data instead of the synthetic ``src.data`` demo set.
 
 Background — there are two ways real VF data reaches Postgres:

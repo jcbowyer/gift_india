@@ -5,14 +5,14 @@
     )
 }}
 
--- Silver NABH accreditations: cleaned, typed, deduped NABH-accredited / -certified /
+-- Silver facilities_nabh: cleaned, typed, deduped NABH-accredited / -certified /
 -- -empanelled facilities in India. Trims text, attaches a state_code, and (re)derives
 -- the canonical entity-resolution keys via the shared `jci_normalize` macro so NABH
 -- and JCI keys are in lock-step with the matcher regardless of what the Python loader
 -- landed. One row per `nabh_org_id`. Feeds gold.facility_nabh (the facility crosswalk).
 
 with raw as (
-    select * from {{ source('bronze', 'nabh_accreditations') }}
+    select * from {{ source('bronze', 'facilities_nabh') }}
 ),
 
 state_codes as (

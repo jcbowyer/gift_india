@@ -161,7 +161,16 @@ export function FacilityPage() {
                       cap={cap}
                       facilityId={f.facilityId}
                       facilityName={f.name}
-                      onSaved={(sig) => setOverrides((prev) => ({ ...prev, [cap.key]: sig }))}
+                      onSaved={(sig) =>
+                        setOverrides((prev) => {
+                          if (!sig) {
+                            const next = { ...prev };
+                            delete next[cap.key];
+                            return next;
+                          }
+                          return { ...prev, [cap.key]: sig };
+                        })
+                      }
                     />
                   </CardContent>
                 )}

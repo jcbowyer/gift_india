@@ -53,17 +53,15 @@ function RailButton({
       disabled={disabled}
       onClick={onClick}
       className={[
-        'map-tool-rail-btn flex flex-col items-center justify-center gap-0.5 rounded-2xl',
-        'h-[52px] w-[52px] text-[10px] font-semibold leading-none tracking-tight',
-        'transition-[background-color,color,box-shadow] duration-150',
+        'map-tool-rail-btn flex items-center justify-center rounded-lg',
+        'h-8 w-8 transition-[background-color,color,box-shadow] duration-150',
         active
-          ? 'bg-[#24345b] text-white shadow-[0_4px_14px_rgba(20,30,45,0.18)]'
-          : 'bg-white text-[#6b778c] shadow-[0_1px_4px_rgba(20,30,45,0.08)] hover:text-slate-700',
+          ? 'bg-[#24345b] text-white shadow-[0_2px_8px_rgba(20,30,45,0.16)]'
+          : 'bg-white text-[#6b778c] shadow-[0_1px_3px_rgba(20,30,45,0.07)] hover:text-slate-700',
         disabled ? 'cursor-default opacity-45' : 'cursor-pointer',
       ].join(' ')}
     >
-      <span className="flex h-5 w-5 items-center justify-center [&_svg]:h-[18px] [&_svg]:w-[18px]">{children}</span>
-      <span>{label}</span>
+      <span className="flex h-4 w-4 items-center justify-center [&_svg]:h-[15px] [&_svg]:w-[15px]">{children}</span>
     </button>
   );
 }
@@ -133,29 +131,21 @@ export function MapToolRail({
   onMetricChange,
 }: MapToolRailProps) {
   const toggleFlyout = (id: MapFlyoutId) => onFlyoutChange(flyout === id ? null : id);
+  const closeFlyout = () => onFlyoutChange(null);
 
   const flatMetrics = groups.flatMap((g) => g.metrics);
 
   return (
-    <>
-      {flyout && (
-        <button
-          type="button"
-          aria-label="Close map controls"
-          className="absolute inset-0 z-[9] cursor-default"
-          onClick={() => onFlyoutChange(null)}
-        />
-      )}
-
-      <div className="absolute left-3 top-3 z-10 rounded-2xl bg-[#ebeef2] p-1.5 shadow-sm">
-        <div className="flex flex-col gap-1.5">
+    <div className="rounded-lg bg-[#ebeef2]/95 p-0.5 shadow-sm backdrop-blur-sm">
+      <div className="relative">
+        <div className="flex flex-col gap-0.5">
           <RailButton
             label="Home"
             active={false}
             disabled={!canHome}
             onClick={() => {
               onHome();
-              onFlyoutChange(null);
+              closeFlyout();
             }}
           >
             <Home strokeWidth={2.25} />
@@ -175,7 +165,7 @@ export function MapToolRail({
           </RailButton>
 
           <RailButton label="Metric" active={flyout === 'metric'} onClick={() => toggleFlyout('metric')}>
-            <span className="text-[20px] font-bold leading-none">№</span>
+            <span className="text-[13px] font-bold leading-none">№</span>
           </RailButton>
 
           <RailButton
@@ -183,64 +173,98 @@ export function MapToolRail({
             active={showPins}
             onClick={() => {
               onShowPinsChange(!showPins);
-              onFlyoutChange(null);
+              closeFlyout();
             }}
           >
             <PinsIcon filled={showPins} />
           </RailButton>
+        </div>
 
         {flyout && (
-          <div className="absolute left-[4.75rem] top-0 z-10 w-[210px] rounded-xl border bg-card p-3 shadow-[0_10px_30px_rgba(20,30,45,0.16)] gift-fade-in">
-          <div className="mb-2 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-            {flyout === 'layer' ? 'Map layer' : flyout === 'scale' ? 'Color scale' : 'Metric'}
-          </div>
-
-          {flyout === 'layer' && (
-            <div className="space-y-1.5">
-              <FlyoutOption label="Filled shading" selected={display === 'shade'} onSelect={() => onDisplayChange('shade')} />
-              <FlyoutOption label="Proportional bubbles" selected={display === 'bubble'} onSelect={() => onDisplayChange('bubble')} />
+          <div
+            className="absolute left-[calc(100%+0.375rem)] top-0 z-20 w-[200px] rounded-xl border bg-card p-2.5 shadow-[0_10px_30px_rgba(20,30,45,0.16)] gift-fade-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+              {flyout === 'layer' ? 'Map layer' : flyout === 'scale' ? 'Color scale' : 'Metric'}
             </div>
-          )}
 
-          {flyout === 'scale' && !logDisabled && (
-            <div className="space-y-1.5">
-              <FlyoutOption label="Linear" selected={!logScale} onSelect={() => onLogScaleChange(false)} />
-              <FlyoutOption label="Logarithmic" selected={logScale} onSelect={() => onLogScaleChange(true)} />
-            </div>
-          )}
-
-          {flyout === 'metric' && (
-            <ScrollArea className="max-h-[min(320px,50vh)] pr-2">
-              <div className="space-y-2">
-                {flatMetrics.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Loading metrics…</p>
-                ) : (
-                  groups.map((g) => (
-                    <div key={g.category}>
-                      <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{g.category}</div>
-                      <div className="space-y-1">
-                        {g.metrics.map((m) => {
-                          const selected = activeMetric.source === m.source && activeMetric.key === m.key;
-                          return (
-                            <FlyoutOption
-                              key={`${m.source}-${m.key}`}
-                              label={m.label}
-                              selected={selected}
-                              onSelect={() => onMetricChange(m)}
-                            />
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))
-                )}
+            {flyout === 'layer' && (
+              <div className="space-y-1.5">
+                <FlyoutOption
+                  label="Filled shading"
+                  selected={display === 'shade'}
+                  onSelect={() => {
+                    onDisplayChange('shade');
+                    closeFlyout();
+                  }}
+                />
+                <FlyoutOption
+                  label="Proportional bubbles"
+                  selected={display === 'bubble'}
+                  onSelect={() => {
+                    onDisplayChange('bubble');
+                    closeFlyout();
+                  }}
+                />
               </div>
-            </ScrollArea>
-          )}
-        </div>
+            )}
+
+            {flyout === 'scale' && !logDisabled && (
+              <div className="space-y-1.5">
+                <FlyoutOption
+                  label="Linear"
+                  selected={!logScale}
+                  onSelect={() => {
+                    onLogScaleChange(false);
+                    closeFlyout();
+                  }}
+                />
+                <FlyoutOption
+                  label="Logarithmic"
+                  selected={logScale}
+                  onSelect={() => {
+                    onLogScaleChange(true);
+                    closeFlyout();
+                  }}
+                />
+              </div>
+            )}
+
+            {flyout === 'metric' && (
+              <ScrollArea className="max-h-[min(320px,50vh)] pr-2">
+                <div className="space-y-2">
+                  {flatMetrics.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">Loading metrics…</p>
+                  ) : (
+                    groups.map((g) => (
+                      <div key={g.category}>
+                        <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{g.category}</div>
+                        <div className="space-y-1">
+                          {g.metrics.map((m) => {
+                            const selected = activeMetric.source === m.source && activeMetric.key === m.key;
+                            return (
+                              <FlyoutOption
+                                key={`${m.source}-${m.key}`}
+                                label={m.label}
+                                selected={selected}
+                                onSelect={() => {
+                                  onMetricChange(m);
+                                  closeFlyout();
+                                }}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+            )}
+          </div>
         )}
-        </div>
       </div>
-    </>
+    </div>
   );
 }

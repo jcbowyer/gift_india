@@ -30,7 +30,7 @@
 -- kept; the org's status/programme/reference travel with it for traceability.
 
 with nabh as (
-    select * from {{ ref('silver_nabh_accreditations') }}
+    select * from {{ ref('silver_facilities_nabh') }}
 ),
 
 facilities as (

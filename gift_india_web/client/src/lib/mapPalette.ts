@@ -1,4 +1,4 @@
-import { scaleLinear } from 'd3-scale';
+import { scaleLinear, scaleSqrt } from 'd3-scale';
 import type { TrustSignal } from './api';
 
 /** Trust-signal → fill colour for facility pins (matches the trust palette). */
@@ -43,10 +43,58 @@ export function placeMatch(a: string, b: string): boolean {
   return na === nb || na.includes(nb) || nb.includes(na);
 }
 
+/** Map an SoI state boundary label (often ALL CAPS) to a canonical data state name. */
+export function resolveBoundaryState(boundaryName: string, states: { state: string }[]): string {
+  const hit = states.find((s) => placeMatch(s.state, boundaryName));
+  return hit?.state ?? titleCase(boundaryName);
+}
+
+/** Map an SoI district boundary label to a canonical data district name within a state. */
+export function resolveBoundaryDistrict(
+  boundaryName: string,
+  state: string,
+  districts: { state: string; district: string }[],
+): string {
+  const inState = districts.filter((d) => placeMatch(d.state, state));
+  const hit = inState.find((d) => placeMatch(d.district, boundaryName));
+  return hit?.district ?? titleCase(boundaryName);
+}
+
 // ── colour ramps (low → high) ────────────────────────────────────────────────
 export const RATING_RAMP = ['#ef4444', '#f59e0b', '#84cc16', '#10b981']; // red→green, rate metric
 export const COUNT_RAMP = ['#e0e7ff', '#818cf8', '#312e81']; // indigo, built-in counts
 export const STORE_RAMP = ['#dbeafe', '#3b82f6', '#1e3a8a']; // blue, metric-store values (Open Navigator style)
+
+const logT = (v: number) => Math.log10(v + 1);
+
+/** Screen-space radius bounds for facility-count bubbles (px, before zoom / k). */
+export const BUBBLE_RADIUS = { min: 2.5, max: 9 } as const;
+
+/** Cap bubble scale at this percentile so one outlier state does not dominate. */
+export function facilityBubbleCap(counts: number[]): number {
+  if (!counts.length) return 1;
+  const sorted = [...counts].sort((a, b) => a - b);
+  const idx = Math.min(sorted.length - 1, Math.floor(sorted.length * 0.88));
+  return Math.max(1, sorted[idx]);
+}
+
+/** Sqrt-of-log radius for a facility count within the current map scope. */
+export function facilityBubbleRadius(count: number, maxInScope: number): number {
+  const cap = Math.max(1, maxInScope);
+  const sq = scaleSqrt().domain([0, logT(cap)]).range([BUBBLE_RADIUS.min, BUBBLE_RADIUS.max]);
+  return sq(logT(Math.max(0, count)));
+}
+
+/** Three reference bubbles for the legend (low / mid / high facility counts). */
+export function facilityBubbleLegendSamples(maxInScope: number): { count: number; r: number }[] {
+  const cap = Math.max(1, maxInScope);
+  const picks = [
+    Math.max(1, Math.round(cap * 0.2)),
+    Math.max(1, Math.round(cap * 0.55)),
+    cap,
+  ];
+  return [...new Set(picks)].map((count) => ({ count, r: facilityBubbleRadius(count, cap) }));
+}
 
 // ── built-in Trust & Capacity metrics (computed from region roll-ups) ────────
 export type BuiltinMetric = 'rating' | 'facilities' | 'strong' | 'claiming';
@@ -76,4 +124,17 @@ export function rampFor(source: 'builtin' | 'store', metricKey: string): { ramp:
   if (source === 'store') return { ramp: STORE_RAMP, isRate: false };
   if (metricKey === 'rating') return { ramp: RATING_RAMP, isRate: true };
   return { ramp: COUNT_RAMP, isRate: false };
+}
+
+/** Min/max for the colour scale from metric values in the current geography scope. */
+export function metricExtent(values: (number | null | undefined)[]): [number, number] | null {
+  const nums = values.filter((v): v is number => v !== null && v !== undefined && Number.isFinite(v));
+  if (!nums.length) return null;
+  const lo = Math.min(...nums);
+  const hi = Math.max(...nums);
+  if (lo === hi) {
+    const pad = Math.max(Math.abs(lo) * 0.05, lo === 0 ? 1 : 0.01);
+    return [lo - pad, hi + pad];
+  }
+  return [lo, hi];
 }

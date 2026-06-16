@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { Application, Request } from 'express';
 import { CAPABILITIES, type TrustSignal } from './capabilities';
 import { regionOf, statesInRegion, REGION_VALUES, type Region } from './regions';
+import { mapStateCtes } from './stateCanonical';
 import { setupIngestRoutes } from './ingest';
 
 interface LakebaseQuery {
@@ -77,9 +78,13 @@ const SETUP_SQL = `
     facility_name   TEXT,
     original_signal TEXT,
     override_signal TEXT NOT NULL,
+    original_score  DOUBLE PRECISION,
+    override_score  DOUBLE PRECISION,
     note            TEXT,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
+  ALTER TABLE app.capability_overrides ADD COLUMN IF NOT EXISTS original_score DOUBLE PRECISION;
+  ALTER TABLE app.capability_overrides ADD COLUMN IF NOT EXISTS override_score DOUBLE PRECISION;
 `;
 
 async function assertGoldServingTables(lakebase: LakebaseQuery): Promise<void> {
@@ -297,8 +302,13 @@ const OverrideBody = z.object({
   facilityId: z.string().min(1),
   capability: z.enum(CAP_KEYS as [string, ...string[]]),
   overrideSignal: z.enum(SIGNALS as [string, ...string[]]),
+  overrideScore: z.number().min(0).max(1),
   note: z.string().max(2000).optional(),
 });
+
+function scoresEqual(a: number, b: number): boolean {
+  return Math.abs(a - b) < 0.005;
+}
 
 export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
   try {
@@ -431,6 +441,8 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
       const capability = txt(req.query.capability) || 'icu';
       const regionParam = txt(req.query.region).trim();
       const region = regionParam ? (regionParam as Region) : null;
+      const stateParam = txt(req.query.state).trim() || null;
+      const includeDistricts = txt(req.query.includeDistricts).trim() !== 'false';
       if (!CAP_KEYS_WITH_ALL.includes(capability)) {
         res.status(400).json({ error: 'Invalid capability' });
         return;
@@ -446,7 +458,8 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             AVG(a.trust_score) FILTER (WHERE a.claimed)                    AS avg_score,
             COUNT(*) FILTER (WHERE a.trust_signal = 'strong')::int         AS strong,
             COUNT(*) FILTER (WHERE a.trust_signal = 'partial')::int        AS partial,
-            COUNT(*) FILTER (WHERE a.trust_signal = 'weak_suspicious')::int AS weak`;
+            COUNT(*) FILTER (WHERE a.trust_signal = 'weak_suspicious')::int AS weak,
+            COUNT(*) FILTER (WHERE a.trust_signal = 'no_claim')::int       AS no_claim`;
         const regionStates = region ? statesInRegion(region) : null;
         // "All" joins one rolled-up row per facility (so a facility is counted
         // once, not six times); a single capability joins that capability's row.
@@ -457,26 +470,31 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
                ON a.facility_id = f.facility_id AND a.capability = $1`;
         const regionFilter = isAll ? '$1' : '$2';
         const params: unknown[] = isAll ? [regionStates] : [capability, regionStates];
-        const [{ rows: states }, { rows: districts }] = await Promise.all([
-          appkit.lakebase.query(
-            `SELECT f.state, MAX(f.state_code) AS state_code, ${agg}
-             FROM gold.facilities f
+        const mapCtes = mapStateCtes();
+        const statesPromise = appkit.lakebase.query(
+          `WITH ${mapCtes}
+           SELECT f.map_state AS state, MAX(f.map_state_code) AS state_code, ${agg}
+             FROM facility_map_state f
              ${assess}
-             WHERE (${regionFilter}::text[] IS NULL OR f.state = ANY(${regionFilter}))
-             GROUP BY f.state`,
-            params,
-          ),
-          appkit.lakebase.query(
-            `SELECT f.state, f.district, MAX(f.state_code) AS state_code,
+             WHERE (${regionFilter}::text[] IS NULL OR f.map_state = ANY(${regionFilter}))
+             GROUP BY f.map_state`,
+          params,
+        );
+        const districtsPromise = includeDistricts
+          ? appkit.lakebase.query(
+              `WITH ${mapCtes}
+               SELECT f.map_state AS state, f.district, MAX(f.map_state_code) AS state_code,
                     MAX(g.lat) AS lat, MAX(g.lon) AS lon, MAX(g.population)::bigint AS population, ${agg}
-             FROM gold.facilities f
+             FROM facility_map_state f
              ${assess}
-             LEFT JOIN gold.geography g ON g.district = f.district AND g.state = f.state
-             WHERE (${regionFilter}::text[] IS NULL OR f.state = ANY(${regionFilter}))
-             GROUP BY f.state, f.district`,
-            params,
-          ),
-        ]);
+             LEFT JOIN gold.geography g ON g.district = f.district AND g.state = f.map_state
+             WHERE (${regionFilter}::text[] IS NULL OR f.map_state = ANY(${regionFilter}))
+               AND ($${params.length + 1}::text IS NULL OR f.map_state = $${params.length + 1})
+             GROUP BY f.map_state, f.district`,
+              [...params, stateParam],
+            )
+          : Promise.resolve({ rows: [] as Record<string, unknown>[] });
+        const [{ rows: states }, { rows: districts }] = await Promise.all([statesPromise, districtsPromise]);
         const toRating = (r: Record<string, unknown>) => ({
           facilities: Number(r.facilities ?? 0),
           claiming: Number(r.claiming ?? 0),
@@ -484,6 +502,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           strong: Number(r.strong ?? 0),
           partial: Number(r.partial ?? 0),
           weak: Number(r.weak ?? 0),
+          noClaim: Number(r.no_claim ?? 0),
         });
         res.json({
           capability,
@@ -717,7 +736,10 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
                WHERE ($1::text IS NULL OR f.state = $1)
                  AND ($2::text[] IS NULL OR f.state = ANY($2))
                  AND ($3::text IS NULL OR f.district = $3)
-                 AND (a.trust_signal = $4 OR ($4::text IS NULL AND a.trust_signal <> 'no_claim'))
+                 AND (
+                   a.trust_signal = $4
+                   OR ($4::text IS NULL AND (a.trust_signal <> 'no_claim' OR $3::text IS NOT NULL))
+                 )
                  AND ($5::text IS NULL OR f.name ILIKE '%' || $5 || '%')
                ORDER BY a.trust_score DESC NULLS LAST, a.evidence_count DESC, f.name
                LIMIT $6::int`,
@@ -740,13 +762,13 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
                       s.evidence_tier,
                       a.evidence_count,
                       a.supporting_count, a.contradicting_count, a.best_source, a.summary,
-                      ov.override_signal, ov.note AS override_note
+                      ov.override_signal, ov.override_score, ov.note AS override_note
                FROM gold.facility_capability_assessments a
                JOIN gold.facilities f USING (facility_id)
                LEFT JOIN gold.capability_scored s
                  ON s.facility_id = a.facility_id AND s.capability = a.capability
                LEFT JOIN LATERAL (
-                 SELECT override_signal, note FROM app.capability_overrides o
+                 SELECT override_signal, override_score, note FROM app.capability_overrides o
                  WHERE o.facility_id = f.facility_id AND o.capability = a.capability AND o.created_by = $8
                  ORDER BY o.created_at DESC LIMIT 1
                ) ov ON TRUE
@@ -766,19 +788,22 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
                    ) = $5
                    OR (
                      $5::text IS NULL
-                     AND COALESCE(
-                       CASE s.evidence_tier
-                         WHEN 'Strong' THEN 'strong'
-                         WHEN 'Moderate' THEN 'partial'
-                         WHEN 'Weak' THEN 'weak_suspicious'
-                         WHEN 'Insufficient' THEN 'no_claim'
-                       END,
-                       a.trust_signal
-                     ) <> 'no_claim'
+                     AND (
+                       $4::text IS NOT NULL
+                       OR COALESCE(
+                         CASE s.evidence_tier
+                           WHEN 'Strong' THEN 'strong'
+                           WHEN 'Moderate' THEN 'partial'
+                           WHEN 'Weak' THEN 'weak_suspicious'
+                           WHEN 'Insufficient' THEN 'no_claim'
+                         END,
+                         a.trust_signal
+                       ) <> 'no_claim'
+                     )
                    )
                  )
                  AND ($6::text IS NULL OR f.name ILIKE '%' || $6 || '%')
-               ORDER BY COALESCE(s.evidence_strength_score, a.trust_score) DESC,
+               ORDER BY COALESCE(ov.override_score, COALESCE(s.evidence_strength_score, a.trust_score)) DESC,
                         a.evidence_count DESC, f.name
                LIMIT $7::int`,
               [capability, state ?? null, regionStates, district ?? null, signal ?? null, q ?? null, limit, currentUser(req)],
@@ -806,6 +831,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           bestSource: txt(r.best_source),
           summary: txt(r.summary),
           overrideSignal: r.override_signal ? (txt(r.override_signal) as TrustSignal) : null,
+          overrideScore: r.override_score === null || r.override_score === undefined ? null : Number(r.override_score),
           overrideNote: r.override_note ? txt(r.override_note) : null,
         }));
         res.json({ capability, region: parsed.data.region ?? null, state: state ?? null, district: district ?? null, results });
@@ -858,7 +884,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             [id],
           ),
           appkit.lakebase.query(
-            `SELECT DISTINCT ON (capability) capability, override_signal, note, created_at
+            `SELECT DISTINCT ON (capability) capability, override_signal, override_score, note, created_at
              FROM app.capability_overrides WHERE facility_id = $1 AND created_by = $2
              ORDER BY capability, created_at DESC`,
             [id, currentUser(req)],
@@ -868,11 +894,11 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             [id],
           ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
           appkit.lakebase.query(
-            'SELECT capability, assessment_json FROM gold.capability_evidence_json WHERE facility_id = $1',
+            'SELECT capability, assessment_json, model_endpoint, narrated_at FROM gold.capability_evidence_json WHERE facility_id = $1',
             [id],
           ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
           appkit.lakebase.query(
-            'SELECT capability, assessment_md FROM gold.capability_evidence_md WHERE facility_id = $1',
+            'SELECT capability, assessment_md, model_endpoint, narrated_at FROM gold.capability_evidence_md WHERE facility_id = $1',
             [id],
           ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
         ]);
@@ -936,7 +962,20 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
                     }
                   })(),
             assessmentMd: nm?.assessment_md ? txt(nm.assessment_md) : null,
+            assessmentModel: nj?.model_endpoint
+              ? txt(nj.model_endpoint)
+              : nm?.model_endpoint
+                ? txt(nm.model_endpoint)
+                : null,
+            assessmentNarratedAt:
+              nj?.narrated_at != null
+                ? txt(nj.narrated_at).slice(0, 19)
+                : nm?.narrated_at != null
+                  ? txt(nm.narrated_at).slice(0, 19)
+                  : null,
             overrideSignal: o ? (txt(o.override_signal) as TrustSignal) : null,
+            overrideScore:
+              o?.override_score === null || o?.override_score === undefined ? null : Number(o.override_score),
             overrideNote: o?.note ? txt(o.note) : null,
             evidence,
           };
@@ -966,12 +1005,21 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
     app.get('/api/overrides', async (req, res) => {
       try {
         const { rows } = await appkit.lakebase.query(
-          `SELECT id, facility_id, facility_name, capability, original_signal, override_signal, note, created_at
+          `SELECT DISTINCT ON (facility_id, capability)
+              id, facility_id, facility_name, capability,
+              original_signal, override_signal, original_score, override_score, note, created_at
            FROM app.capability_overrides
            WHERE created_by = $1
-           ORDER BY created_at DESC
-           LIMIT 200`,
+             AND (
+               original_signal IS DISTINCT FROM override_signal
+               OR original_score IS DISTINCT FROM override_score
+             )
+           ORDER BY facility_id, capability, created_at DESC`,
           [currentUser(req)],
+        );
+        rows.sort(
+          (a, b) =>
+            new Date(txt(b.created_at)).getTime() - new Date(txt(a.created_at)).getTime(),
         );
         res.json(rows);
       } catch (err) {
@@ -986,13 +1034,26 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
         res.status(400).json({ error: 'Invalid review', details: parsed.error.flatten() });
         return;
       }
-      const { facilityId, capability, overrideSignal, note } = parsed.data;
+      const { facilityId, capability, overrideSignal, overrideScore, note } = parsed.data;
+      const user = currentUser(req);
       try {
         const { rows: ctx } = await appkit.lakebase.query(
-          `SELECT f.name, a.trust_signal
+          `SELECT f.name,
+                  COALESCE(
+                    CASE s.evidence_tier
+                      WHEN 'Strong' THEN 'strong'
+                      WHEN 'Moderate' THEN 'partial'
+                      WHEN 'Weak' THEN 'weak_suspicious'
+                      WHEN 'Insufficient' THEN 'no_claim'
+                    END,
+                    a.trust_signal
+                  ) AS trust_signal,
+                  COALESCE(s.evidence_strength_score, a.trust_score, 0) AS trust_score
            FROM gold.facilities f
            LEFT JOIN gold.facility_capability_assessments a
              ON a.facility_id = f.facility_id AND a.capability = $2
+           LEFT JOIN gold.capability_scored s
+             ON s.facility_id = f.facility_id AND s.capability = $2
            WHERE f.facility_id = $1`,
           [facilityId, capability],
         );
@@ -1000,18 +1061,36 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           res.status(404).json({ error: 'Facility not found' });
           return;
         }
+        const originalSignal = ctx[0].trust_signal ? txt(ctx[0].trust_signal) : 'no_claim';
+        const originalScore = Number(ctx[0].trust_score ?? 0);
+
+        await appkit.lakebase.query(
+          `DELETE FROM app.capability_overrides
+           WHERE created_by = $1 AND facility_id = $2 AND capability = $3`,
+          [user, facilityId, capability],
+        );
+
+        if (overrideSignal === originalSignal && scoresEqual(overrideScore, originalScore)) {
+          res.status(204).send();
+          return;
+        }
+
         const { rows } = await appkit.lakebase.query(
           `INSERT INTO app.capability_overrides
-             (created_by, facility_id, capability, facility_name, original_signal, override_signal, note)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)
-           RETURNING id, facility_id, facility_name, capability, original_signal, override_signal, note, created_at`,
+             (created_by, facility_id, capability, facility_name,
+              original_signal, override_signal, original_score, override_score, note)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+           RETURNING id, facility_id, facility_name, capability,
+                     original_signal, override_signal, original_score, override_score, note, created_at`,
           [
-            currentUser(req),
+            user,
             facilityId,
             capability,
             txt(ctx[0].name),
-            ctx[0].trust_signal ? txt(ctx[0].trust_signal) : 'no_claim',
+            originalSignal,
             overrideSignal,
+            originalScore,
+            overrideScore,
             note ?? null,
           ],
         );
@@ -1046,6 +1125,134 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
 
     // ── data quality (web address coverage) ────────────────────────────────────────────────────
     const DataQualityStateQuery = z.object({ state: z.string().optional() });
+
+    const GEO_MAP_COVERAGE_SQL = `
+      WITH ${mapStateCtes()},
+      ref_districts AS (
+        SELECT sc.state AS map_state,
+               sc.state_code,
+               g.district
+        FROM gold.geography g
+        JOIN state_codes sc
+          ON sc.state = g.state OR sc.state_code = g.state_code
+      ),
+      fac_by_state AS (
+        SELECT map_state,
+               MAX(map_state_code) AS map_state_code,
+               COUNT(*)::int AS facilities,
+               COUNT(*) FILTER (WHERE geography_id IS NOT NULL)::int AS with_geography
+        FROM facility_map_state
+        GROUP BY map_state
+      ),
+      fac_by_district AS (
+        SELECT f.map_state,
+               COALESCE(g.district, f.district) AS district,
+               COUNT(*)::int AS facilities,
+               COUNT(*) FILTER (WHERE f.geography_id IS NOT NULL)::int AS with_geography
+        FROM facility_map_state f
+        LEFT JOIN gold.geography g ON g.geography_id = f.geography_id
+        WHERE COALESCE(g.district, f.district) IS NOT NULL
+          AND TRIM(COALESCE(g.district, f.district)) != ''
+        GROUP BY f.map_state, COALESCE(g.district, f.district)
+      ),
+      district_coverage AS (
+        SELECT rd.map_state,
+               rd.state_code,
+               rd.district,
+               COALESCE(fd.facilities, 0)::int AS facilities,
+               COALESCE(fd.with_geography, 0)::int AS with_geography,
+               (fd.facilities IS NOT NULL) AS mapped
+        FROM ref_districts rd
+        LEFT JOIN fac_by_district fd
+          ON fd.map_state = rd.map_state
+         AND lower(fd.district) = lower(rd.district)
+      ),
+      state_coverage AS (
+        SELECT sc.state,
+               sc.state_code,
+               COUNT(dc.district)::int AS total_districts,
+               COUNT(*) FILTER (WHERE dc.mapped)::int AS mapped_districts,
+               COALESCE(SUM(dc.facilities), 0)::int AS facilities,
+               COALESCE(SUM(dc.with_geography), 0)::int AS with_geography,
+               (COUNT(*) FILTER (WHERE dc.mapped) > 0) AS mapped
+        FROM state_codes sc
+        LEFT JOIN fac_by_state fbs ON fbs.map_state = sc.state
+        LEFT JOIN district_coverage dc ON dc.map_state = sc.state
+        GROUP BY sc.state, sc.state_code, fbs.facilities
+      )
+      SELECT
+        (SELECT COUNT(*)::int FROM state_codes) AS ref_states,
+        (SELECT COUNT(*)::int FROM state_coverage WHERE mapped) AS mapped_states,
+        (SELECT COUNT(*)::int FROM ref_districts) AS ref_districts,
+        (SELECT COUNT(*)::int FROM district_coverage WHERE mapped) AS mapped_districts,
+        (SELECT COUNT(*)::int FROM facility_map_state) AS facilities,
+        (SELECT COUNT(*)::int FROM facility_map_state WHERE geography_id IS NOT NULL) AS with_geography,
+        (SELECT COUNT(*)::int FROM facility_map_state) AS total_facilities,
+        (SELECT COUNT(*)::int FROM facility_map_state) AS nation_mapped_facilities,
+        (SELECT COUNT(*)::int
+           FROM facility_map_state f
+          WHERE EXISTS (SELECT 1 FROM state_codes sc WHERE sc.state = f.map_state)) AS state_mapped_facilities,
+        (SELECT COUNT(*)::int
+           FROM facility_map_state
+          WHERE geography_id IS NOT NULL) AS district_mapped_facilities
+    `;
+
+    const GEO_STATE_COVERAGE_SQL = `
+      WITH ${mapStateCtes()},
+      ref_districts AS (
+        SELECT sc.state AS map_state,
+               sc.state_code,
+               g.district
+        FROM gold.geography g
+        JOIN state_codes sc
+          ON sc.state = g.state OR sc.state_code = g.state_code
+      ),
+      fac_by_state AS (
+        SELECT map_state,
+               MAX(map_state_code) AS map_state_code,
+               COUNT(*)::int AS facilities,
+               COUNT(*) FILTER (WHERE geography_id IS NOT NULL)::int AS with_geography
+        FROM facility_map_state
+        GROUP BY map_state
+      ),
+      fac_by_district AS (
+        SELECT f.map_state,
+               COALESCE(g.district, f.district) AS district,
+               COUNT(*)::int AS facilities,
+               COUNT(*) FILTER (WHERE f.geography_id IS NOT NULL)::int AS with_geography
+        FROM facility_map_state f
+        LEFT JOIN gold.geography g ON g.geography_id = f.geography_id
+        WHERE COALESCE(g.district, f.district) IS NOT NULL
+          AND TRIM(COALESCE(g.district, f.district)) != ''
+        GROUP BY f.map_state, COALESCE(g.district, f.district)
+      ),
+      district_coverage AS (
+        SELECT rd.map_state,
+               rd.state_code,
+               rd.district,
+               COALESCE(fd.facilities, 0)::int AS facilities,
+               COALESCE(fd.with_geography, 0)::int AS with_geography,
+               (fd.facilities IS NOT NULL) AS mapped
+        FROM ref_districts rd
+        LEFT JOIN fac_by_district fd
+          ON fd.map_state = rd.map_state
+         AND lower(fd.district) = lower(rd.district)
+      )
+      SELECT sc.state,
+             sc.state_code,
+             COUNT(dc.district)::int AS total_districts,
+             COUNT(*) FILTER (WHERE dc.mapped)::int AS mapped_districts,
+             COALESCE(SUM(dc.facilities), 0)::int AS facilities,
+             COALESCE(SUM(dc.with_geography), 0)::int AS with_geography,
+             (COUNT(*) FILTER (WHERE dc.mapped) > 0) AS state_mapped
+      FROM state_codes sc
+      LEFT JOIN fac_by_state fbs ON fbs.map_state = sc.state
+      LEFT JOIN district_coverage dc ON dc.map_state = sc.state
+      GROUP BY sc.state, sc.state_code, fbs.facilities
+      ORDER BY sc.state
+    `;
+
+    const pctRate = (num: number, den: number) => (den > 0 ? Math.round((num / den) * 1000) / 10 : 0);
 
     app.get('/api/data-quality', async (_req, res) => {
       try {
@@ -1093,11 +1300,25 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           ORDER BY COUNT(*) DESC
         `);
 
+        const [{ rows: geoSumRows }, { rows: geoStateRows }] = await Promise.all([
+          appkit.lakebase.query(GEO_MAP_COVERAGE_SQL),
+          appkit.lakebase.query(GEO_STATE_COVERAGE_SQL),
+        ]);
+
         const s = sumRows[0] ?? {};
         const total       = Number(s.total       ?? 0);
         const withUrl     = Number(s.with_url    ?? 0);
         const scrapeTotal = Number(s.scrape_total ?? 0);
         const scrapeOk    = Number(s.scrape_ok    ?? 0);
+
+        const g = geoSumRows[0] ?? {};
+        const refStates = Number(g.ref_states ?? 0);
+        const mappedStates = Number(g.mapped_states ?? 0);
+        const refDistricts = Number(g.ref_districts ?? 0);
+        const mappedDistricts = Number(g.mapped_districts ?? 0);
+        const totalFacilities = Number(g.total_facilities ?? 0);
+        const nationMappedFacilities = Number(g.nation_mapped_facilities ?? 0);
+        const districtMappedFacilities = Number(g.district_mapped_facilities ?? 0);
 
         res.json({
           summary: {
@@ -1108,6 +1329,70 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             scrapeTotal,
             scrapeOk,
             scrapePct:   scrapeTotal > 0 ? Math.round((scrapeOk  / scrapeTotal) * 1000) / 10 : 0,
+          },
+          byGeography: {
+            overall: {
+              total: refDistricts,
+              mapped: mappedDistricts,
+              pct: pctRate(mappedDistricts, refDistricts),
+              facilities: totalFacilities,
+              withGeography: districtMappedFacilities,
+              facilityPct: pctRate(districtMappedFacilities, totalFacilities),
+              refStates,
+              mappedStates,
+              refDistricts,
+              mappedDistricts,
+            },
+            levels: [
+              {
+                level: 'nation',
+                label: 'Level 1 · National',
+                name: 'India',
+                total: 1,
+                mapped: nationMappedFacilities > 0 ? 1 : 0,
+                pct: nationMappedFacilities > 0 ? 100 : 0,
+                facilities: totalFacilities,
+                withGeography: districtMappedFacilities,
+                facilityPct: pctRate(districtMappedFacilities, totalFacilities),
+              },
+              {
+                level: 'state',
+                label: 'Level 2 · State / UT',
+                total: refStates,
+                mapped: mappedStates,
+                pct: pctRate(mappedStates, refStates),
+                facilities: totalFacilities,
+                withGeography: districtMappedFacilities,
+                facilityPct: pctRate(districtMappedFacilities, totalFacilities),
+              },
+              {
+                level: 'district',
+                label: 'Level 3 · District',
+                total: refDistricts,
+                mapped: mappedDistricts,
+                pct: pctRate(mappedDistricts, refDistricts),
+                facilities: totalFacilities,
+                withGeography: districtMappedFacilities,
+                facilityPct: pctRate(districtMappedFacilities, totalFacilities),
+              },
+            ],
+            byState: geoStateRows.map((r) => {
+              const totalDistricts = Number(r.total_districts ?? 0);
+              const mappedDistrictsCount = Number(r.mapped_districts ?? 0);
+              const facilities = Number(r.facilities ?? 0);
+              const withGeo = Number(r.with_geography ?? 0);
+              return {
+                state: txt(r.state),
+                stateCode: txt(r.state_code),
+                totalDistricts,
+                mappedDistricts: mappedDistrictsCount,
+                pct: pctRate(withGeo, facilities),
+                stateMapped: Boolean(r.state_mapped),
+                facilities,
+                withGeography: withGeo,
+                facilityPct: pctRate(withGeo, facilities),
+              };
+            }),
           },
           byState: stateRows.map((r) => {
             const t = Number(r.total);
@@ -1168,6 +1453,49 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
       } catch (err) {
         console.error('data-quality/missing failed:', err);
         res.status(500).json({ error: 'Failed to load missing facilities' });
+      }
+    });
+
+    app.get('/api/data-quality/unmapped-districts', async (req, res) => {
+      const parsed = DataQualityStateQuery.safeParse(req.query);
+      const state = parsed.success ? (parsed.data.state ?? null) : null;
+      if (!state) {
+        res.status(400).json({ error: 'state is required' });
+        return;
+      }
+      try {
+        const { rows } = await appkit.lakebase.query(
+          `WITH ${mapStateCtes()},
+          ref_districts AS (
+            SELECT sc.state AS map_state, g.district
+            FROM gold.geography g
+            JOIN state_codes sc
+              ON sc.state = g.state OR sc.state_code = g.state_code
+            WHERE sc.state = $1
+          ),
+          fac_by_district AS (
+            SELECT f.map_state, COALESCE(g.district, f.district) AS district
+            FROM facility_map_state f
+            LEFT JOIN gold.geography g ON g.geography_id = f.geography_id
+            WHERE f.map_state = $1
+              AND COALESCE(g.district, f.district) IS NOT NULL
+              AND TRIM(COALESCE(g.district, f.district)) != ''
+            GROUP BY f.map_state, COALESCE(g.district, f.district)
+          )
+          SELECT rd.district
+          FROM ref_districts rd
+          WHERE NOT EXISTS (
+            SELECT 1 FROM fac_by_district fd
+            WHERE fd.map_state = rd.map_state
+              AND lower(fd.district) = lower(rd.district)
+          )
+          ORDER BY rd.district`,
+          [state],
+        );
+        res.json(rows.map((r) => ({ district: txt(r.district) })));
+      } catch (err) {
+        console.error('data-quality/unmapped-districts failed:', err);
+        res.status(500).json({ error: 'Failed to load unmapped districts' });
       }
     });
   });

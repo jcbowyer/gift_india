@@ -5,14 +5,14 @@
     )
 }}
 
--- Silver JCI accreditations: cleaned, typed, deduped JCI-accredited organizations
+-- Silver facilities_jci: cleaned, typed, deduped JCI-accredited organizations
 -- in India. Trims text, attaches a state_code, and (re)derives the canonical
 -- entity-resolution keys via the `jci_normalize` macro so the keys are always in
 -- lock-step with the matcher regardless of what the Python loader landed. One row
 -- per `jci_org_id`. Feeds gold.facility_jci (the facility crosswalk).
 
 with raw as (
-    select * from {{ source('bronze', 'jci_accreditations') }}
+    select * from {{ source('bronze', 'facilities_jci') }}
 ),
 
 state_codes as (

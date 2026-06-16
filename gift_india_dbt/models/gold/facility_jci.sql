@@ -25,7 +25,7 @@
 -- to tighten; gold.facilities flags `jci_accredited` at confidence >= 0.70.
 
 with jci as (
-    select * from {{ ref('silver_jci_accreditations') }}
+    select * from {{ ref('silver_facilities_jci') }}
 ),
 
 facilities as (

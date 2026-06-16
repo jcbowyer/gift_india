@@ -27,7 +27,7 @@ interface DbHandle {
 createApp({
   plugins: useLocalDb ? [server()] : [lakebase(), server()],
   async onPluginsReady(appkit) {
-    // gzip every response (incl. the 3 MB india-topo.json static asset and the
+    // gzip every response (incl. static topo assets under client/public and the
     // /api/map/geography JSON). Registered first so it sits ahead of AppKit's
     // express.static / Vite middleware in the chain and wraps their responses.
     appkit.server.extend((app) => app.use(compression()));

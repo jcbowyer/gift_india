@@ -3,20 +3,17 @@
 # Run dbt from this directory with this profile:
 #   cd gift_india_dbt && DBT_PROFILES_DIR=. dbt build
 #
-# Defaults match the local docker-compose Postgres (see ../docker-compose.yml).
-# Override any value via the GIFT_INDIA_PG* environment variables — e.g. point
-# at Databricks Lakebase by exporting the host/user/password it injects.
+# Defaults match **system PostgreSQL on localhost:5432** (see ../claude.md — no Docker).
+# Override via GIFT_INDIA_PG* in the repo .env, or export for Lakebase deploys.
 gift_india_postgres:
   target: dev
   outputs:
     dev:
       type: postgres
       host: "{{ env_var('GIFT_INDIA_PGHOST', 'localhost') }}"
-      # Local docker-compose Postgres binds container 5432 -> host 5433.
-      # See ../docker-compose.yml and ../.env.example.
-      port: "{{ env_var('GIFT_INDIA_PGPORT', '5433') | as_number }}"
+      port: "{{ env_var('GIFT_INDIA_PGPORT', '5432') | as_number }}"
       user: "{{ env_var('GIFT_INDIA_PGUSER', 'postgres') }}"
-      password: "{{ env_var('GIFT_INDIA_PGPASSWORD', 'password') }}"
+      password: "{{ env_var('GIFT_INDIA_PGPASSWORD', '') }}"
       dbname: "{{ env_var('GIFT_INDIA_PGDATABASE', 'gift_india') }}"
       schema: "{{ env_var('GIFT_INDIA_DBT_SCHEMA', 'bronze') }}"
       sslmode: "{{ env_var('GIFT_INDIA_PGSSLMODE', 'prefer') }}"

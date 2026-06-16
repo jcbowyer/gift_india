@@ -374,16 +374,26 @@ def _target():
 def test_scrape_one_ok_writes_snapshot_and_extraction(tmp_path, monkeypatch):
     html = '<html><head><title>Aravind</title></head><body><p>care@aravind.org</p></body></html>'
     monkeypatch.setattr(scraper, "fetch", lambda *a, **k: _FakeResponse(text=html))
+    monkeypatch.setattr(
+        scraper,
+        "_capture_thumbnails",
+        lambda record, **kwargs: (
+            setattr(record, "png_path", str(kwargs["facility_dir"] / "homepage.png"))
+            or setattr(record, "pdf_path", str(kwargs["facility_dir"] / "homepage.pdf"))
+        ),
+    )
 
     rec = scraper.scrape_one(
         session=None, target=_target(), out_dir=tmp_path,
-        timeout=1, retries=0, force=False,
+        timeout=1, retries=0, force=False, thumbnails=True,
     )
 
     assert rec.status == "ok"
     assert rec.http_status == 200
     assert rec.title == "Aravind"
     assert rec.n_emails == 1
+    assert rec.png_path.endswith("homepage.png")
+    assert rec.pdf_path.endswith("homepage.pdf")
     assert Path(rec.html_path).read_text(encoding="utf-8") == html
     extracted = json.loads(Path(rec.extracted_path).read_text(encoding="utf-8"))
     assert extracted["emails"] == ["care@aravind.org"]
@@ -417,14 +427,50 @@ def test_scrape_one_uses_cache_without_fetching(tmp_path, monkeypatch):
     # First scrape populates the cache.
     html = '<html><head><title>Cached</title></head><body><p>a@b.org x@y.org</p></body></html>'
     monkeypatch.setattr(scraper, "fetch", lambda *a, **k: _FakeResponse(text=html))
-    scraper.scrape_one(None, _target(), tmp_path, timeout=1, retries=0, force=False)
+    monkeypatch.setattr(scraper, "_capture_thumbnails", lambda *a, **k: None)
+    scraper.scrape_one(None, _target(), tmp_path, timeout=1, retries=0, force=False, thumbnails=False)
 
     # Second scrape must NOT fetch again (force=False, extraction exists).
     def _explode(*a, **k):
         raise AssertionError("fetch should not be called when cache is warm")
 
     monkeypatch.setattr(scraper, "fetch", _explode)
-    rec = scraper.scrape_one(None, _target(), tmp_path, timeout=1, retries=0, force=False)
+    rec = scraper.scrape_one(None, _target(), tmp_path, timeout=1, retries=0, force=False, thumbnails=False)
     assert rec.status == "ok"
     assert rec.title == "Cached"
     assert rec.n_emails == 2  # read back from the cached extraction
+
+
+def test_scrape_one_backfills_missing_thumbnails_from_cache(tmp_path, monkeypatch):
+    html = '<html><head><title>Cached</title></head><body><p>a@b.org</p></body></html>'
+    leaf = scraper.facility_subdir(
+        tmp_path, facility_id="VF-1", name="Aravind", state="Tamil Nadu", district="Madurai",
+    )
+    leaf.mkdir(parents=True)
+    (leaf / "page.html").write_text(html, encoding="utf-8")
+    (leaf / "extracted.json").write_text(
+        json.dumps({"title": "Cached", "emails": ["a@b.org"], "source_url": "https://aravind.org"}),
+        encoding="utf-8",
+    )
+
+    captured: dict = {}
+
+    def _capture(record, **kwargs):
+        captured["url"] = kwargs["url"]
+        (kwargs["facility_dir"] / "homepage.png").write_bytes(b"png")
+        (kwargs["facility_dir"] / "homepage.pdf").write_bytes(b"pdf")
+        record.png_path = str(kwargs["facility_dir"] / "homepage.png")
+        record.pdf_path = str(kwargs["facility_dir"] / "homepage.pdf")
+
+    monkeypatch.setattr(scraper, "_capture_thumbnails", _capture)
+    monkeypatch.setattr(
+        scraper, "fetch",
+        lambda *a, **k: (_ for _ in ()).throw(AssertionError("fetch should not run")),
+    )
+
+    rec = scraper.scrape_one(None, _target(), tmp_path, timeout=1, retries=0, force=False, thumbnails=True)
+    assert rec.status == "ok"
+    assert rec.title == "Cached"
+    assert captured["url"] == "https://aravind.org"
+    assert (leaf / "homepage.png").exists()
+    assert (leaf / "homepage.pdf").exists()

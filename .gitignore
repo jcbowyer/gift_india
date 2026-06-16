@@ -20,6 +20,9 @@ gift_india_dbt/dbt_packages/
 gift_india_dbt/logs/
 gift_india_dbt/.user.yml
 
+# Local secrets (passwords); copy from .env.local.example
+.env.local
+
 # OS / editor
 .DS_Store
 .ipynb_checkpoints/

@@ -55,6 +55,7 @@ export interface FacilityRanking {
   bestSource: string;
   summary: string;
   overrideSignal: TrustSignal | null;
+  overrideScore: number | null;
   overrideNote: string | null;
 }
 
@@ -84,6 +85,7 @@ export interface RegionRating {
   strong: number;
   partial: number;
   weak: number;
+  noClaim: number;
 }
 
 export interface StateRating extends RegionRating {
@@ -212,7 +214,11 @@ export interface CapabilityDetail {
   summary: string;
   assessmentJson: CapabilityAssessmentJson | null;
   assessmentMd: string | null;
+  /** Databricks serving endpoint or `stub/deterministic-template` when narrated. */
+  assessmentModel: string | null;
+  assessmentNarratedAt: string | null;
   overrideSignal: TrustSignal | null;
+  overrideScore: number | null;
   overrideNote: string | null;
   evidence: EvidenceItem[];
 }
@@ -241,6 +247,8 @@ export interface OverrideRecord {
   capability: string;
   original_signal: string;
   override_signal: string;
+  original_score: number | null;
+  override_score: number | null;
   note: string | null;
   created_at: string;
 }
@@ -265,6 +273,41 @@ export interface DataQualityTypeRow {
   pct: number;
 }
 
+export interface DataQualityGeographyLevel {
+  level: 'nation' | 'state' | 'district';
+  label: string;
+  name?: string;
+  total: number;
+  mapped: number;
+  pct: number;
+  facilities: number;
+  withGeography: number;
+  facilityPct: number;
+}
+
+export interface DataQualityGeographyStateRow {
+  state: string;
+  stateCode: string;
+  totalDistricts: number;
+  mappedDistricts: number;
+  pct: number;
+  stateMapped: boolean;
+  facilities: number;
+  withGeography: number;
+  facilityPct: number;
+}
+
+export interface DataQualityGeography {
+  overall: Omit<DataQualityGeographyLevel, 'level' | 'label' | 'name'> & {
+    refStates?: number;
+    mappedStates?: number;
+    refDistricts?: number;
+    mappedDistricts?: number;
+  };
+  levels: DataQualityGeographyLevel[];
+  byState: DataQualityGeographyStateRow[];
+}
+
 export interface DataQualityReport {
   summary: {
     total: number;
@@ -275,6 +318,7 @@ export interface DataQualityReport {
     scrapeOk: number;
     scrapePct: number;
   };
+  byGeography: DataQualityGeography;
   byState: DataQualityStateRow[];
   byType: DataQualityTypeRow[];
 }
@@ -289,18 +333,12 @@ export interface DataQualityMissingFacility {
   beds: number | null;
 }
 
-async function getJSON<T>(url: string): Promise<T> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-  return (await res.json()) as T;
+export interface DataQualityUnmappedDistrict {
+  district: string;
 }
 
-async function postJSON<T>(url: string, body: unknown): Promise<T> {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+async function getJSON<T>(url: string): Promise<T> {
+  const res = await fetch(url);
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return (await res.json()) as T;
 }
@@ -310,9 +348,11 @@ export const api = {
   stats: () => getJSON<Stats>('/api/stats'),
   capabilities: () => getJSON<Capability[]>('/api/capabilities'),
   regions: () => getJSON<RegionState[]>('/api/regions'),
-  mapGeography: (capability: string, params?: { region?: string }) => {
+  mapGeography: (capability: string, params?: { region?: string; state?: string; includeDistricts?: boolean }) => {
     const qs = new URLSearchParams({ capability });
     if (params?.region) qs.set('region', params.region);
+    if (params?.state) qs.set('state', params.state);
+    if (params?.includeDistricts === false) qs.set('includeDistricts', 'false');
     return getJSON<MapGeography>(`/api/map/geography?${qs.toString()}`);
   },
   metricCatalog: () => getJSON<MetricCatalog>('/api/metrics/catalog'),
@@ -346,8 +386,22 @@ export const api = {
     getJSON<FacilitySearchResult[]>(`/api/facilities/search${q ? `?q=${encodeURIComponent(q)}` : ''}`),
   facility: (id: string) => getJSON<FacilityDetail>(`/api/facilities/${encodeURIComponent(id)}`),
   overrides: () => getJSON<OverrideRecord[]>('/api/overrides'),
-  saveOverride: (body: { facilityId: string; capability: string; overrideSignal: TrustSignal; note?: string }) =>
-    postJSON<OverrideRecord>('/api/overrides', body),
+  saveOverride: async (body: {
+    facilityId: string;
+    capability: string;
+    overrideSignal: TrustSignal;
+    overrideScore: number;
+    note?: string;
+  }): Promise<OverrideRecord | null> => {
+    const res = await fetch('/api/overrides', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (res.status === 204) return null;
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    return (await res.json()) as OverrideRecord;
+  },
   deleteOverride: async (id: number) => {
     const res = await fetch(`/api/overrides/${id}`, { method: 'DELETE' });
     if (!res.ok && res.status !== 204) throw new Error(`${res.status} ${res.statusText}`);
@@ -357,7 +411,54 @@ export const api = {
     getJSON<DataQualityMissingFacility[]>(
       `/api/data-quality/missing${state ? `?state=${encodeURIComponent(state)}` : ''}`,
     ),
+  dataQualityUnmappedDistricts: (state: string) =>
+    getJSON<DataQualityUnmappedDistrict[]>(
+      `/api/data-quality/unmapped-districts?state=${encodeURIComponent(state)}`,
+    ),
 };
+
+/** Default 0–1 trust score when a planner picks a signal in the override dialog. */
+export const DEFAULT_SCORE_FOR_SIGNAL: Record<TrustSignal, number> = {
+  strong: 0.9,
+  partial: 0.75,
+  weak_suspicious: 0.55,
+  no_claim: 0,
+};
+
+export function effectiveTrustScore(item: { trustScore: number; overrideScore?: number | null }): number {
+  return item.overrideScore ?? item.trustScore;
+}
+
+export function effectiveTrustSignal(item: {
+  trustSignal: TrustSignal;
+  overrideSignal?: TrustSignal | null;
+}): TrustSignal {
+  return item.overrideSignal ?? item.trustSignal;
+}
+
+export const STUB_NARRATION_MODEL = 'stub/deterministic-template';
+
+/** Human-readable attribution for Layer 2 evidence cards (Agent Bricks vs dev stub). */
+export function narrationAttribution(model: string | null): {
+  isLlm: boolean;
+  title: string;
+  modelLabel: string | null;
+} | null {
+  if (!model) return null;
+  if (model === STUB_NARRATION_MODEL) {
+    return {
+      isLlm: false,
+      title: 'Pipeline template',
+      modelLabel: null,
+    };
+  }
+  const modelLabel = model.replace(/^databricks-/, '').replace(/-/g, ' ');
+  return {
+    isLlm: true,
+    title: 'Databricks Agent Bricks',
+    modelLabel,
+  };
+}
 
 // ── trust-signal presentation helpers ───────────────────────────────────────
 export const SIGNAL_META: Record<TrustSignal, { label: string; short: string; tone: string; dot: string }> = {

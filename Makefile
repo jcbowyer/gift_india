@@ -12,7 +12,12 @@
 #   make test           run the gift_india_api Python unit tests (pytest)
 #   make publish        publish the dataset to Lakebase (set ENDPOINT, PROFILE)
 
-.PHONY: db-up db-down db-reset load load-real data pipeline web scrape load-crawl crawl jci-scrape load-jci load-jci-crawl jci nabh-scrape load-nabh nabh nhpr-scrape load-nhpr nhpr pmjay-scrape load-pmjay pmjay med-travel shapefiles test publish dbt dbt-test dbt-docs dbt-databricks narrate-evidence
+.PHONY: db-up db-down db-reset load load-real data pipeline web scrape load-crawl crawl jci-scrape load-jci load-jci-crawl jci nabh-scrape load-nabh nabh nhpr-scrape load-nhpr nhpr pmjay-scrape load-pmjay pmjay med-travel shapefiles test publish dbt dbt-test dbt-docs dbt-databricks narrate-evidence narrate-pilot narrate-pilot-stub pg-check
+
+# Load repo .env (+ optional .env.local) and sync GIFT_INDIA_PG* from GIFT_INDIA_DB_URL.
+define LOAD_GIFT_ENV
+eval "$$(cd gift_india_api && $(PYTHON) -m src.pg_env --export)"
+endef
 
 # Prefer the repo venv when present; fall back to python3 on PATH.
 # Use $(CURDIR) so the interpreter still resolves after `cd gift_india_api`.
@@ -116,7 +121,7 @@ jci-scrape:
 		$(if $(FETCH_OFFICIAL),--fetch-official,) \
 		$(if $(LIMIT),--limit $(LIMIT),)
 
-# Land the JCI seed into bronze.jci_accreditations (upsert, idempotent).
+# Land the JCI seed into bronze.facilities_jci (upsert, idempotent).
 load-jci:
 	cd gift_india_api && $(PYTHON) -m src.load_jci $(if $(SOURCE),--source $(SOURCE),)
 
@@ -126,7 +131,7 @@ load-jci-crawl:
 	cd gift_india_api && $(PYTHON) -m src.load_crawl --source ../data/jci/scraped
 
 # Compile the JCI seed + snapshot homepages, then land BOTH the accreditation rows
-# (bronze.jci_accreditations) and the page snapshots (bronze.facility_web_crawl).
+# (bronze.facilities_jci) and the page snapshots (bronze.facility_web_crawl).
 # dbt then resolves orgs to facility_ids (gold.facility_jci) and flags
 # gold.facilities.jci_accredited.
 jci: jci-scrape load-jci load-jci-crawl
@@ -139,7 +144,7 @@ nabh-scrape:
 		$(if $(MAX_PAGES),--max-pages $(MAX_PAGES),) \
 		$(if $(RESUME),--resume,)
 
-# Land the NABH directory into bronze.nabh_accreditations (upsert, idempotent).
+# Land the NABH directory into bronze.facilities_nabh (upsert, idempotent).
 load-nabh:
 	cd gift_india_api && $(PYTHON) -m src.load_nabh $(if $(SOURCE),--source $(SOURCE),)
 
@@ -221,21 +226,23 @@ publish:
 	@test -n "$(ENDPOINT)" || (echo "ERROR: set ENDPOINT=projects/.../endpoints/<id>"; exit 1)
 	cd gift_india_api && $(PYTHON) -m src.load_db --target lakebase --endpoint $(ENDPOINT) $(if $(PROFILE),--profile $(PROFILE),)
 
-# Local docker-compose Postgres (host 5433). For Lakebase dbt, pass TARGET=lakebase
-# and export GIFT_INDIA_PGHOST / PGUSER / PGPASSWORD / PGDATABASE / PGSSLMODE first.
-DBT_PG_LOCAL = GIFT_INDIA_PGHOST=localhost GIFT_INDIA_PGPORT=5433 GIFT_INDIA_PGUSER=postgres GIFT_INDIA_PGPASSWORD=password GIFT_INDIA_PGDATABASE=gift_india GIFT_INDIA_PGSSLMODE=prefer
+# Verify Postgres credentials before dbt (password from GIFT_INDIA_DB_URL or GIFT_INDIA_PGPASSWORD).
+pg-check:
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.pg_env --check
 
 # Build the dbt medallion (bronze sources -> silver -> gold) + run its tests.
-# Requires `pip install -r gift_india_dbt/requirements.txt` and a loaded warehouse
-# (`make db-up && make load`). Uses docker Postgres on :5433 unless TARGET=lakebase.
-dbt:
-	cd gift_india_dbt && $(if $(filter lakebase,$(TARGET)),,$(DBT_PG_LOCAL)) DBT_PROFILES_DIR=. dbt build
+# Requires `pip install -r gift_india_dbt/requirements.txt` and a loaded warehouse.
+# Loads repo `.env` (+ `.env.local`) and syncs GIFT_INDIA_PG* from GIFT_INDIA_DB_URL.
+# See claude.md — system Postgres :5432; no Docker unless you opt in.
+# For Lakebase: export PGHOST/PGUSER/PGPASSWORD/PGDATABASE/PGSSLMODE before running.
+dbt: pg-check
+	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. dbt build
 
-dbt-test:
-	cd gift_india_dbt && $(if $(filter lakebase,$(TARGET)),,$(DBT_PG_LOCAL)) DBT_PROFILES_DIR=. dbt test
+dbt-test: pg-check
+	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. dbt test
 
-dbt-docs:
-	cd gift_india_dbt && $(if $(filter lakebase,$(TARGET)),,$(DBT_PG_LOCAL)) DBT_PROFILES_DIR=. dbt docs generate && DBT_PROFILES_DIR=. dbt docs serve
+dbt-docs: pg-check
+	@$(LOAD_GIFT_ENV) && cd gift_india_dbt && DBT_PROFILES_DIR=. dbt docs generate && DBT_PROFILES_DIR=. dbt docs serve
 
 # Build the upstream Databricks medallion (dbt_project/, adapter: databricks).
 # Runs the dbt SQL on the workspace SQL warehouse — needs the Databricks CLI
@@ -251,12 +258,33 @@ dbt-databricks:
 #   2. data           — bronze load → silver/gold serving tables the app reads (Postgres)
 pipeline: dbt-databricks data
 
-# Layer 2: Agent Bricks narration (ai_query) → gold.capability_evidence_json/md.
-# Requires `make dbt` first (gold.capability_scored) and a deployed serving endpoint.
-#   make narrate-evidence LIMIT=50 PROFILE=gift-india-mb
-#   make narrate-evidence TARGET=lakebase ENDPOINT=projects/.../endpoints/primary PROFILE=gift-india-mb
+# Layer 2: LLM narration → gold.capability_evidence_json/md.
+# Default: serving mode + GPT-OSS 20B (no SQL warehouse). Pilot districts first.
+#   make narrate-pilot PROFILE=gift-india-mb LIMIT=50
+#   make narrate-evidence PILOT=1 MODE=serving PROFILE=gift-india-mb
+# Lakebase:
+#   make narrate-evidence TARGET=lakebase ENDPOINT=projects/.../endpoints/primary PROFILE=gift-india-mb PILOT=1
+# Offline dev only (no Databricks):
+#   make narrate-pilot-stub LIMIT=50
+narrate-pilot-stub:
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.pg_env --check && \
+	$(PYTHON) -m src.narrate_evidence --pilot --mode stub \
+		$(if $(LIMIT),--limit $(LIMIT),)
+
+narrate-pilot:
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.pg_env --check && \
+	$(PYTHON) -m src.narrate_evidence --pilot --mode serving \
+		--agent-endpoint databricks-gpt-oss-20b \
+		$(if $(filter 0,$(SKIP)),--no-skip-existing,) \
+		$(if $(LIMIT),--limit $(LIMIT),) \
+		$(if $(PROFILE),--profile $(PROFILE),)
+
 narrate-evidence:
-	cd gift_india_api && $(PYTHON) -m src.narrate_evidence \
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && \
+	$(if $(filter lakebase,$(TARGET)),,$(PYTHON) -m src.pg_env --check &&) \
+	$(PYTHON) -m src.narrate_evidence \
+		$(if $(PILOT),--pilot,) \
+		$(if $(filter 0,$(SKIP)),--no-skip-existing,) \
 		$(if $(LIMIT),--limit $(LIMIT),) \
 		$(if $(CAPABILITY),--capability $(CAPABILITY),) \
 		$(if $(MODE),--mode $(MODE),) \

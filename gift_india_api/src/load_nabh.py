@@ -1,9 +1,9 @@
-"""Land the NABH accredited-organizations directory into ``bronze.nabh_accreditations``.
+"""Land the NABH accredited-organizations directory into ``bronze.facilities_nabh``.
 
 ``src.nabh_scraper`` scrapes the official NABH directory (``nabh.co``) and writes
 ``data/nabh/nabh_accredited.json`` — one record per accredited / certified /
 empanelled facility in India. This module reads that output and loads one **bronze**
-row per organization into ``bronze.nabh_accreditations`` — the raw accreditation
+row per organization into ``bronze.facilities_nabh`` — the raw accreditation
 REFERENCE landing table that dbt resolves to facility_ids (silver -> gold) to flag
 ``nabh_accredited``.
 
@@ -47,7 +47,7 @@ _NABH_COLS = [
 
 
 def nabh_rows(out_dir: Path = DEFAULT_OUT_DIR) -> list[tuple]:
-    """Build ``bronze.nabh_accreditations`` rows from ``nabh_accredited.json``."""
+    """Build ``bronze.facilities_nabh`` rows from ``nabh_accredited.json``."""
     records_path = out_dir / "nabh_accredited.json"
     if not records_path.exists():
         raise FileNotFoundError(
@@ -76,7 +76,7 @@ def _load(conn, schema: str, rows: list[tuple]) -> int:
         f"{c} = EXCLUDED.{c}" for c in _NABH_COLS if c != "nabh_org_id"
     )
     sql = (
-        f"INSERT INTO {schema}.nabh_accreditations ({cols}) "
+        f"INSERT INTO {schema}.facilities_nabh ({cols}) "
         f"VALUES ({placeholders}) "
         f"ON CONFLICT (nabh_org_id) DO UPDATE SET {updates}"
     )
@@ -139,7 +139,7 @@ def main(argv: list[str] | None = None) -> int:
         affected = _load(conn, args.schema, rows)
 
     logger.success(
-        "Upserted {} NABH org(s) into {}.nabh_accreditations on {}.",
+        "Upserted {} NABH org(s) into {}.facilities_nabh on {}.",
         affected, args.schema, where,
     )
     return 0

@@ -78,14 +78,14 @@ export function ReviewsPage() {
           <h2 className="text-2xl font-bold text-foreground">My reviews</h2>
           <p className="text-muted-foreground">
             Assessments you overrode, with your reviewer notes. Stored in <code>app.capability_overrides</code> on
-            Lakebase and applied on top of the computed trust signals.
+            Lakebase and applied on top of the computed trust signals and scores.
           </p>
         </div>
       </div>
 
       {error && <div className="rounded-md bg-destructive/10 p-3 text-destructive">{error}</div>}
 
-      <Card className="gift-elevate gift-fade-in">
+      <Card className="gift-elevate gift-fade-in" data-demo="reviews">
         <CardHeader>
           <div className="flex items-center justify-between gap-2">
             <div className="space-y-1">
@@ -144,10 +144,19 @@ export function ReviewsPage() {
                     </TableCell>
                     <TableCell className="text-sm">{CAP_LABEL[r.capability] ?? r.capability}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        <SignalBadge signal={asSignal(r.original_signal)} />
-                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-                        <SignalBadge signal={asSignal(r.override_signal)} />
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-1.5">
+                          <SignalBadge signal={asSignal(r.original_signal)} />
+                          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                          <SignalBadge signal={asSignal(r.override_signal)} />
+                        </div>
+                        {(r.original_score != null || r.override_score != null) && (
+                          <div className="text-xs tabular-nums text-muted-foreground">
+                            score{' '}
+                            {r.original_score != null ? Math.round(r.original_score * 100) : '—'} →{' '}
+                            {r.override_score != null ? Math.round(r.override_score * 100) : '—'}
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="max-w-xs text-sm text-muted-foreground">

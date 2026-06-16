@@ -6,6 +6,7 @@
   "scripts": {
     "start": "NODE_ENV=production node --env-file-if-exists=./.env ./dist/server.js",
     "dev": "NODE_ENV=development tsx watch --tsconfig ./tsconfig.server.json --env-file-if-exists=./.env ./server/server.ts",
+    "build:topo": "node scripts/build-india-topo.mjs",
     "build:client": "tsc -b tsconfig.client.json && vite build --config client/vite.config.ts",
     "build:server": "tsc -b tsconfig.server.json && tsdown -c tsdown.server.config.ts",
     "build": "npm run build:server && npm run build:client",
@@ -21,7 +22,7 @@
     "test:smoke": "playwright install chromium && playwright test tests/smoke.spec.ts",
     "clean": "rm -rf client/dist dist build node_modules .smoke-test test-results playwright-report",
     "postinstall": "npm run typegen",
-    "prebuild": "npm run sync && npm run typegen",
+    "prebuild": "npm run sync && npm run typegen && npm run build:topo",
     "predev": "npm run sync && npm run typegen",
     "sync": "appkit plugin sync --write --silent",
     "typegen": "appkit generate-types",

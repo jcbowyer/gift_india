@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider, NavLink, Outlet } from 'react-router';
+import { createBrowserRouter, RouterProvider, NavLink, Link, Outlet } from 'react-router';
 import { useState, useEffect } from 'react';
 import {
   Button,
@@ -88,7 +88,7 @@ function Layout() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-30 border-b bg-background/80 px-4 md:px-6 py-3 flex items-center gap-4 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-        <div className="flex items-center gap-2.5">
+        <Link to="/" className="flex items-center gap-2.5 rounded-md hover:opacity-80 transition-opacity">
           <GiftSeal size={36} showText={false} className="gift-seal-glow shrink-0" />
           <div className="leading-tight max-w-[11rem] sm:max-w-none">
             <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700">GIFT Gauge ✨</span>
@@ -96,7 +96,7 @@ function Layout() {
               Great care, brought to light
             </span>
           </div>
-        </div>
+        </Link>
         <NavLinks className="hidden md:flex gap-1 ml-4" linkClass={navLinkClass} showDataQuality={false} />
         <div className="ml-auto flex items-center gap-3">
           <DemoLaunchButton />
@@ -142,7 +142,7 @@ function Layout() {
       </main>
 
       <footer className="border-t px-4 md:px-6 py-3 text-xs text-muted-foreground">
-        Trust signals computed in gold.* from facility records in Lakebase Postgres · Virtue Foundation hackathon demo
+        Trust signals computed in gold.* from facility records in Lakebase Postgres · Databricks for Good hackathon demo
       </footer>
 
       <DemoGuide />

@@ -27,15 +27,21 @@ if ! databricks current-user me --profile "$PROFILE" >/dev/null 2>&1; then
 fi
 echo "✓ Databricks profile '$PROFILE' authenticated"
 
-# 2. Kill any prior dev server and free the target port.
+# 2. Kill any prior dev server, Vite HMR websocket, and free the target port.
 PORT="${DATABRICKS_APP_PORT:-8000}"
-echo "▶ Stopping any existing dev server / process on port $PORT…"
+echo "▶ Stopping any existing dev server / Vite HMR / process on port $PORT…"
 pkill -f "tsx watch .*server/server.ts" 2>/dev/null || true
+pkill -f "vite.*gift_india_web" 2>/dev/null || true
 if command -v lsof >/dev/null 2>&1; then
-  lsof -ti:"$PORT" 2>/dev/null | xargs -r kill -9 2>/dev/null || true
+  # App HTTP port + common fallbacks when 8000 is busy.
+  for p in "$PORT" 8001 8002 24678 24679; do
+    lsof -ti:"$p" 2>/dev/null | xargs -r kill -9 2>/dev/null || true
+  done
 elif command -v fuser >/dev/null 2>&1; then
   fuser -k "${PORT}/tcp" 2>/dev/null || true
+  fuser -k 24678/tcp 2>/dev/null || true
 fi
+sleep 0.5
 
 # 3. Install web dependencies on first run.
 cd "$WEB_DIR"
@@ -64,4 +70,6 @@ open_browser() {
 
 # 5. Run the dev server — serves both the web client and the /api routes.
 echo "▶ Starting dev server on $URL (Ctrl-C to stop)…"
+echo "  If the terminal later says a different port (e.g. 8001), use that URL instead."
+echo "  After a Vite error, hard-refresh the browser (Ctrl+Shift+R)."
 exec npm run dev

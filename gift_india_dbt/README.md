@@ -18,7 +18,7 @@ clean **silver** models and the two **gold** serving models you'll build on:
 
 | Layer | Schema | Models |
 |-------|--------|--------|
-| bronze | `bronze` (where `load_db.py` writes) | sources: `facilities`, `districts` |
+| bronze | `bronze` (where `load_db.py` writes) | sources: `facilities_virtue`, `districts` |
 | silver | `silver` | `silver_facilities`, `silver_geography` — cleaned, typed, `state_code` attached, coordinates validated, duplicates resolved |
 | gold | `gold` | `facilities`, `geography` — serving tables with enforced PK/FK constraints |
 

@@ -1,25 +1,25 @@
 """Narrate capability evidence via Agent Bricks and land JSON + Markdown in gold.*
 
 Layer 1 (deterministic): ``make dbt`` builds ``gold.capability_scored``.
-Layer 2 (LLM narration): this module calls the Agent Bricks serving endpoint
-(``open_navigator_evidence_agent``) through Databricks ``ai_query`` on a SQL
-warehouse, then upserts results into:
+Layer 2 (LLM narration): calls a Databricks model serving endpoint, then upserts:
 
 * ``gold.capability_evidence_json`` — structured assessment for the citation panel
 * ``gold.capability_evidence_md`` — compact Markdown evidence card
 
-Planner overrides in ``app.capability_overrides`` supersede the LLM default.
+Default mode is ``serving`` (REST per row, no SQL warehouse). Use ``--mode ai_query``
+for batch ``ai_query`` on a SQL warehouse when it is running.
 
 Usage::
 
-    # After `make dbt` (or `make load-virtue` + scored rebuild):
-    python -m src.narrate_evidence --profile gift-india-mb --limit 50
+    # Affordable pilot across 5 demo districts (no warehouse needed):
+    python -m src.narrate_evidence --profile gift-india-mb --pilot --limit 50
+
     python -m src.narrate_evidence --target lakebase \\
         --endpoint projects/gift-india/branches/production/endpoints/primary \\
-        --profile gift-india-mb
+        --profile gift-india-mb --pilot
 
 Environment:
-    EVIDENCE_AGENT_ENDPOINT — override serving endpoint (default open_navigator_evidence_agent)
+    EVIDENCE_AGENT_ENDPOINT — serving endpoint (default databricks-gpt-oss-20b)
     DATABRICKS_WAREHOUSE_ID — SQL warehouse for ai_query (default 234ccf680e359443)
 """
 from __future__ import annotations
@@ -38,15 +38,45 @@ from databricks.sdk.service.sql import StatementState
 from . import db
 from .evidence_prompts import (
     DEFAULT_ENDPOINT,
+    EVIDENCE_GRADING_RUBRIC,
     JSON_RESPONSE_FORMAT,
+    JSON_TASK,
+    MARKDOWN_TASK,
+    escape_for_sql_concat,
     json_prompt,
     markdown_prompt,
+    stub_grade_sections,
+    _prompt_intro,
 )
 
 DEFAULT_OWNER = "admins"
 DEFAULT_WAREHOUSE = os.getenv("DATABRICKS_WAREHOUSE_ID", "234ccf680e359443")
 STAGING_SCHEMA = os.getenv("EVIDENCE_STAGING_SCHEMA", "gift_india_gold")
 STAGING_TABLE = f"{STAGING_SCHEMA}.capability_scored_staging"
+
+# Demo districts for pilot narration — ordered coastal urban → desert rural.
+# NOTE: ``%%`` escapes literal percent for psycopg parameter binding.
+PILOT_GEO_WHERE = """(
+    (state = 'Maharashtra' AND city ILIKE '%%mumbai%%')
+    OR (state = 'Delhi' AND city IN ('New Delhi', 'Central Delhi'))
+    OR (state = 'Karnataka' AND (city ILIKE '%%bengaluru%%' OR city ILIKE 'bangalore%%'))
+    OR (state = 'Uttar Pradesh' AND city ILIKE '%%lucknow%%')
+    OR (state = 'Rajasthan' AND city ILIKE '%%jaisalmer%%')
+)"""
+
+PILOT_GEO_ORDER = """
+    CASE
+        WHEN state = 'Maharashtra' AND city ILIKE '%%mumbai%%' THEN 1
+        WHEN state = 'Delhi' AND city IN ('New Delhi', 'Central Delhi') THEN 2
+        WHEN state = 'Karnataka'
+             AND (city ILIKE '%%bengaluru%%' OR city ILIKE 'bangalore%%') THEN 3
+        WHEN state = 'Uttar Pradesh' AND city ILIKE '%%lucknow%%' THEN 4
+        WHEN state = 'Rajasthan' AND city ILIKE '%%jaisalmer%%' THEN 5
+        ELSE 99
+    END
+"""
+
+STUB_ENDPOINT = "stub/deterministic-template"
 
 DDL = """
 CREATE SCHEMA IF NOT EXISTS gold;
@@ -87,6 +117,12 @@ SCORED_COLUMNS = """
     supporting_count, contradicting_count, best_source, trust_signal
 """
 
+SCORED_SELECT = """
+    s.facility_id, s.facility_name, s.capability, s.capability_label,
+    s.evidence_strength_score, s.evidence_tier, s.evidence_context,
+    s.supporting_count, s.contradicting_count, s.best_source, s.trust_signal
+"""
+
 
 def _sql_str(val: Any) -> str:
     if val is None:
@@ -103,21 +139,52 @@ def _lakebase_dsn(args: argparse.Namespace) -> str:
     )
 
 
-def fetch_scored(conn, *, limit: int | None, capability: str | None) -> list[dict[str, Any]]:
-    clauses = ["(claimed OR trust_signal <> 'no_claim')"]
+def fetch_scored(
+    conn,
+    *,
+    limit: int | None,
+    capability: str | None,
+    pilot: bool = False,
+    skip_existing: bool = False,
+) -> list[dict[str, Any]]:
+    clauses = ["(s.claimed OR s.trust_signal <> 'no_claim')"]
     params: list[Any] = []
     if capability:
-        clauses.append("capability = %s")
+        clauses.append("s.capability = %s")
         params.append(capability)
+    if pilot:
+        # Re-bind pilot geo filters to scored alias (city/state on capability_scored).
+        pilot_where = PILOT_GEO_WHERE.replace("state =", "s.state =").replace(
+            "city ", "s.city "
+        )
+        clauses.append(pilot_where)
+    if skip_existing:
+        # Keep stub rows eligible so a real LLM run replaces offline templates.
+        clauses.append(
+            f"""(j.facility_id IS NULL OR j.model_endpoint = {_sql_str(STUB_ENDPOINT)})"""
+        )
+    order = (
+        f"{PILOT_GEO_ORDER.replace('state =', 's.state =').replace('city ', 's.city ')}, "
+        "s.evidence_strength_score DESC, s.facility_name, s.capability"
+        if pilot
+        else "s.evidence_strength_score DESC, s.facility_name, s.capability"
+    )
     limit_sql = ""
     if limit:
         limit_sql = "LIMIT %s"
         params.append(limit)
+    join_sql = ""
+    if skip_existing:
+        join_sql = """
+        LEFT JOIN gold.capability_evidence_json j
+          ON j.facility_id = s.facility_id AND j.capability = s.capability
+        """
     sql = f"""
-        SELECT {SCORED_COLUMNS}
-        FROM gold.capability_scored
+        SELECT {SCORED_SELECT}
+        FROM gold.capability_scored s
+        {join_sql}
         WHERE {' AND '.join(clauses)}
-        ORDER BY evidence_strength_score DESC, facility_name, capability
+        ORDER BY {order}
         {limit_sql}
     """
     with conn.cursor() as cur:
@@ -138,7 +205,31 @@ def _wait_statement(w: WorkspaceClient, statement_id: str, *, poll_s: float = 2.
         time.sleep(poll_s)
 
 
+def _ensure_warehouse_ready(w: WorkspaceClient, warehouse_id: str) -> None:
+    wh = w.warehouses.get(warehouse_id)
+    state = wh.state.value if wh.state else "UNKNOWN"
+    if state == "RUNNING":
+        return
+    if state == "STOPPED":
+        try:
+            w.warehouses.start(warehouse_id)
+            return
+        except Exception as exc:
+            raise SystemExit(
+                f"SQL warehouse {warehouse_id!r} is stopped and could not be started "
+                f"({exc}).\n"
+                "Use serving mode instead (no warehouse): "
+                "make narrate-evidence MODE=serving AGENT=databricks-gpt-oss-20b "
+                "PROFILE=gift-india-mb PILOT=1 LIMIT=50"
+            ) from exc
+    raise SystemExit(
+        f"SQL warehouse {warehouse_id!r} is not ready (state={state}). "
+        "Use MODE=serving to narrate via the model endpoint REST API."
+    )
+
+
 def _exec_sql(w: WorkspaceClient, warehouse_id: str, statement: str) -> None:
+    _ensure_warehouse_ready(w, warehouse_id)
     resp = w.statement_execution.execute_statement(
         warehouse_id=warehouse_id,
         statement=statement,
@@ -203,45 +294,13 @@ def stage_scored_on_databricks(
 
 def build_narration_sql(endpoint: str) -> tuple[str, str]:
     """Return (json_table_sql, md_table_sql) using ai_query on staged rows."""
-    json_prefix = (
-        "You are a verification assistant for a hospital capability registry. "
-        "A care planner is checking whether a facility truly offers a given clinical "
-        "capability. Use the numbers EXACTLY as provided — do not recompute or invent "
-        "any value or source.\\n\\n"
+    json_prefix = escape_for_sql_concat(_prompt_intro(json_mode=True))
+    json_suffix = escape_for_sql_concat(
+        f"\n\n{EVIDENCE_GRADING_RUBRIC}\n\n{JSON_TASK}"
     )
-    json_task = (
-        "\\n\\nTASK\\n"
-        "1. Map evidence_tier to verdict: Strong→Confirmed, Moderate→Likely, "
-        "Weak→Needs review, Insufficient→Unsupported. Never exceed \\\"Needs review\\\" "
-        "when contradicting > 0 or trust_signal = weak_suspicious.\\n"
-        "2. Specialty corroboration: state whether the on-record specialties plausibly "
-        "support this capability.\\n"
-        "3. Write a 1–2 sentence plain-language rationale a non-clinical planner can act on.\\n"
-        "4. List citations drawn ONLY from the evidence above.\\n"
-        "5. Recommend human review and give a reason; force true when "
-        "trust_signal = weak_suspicious or contradicting > 0.\\n\\n"
-        "Return ONLY JSON matching the schema. No prose, no markdown."
-    )
-    md_prefix = (
-        "You are a verification assistant for a hospital capability registry. "
-        "Use the numbers EXACTLY as provided — never invent sources or values.\\n\\n"
-    )
-    md_task = (
-        "\\n\\nTASK\\n"
-        "Produce a compact Markdown evidence card the planner sees when expanding "
-        "this facility. Use exactly this structure:\\n\\n"
-        "### {facility_name} — {capability_label}\\n"
-        "**Verdict:** <Confirmed | Likely | Needs review | Unsupported>  ·  "
-        "**Evidence:** {evidence_tier} ({evidence_strength_score})\\n\\n"
-        "<one-sentence plain-language verdict>\\n\\n"
-        "**Why:**\\n- <supporting point>\\n- <specialty corroboration>\\n- <gap if any>\\n\\n"
-        "**Citations:**\\n- {best_source} — <what it supports>\\n"
-        "- {supporting_count} supporting / {contradicting_count} contradicting items\\n"
-        "- Specialties on record: <only the relevant ones>\\n\\n"
-        "**Review:** <✅ Looks solid | ⚠️ Needs human review> — <reason>\\n\\n"
-        "Rules: evidence only, no invented sources/numbers, under 120 words, "
-        "and never rate above \\\"Needs review\\\" when contradicting > 0 or "
-        "trust_signal = weak_suspicious."
+    md_prefix = escape_for_sql_concat(_prompt_intro(json_mode=False))
+    md_suffix = escape_for_sql_concat(
+        f"\n\n{EVIDENCE_GRADING_RUBRIC}\n\n{MARKDOWN_TASK}"
     )
     rf = JSON_RESPONSE_FORMAT.replace("'", "\\'")
 
@@ -258,7 +317,7 @@ SELECT
     request => CONCAT(
       '{json_prefix}',
       evidence_context,
-      '{json_task}'
+      '{json_suffix}'
     ),
     responseFormat => '{rf}'
   ) AS assessment_json
@@ -278,7 +337,7 @@ SELECT
     request => CONCAT(
       '{md_prefix}',
       evidence_context,
-      '{md_task}'
+      '{md_suffix}'
     )
   ) AS assessment_md
 FROM {STAGING_TABLE}
@@ -390,18 +449,155 @@ def narrate_via_databricks(
     return json_rows, md_rows
 
 
+class ServingQuotaError(Exception):
+    """Databricks model serving blocked (daily limit, rate limit 0, etc.)."""
+
+    def __init__(self, endpoint: str, detail: str) -> None:
+        self.endpoint = endpoint
+        self.detail = detail
+        super().__init__(detail)
+
+
+def _verdict_for_row(row: dict[str, Any]) -> str:
+    contradicting = int(row.get("contradicting_count") or 0)
+    trust = row.get("trust_signal") or ""
+    if contradicting > 0 or trust == "weak_suspicious":
+        return "Needs review"
+    return {
+        "Strong": "Confirmed",
+        "Moderate": "Likely",
+        "Weak": "Needs review",
+        "Insufficient": "Unsupported",
+    }.get(row.get("evidence_tier") or "", "Needs review")
+
+
+def narrate_via_stub(rows: list[dict[str, Any]]) -> tuple[list[dict], list[dict]]:
+    """Deterministic template narrations — no Databricks calls (dev / quota fallback)."""
+    json_rows: list[dict] = []
+    md_rows: list[dict] = []
+    for row in rows:
+        verdict = _verdict_for_row(row)
+        tier = row.get("evidence_tier") or ""
+        score = float(row.get("evidence_strength_score") or 0)
+        supporting = int(row.get("supporting_count") or 0)
+        contradicting = int(row.get("contradicting_count") or 0)
+        best_source = row.get("best_source") or "on-record facility fields"
+        trust = row.get("trust_signal") or ""
+        review = contradicting > 0 or trust == "weak_suspicious"
+        review_reason = (
+            f"{contradicting} contradicting item(s) on record."
+            if contradicting > 0
+            else "Low trust signal — planner should confirm."
+            if trust == "weak_suspicious"
+            else "Evidence tier and counts look consistent."
+        )
+        rationale = (
+            f"Pipeline scores this {row.get('capability_label', row['capability'])} claim as "
+            f"{tier} ({score:.2f}) with {supporting} supporting and {contradicting} "
+            f"contradicting evidence items. "
+            f"Tiers: Strong ≥0.85, Moderate ≥0.65, Weak ≥0.45, else Insufficient."
+        )
+        grade_text, change_text = stub_grade_sections(
+            tier=tier,
+            score=score,
+            supporting=supporting,
+            contradicting=contradicting,
+            trust=trust,
+        )
+        assessment_json = {
+            "facility_id": row["facility_id"],
+            "capability": row["capability"],
+            "verdict": verdict,
+            "evidence_tier": tier,
+            "evidence_strength_score": score,
+            "rationale": rationale,
+            "specialty_corroboration": "See on-record specialties in the evidence context.",
+            "citations": [
+                {
+                    "source": best_source,
+                    "stance": "supporting" if supporting else "contextual",
+                    "detail": f"{supporting} supporting / {contradicting} contradicting items",
+                }
+            ],
+            "review_recommended": review,
+            "review_reason": review_reason,
+        }
+        review_icon = "⚠️ Needs human review" if review else "✅ Looks solid"
+        assessment_md = (
+            f"### {row.get('facility_name', '')} — {row.get('capability_label', row['capability'])}\n"
+            f"**Verdict:** {verdict}  ·  **Evidence:** {tier} ({score:.3f})\n\n"
+            f"{rationale}\n\n"
+            f"**Grade:** {grade_text}\n\n"
+            f"**What would change this grade:**\n"
+            f"{change_text}\n\n"
+            f"**Why:**\n"
+            f"- {supporting} supporting / {contradicting} contradicting pipeline items\n"
+            f"- Trust signal: {trust or 'n/a'}\n"
+            f"- Best source: {best_source}\n\n"
+            f"**Citations:**\n"
+            f"- {best_source}\n"
+            f"- {supporting} supporting / {contradicting} contradicting items\n\n"
+            f"**Review:** {review_icon} — {review_reason}\n"
+        )
+        json_rows.append({**row, "assessment_json": assessment_json})
+        md_rows.append({**row, "assessment_md": assessment_md})
+    return json_rows, md_rows
+
+
+def _raise_serving_error(resp, endpoint: str) -> None:
+    import requests
+
+    detail = resp.text[:500]
+    lower = detail.lower()
+    if resp.status_code in (400, 403) and (
+        "daily limit" in lower
+        or "rate limit" in lower
+        or "permission_denied" in lower
+    ):
+        raise ServingQuotaError(endpoint, detail)
+    raise requests.HTTPError(
+        f"{resp.status_code} from {endpoint}: {detail}", response=resp
+    )
+
+
+def _extract_message_content(message: dict[str, Any] | Any) -> str:
+    """Normalize chat completion content (string or gpt-oss content blocks)."""
+    if not isinstance(message, dict):
+        return str(message or "")
+    content = message.get("content", "")
+    if isinstance(content, str):
+        return content.strip()
+    if not isinstance(content, list):
+        return str(content).strip()
+    text_parts: list[str] = []
+    for block in content:
+        if not isinstance(block, dict):
+            continue
+        if block.get("type") == "text" and block.get("text"):
+            text_parts.append(str(block["text"]).strip())
+    if text_parts:
+        return "\n".join(text_parts).strip()
+    for block in content:
+        if not isinstance(block, dict) or block.get("type") != "reasoning":
+            continue
+        for part in block.get("summary") or []:
+            if isinstance(part, dict) and part.get("text"):
+                text_parts.append(str(part["text"]).strip())
+    return "\n".join(text_parts).strip()
+
+
 def narrate_via_serving(rows: list[dict[str, Any]], *, profile: str | None, endpoint: str) -> tuple[list[dict], list[dict]]:
     """Row-by-row fallback using the serving endpoint REST API (no ai_query)."""
     w = WorkspaceClient(profile=profile) if profile else WorkspaceClient()
     host = w.config.host
-    token = w.config.token
-    if not host or not token:
-        raise RuntimeError("Databricks auth required for serving-endpoint narration")
-
+    if not host:
+        raise RuntimeError(
+            "Databricks host not configured. Run `databricks auth login --profile <name>`."
+        )
+    headers = {**w.config.authenticate(), "Content-Type": "application/json"}
     import requests
 
     url = f"{host}/serving-endpoints/{endpoint}/invocations"
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     json_rows: list[dict] = []
     md_rows: list[dict] = []
 
@@ -413,11 +609,15 @@ def narrate_via_serving(rows: list[dict[str, Any]], *, profile: str | None, endp
             "response_format": json.loads(JSON_RESPONSE_FORMAT),
         }
         jr = requests.post(url, headers=headers, json=j_body, timeout=120)
-        jr.raise_for_status()
+        if jr.status_code >= 400:
+            _raise_serving_error(jr, endpoint)
         j_payload = jr.json()
-        assessment_json = j_payload.get("choices", [{}])[0].get("message", {}).get("content", j_payload)
-        if isinstance(assessment_json, str):
-            assessment_json = json.loads(assessment_json)
+        j_message = j_payload.get("choices", [{}])[0].get("message", {})
+        raw_json = _extract_message_content(j_message) or j_payload
+        if isinstance(raw_json, dict):
+            assessment_json = raw_json
+        else:
+            assessment_json = json.loads(str(raw_json))
         json_rows.append({**row, "assessment_json": assessment_json})
 
         # Markdown
@@ -432,12 +632,12 @@ def narrate_via_serving(rows: list[dict[str, Any]], *, profile: str | None, endp
             ],
         }
         mr = requests.post(url, headers=headers, json=m_body, timeout=120)
-        mr.raise_for_status()
+        if mr.status_code >= 400:
+            _raise_serving_error(mr, endpoint)
         m_payload = mr.json()
-        assessment_md = m_payload.get("choices", [{}])[0].get("message", {}).get("content", "")
-        if isinstance(assessment_md, dict):
-            assessment_md = json.dumps(assessment_md)
-        md_rows.append({**row, "assessment_md": str(assessment_md).strip()})
+        m_message = m_payload.get("choices", [{}])[0].get("message", {})
+        assessment_md = _extract_message_content(m_message)
+        md_rows.append({**row, "assessment_md": assessment_md})
 
     return json_rows, md_rows
 
@@ -459,10 +659,31 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--limit", type=int, help="Cap rows narrated (for dev/test).")
     parser.add_argument("--capability", help="Narrate a single capability key.")
     parser.add_argument(
+        "--pilot",
+        action="store_true",
+        help="Limit to 5 demo districts (Mumbai, Delhi, Bengaluru, Lucknow, Jaisalmer) "
+        "in that priority order.",
+    )
+    parser.add_argument(
         "--mode",
-        choices=["ai_query", "serving"],
-        default="ai_query",
-        help="ai_query runs batch SQL on Databricks; serving calls the endpoint per row.",
+        choices=["ai_query", "serving", "stub"],
+        default=os.getenv("EVIDENCE_NARRATION_MODE", "serving"),
+        help="serving = REST per row; ai_query = batch SQL on a warehouse; "
+        "stub = local template (no Databricks, for dev/quota limits).",
+    )
+    parser.add_argument(
+        "--fallback-stub",
+        action=argparse.BooleanOptionalAction,
+        default=os.getenv("EVIDENCE_FALLBACK_STUB", "true").lower() not in ("0", "false", "no"),
+        help="When serving/ai_query hits Databricks quota limits, use stub templates "
+        "(default: on). Pass --no-fallback-stub to fail instead.",
+    )
+    parser.add_argument(
+        "--skip-existing",
+        action=argparse.BooleanOptionalAction,
+        default=os.getenv("EVIDENCE_SKIP_EXISTING", "true").lower() not in ("0", "false", "no"),
+        help="Skip facility×capability rows already narrated by a real model. "
+        "Stub templates remain eligible for replacement (default: on).",
     )
     args = parser.parse_args(argv)
 
@@ -487,12 +708,28 @@ def main(argv: list[str] | None = None) -> int:
             cur.execute(DDL)
         conn.commit()
 
-        rows = fetch_scored(conn, limit=args.limit, capability=args.capability)
+        rows = fetch_scored(
+            conn,
+            limit=args.limit,
+            capability=args.capability,
+            pilot=args.pilot,
+            skip_existing=args.skip_existing,
+        )
         if not rows:
             print("No scored rows to narrate.")
+            if args.skip_existing:
+                print("(All matching rows already have real LLM narrations — use --no-skip-existing to force.)")
             return 0
 
-        print(f"Narrating {len(rows):,} rows via {args.mode} ({args.agent_endpoint})…")
+        geo = "pilot districts" if args.pilot else "all geographies"
+        endpoint_label = (
+            STUB_ENDPOINT if args.mode == "stub" else args.agent_endpoint
+        )
+        skip_note = " · skip-existing" if args.skip_existing else ""
+        print(
+            f"Narrating {len(rows):,} rows ({geo}) via {args.mode} "
+            f"({endpoint_label}){skip_note}…"
+        )
         if args.mode == "ai_query":
             json_rows, md_rows = narrate_via_databricks(
                 rows,
@@ -500,6 +737,8 @@ def main(argv: list[str] | None = None) -> int:
                 warehouse_id=args.warehouse,
                 endpoint=args.agent_endpoint,
             )
+        elif args.mode == "stub":
+            json_rows, md_rows = narrate_via_stub(rows)
         else:
             json_rows, md_rows = narrate_via_serving(
                 rows, profile=args.profile, endpoint=args.agent_endpoint
@@ -507,7 +746,7 @@ def main(argv: list[str] | None = None) -> int:
 
         upsert_narrations(
             conn,
-            endpoint=args.agent_endpoint,
+            endpoint=endpoint_label,
             json_rows=json_rows,
             md_rows=md_rows,
         )

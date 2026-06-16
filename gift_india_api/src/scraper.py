@@ -24,6 +24,8 @@ Output layout — a human-readable hierarchy keyed by geography then facility::
     ├── manifest.json                          # one record per facility attempted
     └── <state>/<district>/<facility-name>-<facility_id>/
         ├── page.html                          # raw HTML snapshot
+        ├── homepage.png                       # viewport PNG thumbnail of the live page
+        ├── homepage.pdf                       # printable PDF of the live page
         └── extracted.json                     # structured fields parsed from the page
 
 e.g. ``data/scraped/tamil-nadu/madurai/aravind-eye-hospital-VF-000123/``. Folder
@@ -72,6 +74,8 @@ DEFAULT_TIMEOUT = 20.0
 DEFAULT_DELAY = 1.0
 DEFAULT_RETRIES = 2
 MAX_TEXT_CHARS = 20_000
+THUMBNAIL_VIEWPORT = {"width": 1280, "height": 720}
+THUMBNAIL_SETTLE_MS = 1500
 
 _EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
 # Indian numbers (optional +91/0 prefix, 10 digits) and generic 7-15 digit runs.
@@ -267,6 +271,8 @@ class ScrapeRecord:
     final_url: str | None = None
     content_type: str | None = None
     html_path: str | None = None
+    png_path: str | None = None
+    pdf_path: str | None = None
     extracted_path: str | None = None
     title: str | None = None
     n_emails: int = 0
@@ -599,6 +605,86 @@ def extract(html: str, source_url: str) -> dict:
     }
 
 
+# --------------------------------------------------------------- page capture
+def render_homepage_thumbnails(
+    url: str,
+    facility_dir: Path,
+    *,
+    user_agent: str | None = None,
+    timeout_ms: int = 30_000,
+) -> tuple[Path | None, Path | None]:
+    """Capture a PNG viewport thumbnail and PDF of the live homepage.
+
+    Uses headless Chromium (Playwright). Returns ``(png_path, pdf_path)`` when
+    both artifacts are written, otherwise ``(None, None)`` on missing deps or
+    capture failure — the HTML scrape itself is unaffected.
+    """
+    png_path = facility_dir / "homepage.png"
+    pdf_path = facility_dir / "homepage.pdf"
+    try:
+        from playwright.sync_api import Error as PlaywrightError
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        logger.warning(
+            "playwright is not installed — skipping homepage PNG/PDF for {} "
+            "(pip install playwright && playwright install chromium)",
+            url,
+        )
+        return None, None
+
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            try:
+                context = browser.new_context(
+                    user_agent=user_agent or USER_AGENT,
+                    viewport=THUMBNAIL_VIEWPORT,
+                )
+                page = context.new_page()
+                page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+                page.wait_for_timeout(THUMBNAIL_SETTLE_MS)
+                page.screenshot(path=str(png_path), full_page=False)
+                page.pdf(path=str(pdf_path), format="A4", print_background=True)
+            finally:
+                browser.close()
+    except PlaywrightError as exc:
+        logger.warning("Homepage capture failed for {}: {}", url, exc)
+        return None, None
+
+    return png_path, pdf_path
+
+
+def _attach_thumbnail_paths(record: ScrapeRecord, facility_dir: Path) -> None:
+    """Populate manifest paths when thumbnail files already exist on disk."""
+    png_path = facility_dir / "homepage.png"
+    pdf_path = facility_dir / "homepage.pdf"
+    if png_path.exists():
+        record.png_path = str(png_path)
+    if pdf_path.exists():
+        record.pdf_path = str(pdf_path)
+
+
+def _capture_thumbnails(
+    record: ScrapeRecord,
+    *,
+    url: str,
+    facility_dir: Path,
+    user_agent: str | None,
+    timeout: float,
+) -> None:
+    """Render homepage PNG/PDF and attach paths to ``record`` when successful."""
+    png, pdf = render_homepage_thumbnails(
+        url,
+        facility_dir,
+        user_agent=user_agent,
+        timeout_ms=int(timeout * 1000),
+    )
+    if png:
+        record.png_path = str(png)
+    if pdf:
+        record.pdf_path = str(pdf)
+
+
 # --------------------------------------------------------------- scrape one
 def scrape_one(
     session: requests.Session,
@@ -608,6 +694,8 @@ def scrape_one(
     timeout: float,
     retries: int,
     force: bool,
+    thumbnails: bool = True,
+    user_agent: str | None = None,
 ) -> ScrapeRecord:
     record = ScrapeRecord(
         facility_id=target.facility_id,
@@ -626,12 +714,16 @@ def scrape_one(
     )
     html_path = facility_dir / "page.html"
     extracted_path = facility_dir / "extracted.json"
+    png_path = facility_dir / "homepage.png"
+    pdf_path = facility_dir / "homepage.pdf"
+    thumbnails_cached = png_path.exists() and pdf_path.exists()
 
-    if not force and extracted_path.exists():
+    if not force and extracted_path.exists() and (not thumbnails or thumbnails_cached):
         logger.debug("Skip (cached): {}", target.url)
         record.status = "ok"
         record.html_path = str(html_path) if html_path.exists() else None
         record.extracted_path = str(extracted_path)
+        _attach_thumbnail_paths(record, facility_dir)
         try:
             cached = json.loads(extracted_path.read_text(encoding="utf-8"))
             record.title = cached.get("title")
@@ -641,6 +733,33 @@ def scrape_one(
             record.n_claims = len(cached.get("capability_claims", []))
         except Exception:  # noqa: BLE001
             pass
+        record.fetched_at = _now_iso()
+        return record
+
+    if not force and extracted_path.exists() and thumbnails and not thumbnails_cached:
+        logger.debug("Backfill homepage thumbnails for cached scrape: {}", target.url)
+        record.status = "ok"
+        record.html_path = str(html_path) if html_path.exists() else None
+        record.extracted_path = str(extracted_path)
+        _attach_thumbnail_paths(record, facility_dir)
+        try:
+            cached = json.loads(extracted_path.read_text(encoding="utf-8"))
+            record.title = cached.get("title")
+            record.n_emails = len(cached.get("emails", []))
+            record.n_phones = len(cached.get("phones", []))
+            record.n_specialties = len(cached.get("specialties", []))
+            record.n_claims = len(cached.get("capability_claims", []))
+            capture_url = cached.get("source_url") or target.url
+        except Exception:  # noqa: BLE001
+            capture_url = target.url
+        facility_dir.mkdir(parents=True, exist_ok=True)
+        _capture_thumbnails(
+            record,
+            url=capture_url,
+            facility_dir=facility_dir,
+            user_agent=user_agent,
+            timeout=timeout,
+        )
         record.fetched_at = _now_iso()
         return record
 
@@ -687,9 +806,18 @@ def scrape_one(
     record.n_phones = len(extracted["phones"])
     record.n_specialties = len(extracted["specialties"])
     record.n_claims = len(extracted["capability_claims"])
+    if thumbnails:
+        _capture_thumbnails(
+            record,
+            url=record.final_url or target.url,
+            facility_dir=facility_dir,
+            user_agent=user_agent,
+            timeout=timeout,
+        )
     logger.success(
-        "Scraped {} ({} emails, {} phones, {} specialities, {} capability claims)",
+        "Scraped {} ({} emails, {} phones, {} specialities, {} capability claims{})",
         target.url, record.n_emails, record.n_phones, record.n_specialties, record.n_claims,
+        ", thumbnails saved" if record.png_path and record.pdf_path else "",
     )
     return record
 
@@ -739,6 +867,7 @@ def scrape(
     retries: int = DEFAULT_RETRIES,
     limit: int | None = None,
     force: bool = False,
+    thumbnails: bool = True,
     user_agent: str | None = None,
 ) -> ScrapeSummary:
     """Scrape every target, writing snapshots + a manifest to ``out_dir``.
@@ -758,7 +887,14 @@ def scrape(
     for i, target in enumerate(targets, start=1):
         logger.info("[{}/{}] {}", i, len(targets), target.url)
         record = scrape_one(
-            session, target, out_dir, timeout=timeout, retries=retries, force=force
+            session,
+            target,
+            out_dir,
+            timeout=timeout,
+            retries=retries,
+            force=force,
+            thumbnails=thumbnails,
+            user_agent=user_agent,
         )
         records.append(record)
         if delay and i < len(targets):
@@ -830,6 +966,10 @@ def main(argv: list[str] | None = None) -> int:
         help="Re-scrape even if a cached extraction already exists.",
     )
     parser.add_argument(
+        "--no-thumbnails", action="store_true",
+        help="Skip homepage PNG/PDF capture (HTML + extracted JSON only).",
+    )
+    parser.add_argument(
         "--all-districts", action="store_true",
         help="Crawl every facility URL, ignoring the pilot district scope "
         f"({CRAWL_SCOPE_LABEL}).",
@@ -858,6 +998,7 @@ def main(argv: list[str] | None = None) -> int:
         retries=args.retries,
         limit=args.limit,
         force=args.force,
+        thumbnails=not args.no_thumbnails,
     )
     return 0
 

@@ -346,7 +346,7 @@ def scrape_pages(
 
     Writes the same human-readable hierarchy the facility crawler uses —
     ``<out_dir>/scraped/<state>/<district>/<facility-name>-<jci_org_id>/`` with a
-    ``page.html`` + ``extracted.json`` and a top-level ``manifest.json`` — using
+    ``page.html`` + ``extracted.json`` + ``homepage.png``/``homepage.pdf`` and a top-level ``manifest.json`` — using
     the city as the district level. Each org's ``snapshot_dir`` is set in place so
     the JCI records point at their snapshot. Returns the scrape summary counts.
     """
@@ -499,7 +499,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--scrape-pages", action="store_true",
         help="Snapshot each hospital's official homepage under "
-        "<out>/scraped/<state>/<district>/<name>-<id>/ (page.html + extracted.json).",
+        "<out>/scraped/<state>/<district>/<name>-<id>/ "
+        "(page.html + extracted.json + homepage.png/pdf).",
     )
     parser.add_argument(
         "--no-scrape-pages", dest="scrape_pages", action="store_false",

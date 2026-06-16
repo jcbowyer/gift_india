@@ -15,6 +15,10 @@
 
 CREATE SCHEMA IF NOT EXISTS bronze;
 
+-- Legacy table renamed to bronze.facilities_virtue (see feb96f3). Drop if an old
+-- warehouse still has the pre-rename object.
+DROP TABLE IF EXISTS bronze.facilities CASCADE;
+
 -- District reference + NFHS-5 health indicators.
 CREATE TABLE IF NOT EXISTS bronze.districts (
     district                text             NOT NULL,
@@ -122,7 +126,10 @@ CREATE INDEX IF NOT EXISTS facility_web_crawl_crawled_at_idx
 -- crosswalk) on the normalized `match_name` / `brand_key`. `data_source` tags
 -- the provenance ('jci') so the lineage of the accreditation flag is explicit.
 -- Loads are idempotent on `jci_org_id` = sha256(match_name + city + state)[:16].
-CREATE TABLE IF NOT EXISTS bronze.jci_accreditations (
+ALTER TABLE IF EXISTS bronze.jci_accreditations RENAME TO facilities_jci;
+ALTER INDEX IF EXISTS bronze.jci_accreditations_match_name_idx RENAME TO facilities_jci_match_name_idx;
+ALTER INDEX IF EXISTS bronze.jci_accreditations_state_idx RENAME TO facilities_jci_state_idx;
+CREATE TABLE IF NOT EXISTS bronze.facilities_jci (
     jci_org_id            text        PRIMARY KEY,
     jci_name              text        NOT NULL,
     city                  text,
@@ -142,15 +149,15 @@ CREATE TABLE IF NOT EXISTS bronze.jci_accreditations (
     collected_at          timestamptz NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS jci_accreditations_match_name_idx
-    ON bronze.jci_accreditations (match_name);
-CREATE INDEX IF NOT EXISTS jci_accreditations_state_idx
-    ON bronze.jci_accreditations (state);
+CREATE INDEX IF NOT EXISTS facilities_jci_match_name_idx
+    ON bronze.facilities_jci (match_name);
+CREATE INDEX IF NOT EXISTS facilities_jci_state_idx
+    ON bronze.facilities_jci (state);
 
 -- NABH (National Accreditation Board for Hospitals & Healthcare Providers)
 -- accredited / certified / empanelled facilities in India, scraped from the
 -- official nabh.co directory by src/nabh_scraper.py and landed by src/load_nabh.py.
--- Like bronze.jci_accreditations this is an external accreditation REFERENCE source
+-- Like bronze.facilities_jci this is an external accreditation REFERENCE source
 -- (`data_source` = 'nabh'), NOT a governed facility record — so there is no foreign
 -- key to bronze.facilities_virtue; entity resolution to a facility_id happens downstream in
 -- dbt on the shared normalized `match_name` / `brand_key` (the `jci_normalize`
@@ -158,7 +165,10 @@ CREATE INDEX IF NOT EXISTS jci_accreditations_state_idx
 -- register (~19k orgs) with geocoordinates, so gold.facility_nabh resolves a much
 -- larger share of facilities and confirms the on-record "NABH accredited" claims.
 -- Loads are idempotent on `nabh_org_id` = sha256(match_name + city + state + ref)[:16].
-CREATE TABLE IF NOT EXISTS bronze.nabh_accreditations (
+ALTER TABLE IF EXISTS bronze.nabh_accreditations RENAME TO facilities_nabh;
+ALTER INDEX IF EXISTS bronze.nabh_accreditations_match_name_idx RENAME TO facilities_nabh_match_name_idx;
+ALTER INDEX IF EXISTS bronze.nabh_accreditations_state_idx RENAME TO facilities_nabh_state_idx;
+CREATE TABLE IF NOT EXISTS bronze.facilities_nabh (
     nabh_org_id           text        PRIMARY KEY,
     nabh_name             text        NOT NULL,
     city                  text,
@@ -183,15 +193,15 @@ CREATE TABLE IF NOT EXISTS bronze.nabh_accreditations (
     collected_at          timestamptz NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS nabh_accreditations_match_name_idx
-    ON bronze.nabh_accreditations (match_name);
-CREATE INDEX IF NOT EXISTS nabh_accreditations_state_idx
-    ON bronze.nabh_accreditations (state);
+CREATE INDEX IF NOT EXISTS facilities_nabh_match_name_idx
+    ON bronze.facilities_nabh (match_name);
+CREATE INDEX IF NOT EXISTS facilities_nabh_state_idx
+    ON bronze.facilities_nabh (state);
 
 -- Medical Value Travel (MVT) hospital locations — India hospitals running
 -- international patient programs, seeded from the public Hugging Face MVT MVP
 -- dataset (Dhanush008/india-medical-value-travel-mvp), landed by
--- src/load_med_travel.py into data/medical_travel/. Like bronze.jci_accreditations
+-- src/load_med_travel.py into data/medical_travel/. Like bronze.facilities_jci
 -- this is an external REFERENCE source describing a hospital's medical-tourism
 -- posture (program tier, accreditations, specialties, countries served), NOT a
 -- governed facility record — so there is intentionally NO foreign key to
@@ -297,7 +307,7 @@ CREATE INDEX IF NOT EXISTS locations_nhpr_total_beds_idx
 -- PMJAY (Ayushman Bharat) empanelled hospitals in India, scraped from the official
 -- Hospital Empanelment Module (HEM) public search portal (hospitals.pmjay.gov.in)
 -- by src/pmjay_scraper.py and landed by src/load_pmjay.py. Like
--- bronze.nabh_accreditations this is an external REFERENCE source (`data_source` =
+-- bronze.facilities_nabh this is an external REFERENCE source (`data_source` =
 -- 'pmjay'), NOT a governed facility record — entity resolution to a facility_id
 -- happens downstream in dbt on the shared normalized `match_name` / `brand_key`.
 -- Loads are idempotent on `pmjay_org_id` = sha256(match_name + district + state

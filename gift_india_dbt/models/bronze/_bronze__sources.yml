@@ -3,11 +3,12 @@ version: 2
 sources:
   - name: bronze
     description: >-
-      Raw landing tables for Governance, Integrity, & Facility Trust (GIFT) Gauge. The Python loader
-      (`gift_india_api/src/load_db.py`) writes the governed / synthetic facility
-      and district records here verbatim; dbt promotes them through silver and
-      gold. Defaults to the `bronze` schema where the loader writes (override
-      with `--vars '{bronze_schema: <schema>}'`).
+      Raw landing tables for Governance, Integrity, & Facility Trust (GIFT) Gauge. The Python loaders
+      (`gift_india_api/src/load_db.py`, `load_bronze_real.py`) write governed /
+      synthetic facility rows to `bronze.facilities_virtue` and district records
+      to `bronze.districts`; dbt promotes them through silver and gold. Defaults
+      to the `bronze` schema where the loader writes (override with
+      `--vars '{bronze_schema: <schema>}'`).
     schema: "{{ var('bronze_schema', 'bronze') }}"
     tables:
       - name: facilities_virtue
@@ -97,7 +98,7 @@ sources:
             tests:
               - not_null
 
-      - name: jci_accreditations
+      - name: facilities_jci
         description: >-
           JCI (Joint Commission International) accredited organizations in India,
           compiled by `gift_india_api/src/jci_scraper.py` from curated medical-
@@ -132,7 +133,7 @@ sources:
             tests:
               - not_null
 
-      - name: nabh_accreditations
+      - name: facilities_nabh
         description: >-
           NABH (National Accreditation Board for Hospitals & Healthcare Providers)
           accredited / certified / empanelled facilities in India, scraped from the

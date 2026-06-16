@@ -32,6 +32,7 @@ import {
 import {
   api,
   SIGNAL_META,
+  effectiveTrustScore,
   type FacilityDetail,
   type FacilitySearchResult,
   type CapabilityDetail,
@@ -45,6 +46,10 @@ type GroupBy = 'capability' | 'signal';
 /** Override-aware signal actually shown on the scorecard. */
 function effSignal(c: CapabilityDetail): TrustSignal {
   return c.overrideSignal ?? c.trustSignal;
+}
+
+function effScore(c: CapabilityDetail): number {
+  return effectiveTrustScore(c);
 }
 
 function GradeBadge({ grade, className = '' }: { grade: string; className?: string }) {
@@ -78,8 +83,9 @@ function SignalMixBar({ counts }: { counts: Record<TrustSignal, number> }) {
 function CapabilityRow({ cap }: { cap: CapabilityDetail }) {
   const [open, setOpen] = useState(false);
   const sig = effSignal(cap);
-  const score = Math.round(cap.trustScore * 100);
-  const grade = capabilityGrade(sig, cap.trustScore);
+  const scoreVal = effScore(cap);
+  const score = Math.round(scoreVal * 100);
+  const grade = capabilityGrade(sig, scoreVal);
   const claimed = sig !== 'no_claim';
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -147,7 +153,7 @@ function CapabilityRow({ cap }: { cap: CapabilityDetail }) {
 function SignalGroup({ signal, caps }: { signal: TrustSignal; caps: CapabilityDetail[] }) {
   const meta = SIGNAL_META[signal];
   const claimed = signal !== 'no_claim';
-  const avg = claimed && caps.length ? caps.reduce((a, c) => a + c.trustScore, 0) / caps.length : null;
+  const avg = claimed && caps.length ? caps.reduce((a, c) => a + effScore(c), 0) / caps.length : null;
   return (
     <Card className="gift-lift">
       <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-3">
@@ -166,9 +172,9 @@ function SignalGroup({ signal, caps }: { signal: TrustSignal; caps: CapabilityDe
           >
             <span className="min-w-0 flex-1 font-medium text-foreground">{c.label}</span>
             <span className="w-10 text-right text-sm font-bold tabular-nums text-foreground">
-              {claimed ? Math.round(c.trustScore * 100) : '—'}
+              {claimed ? Math.round(effScore(c) * 100) : '—'}
             </span>
-            <GradeBadge grade={capabilityGrade(effSignal(c), c.trustScore)} />
+            <GradeBadge grade={capabilityGrade(effSignal(c), effScore(c))} />
           </div>
         ))}
       </CardContent>
@@ -252,7 +258,7 @@ export function ScorecardPage() {
       const s = effSignal(c);
       counts[s] += 1;
       if (s !== 'no_claim') {
-        scoreSum += c.trustScore;
+        scoreSum += effScore(c);
         claimed += 1;
       }
     }
@@ -273,7 +279,7 @@ export function ScorecardPage() {
   );
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="mx-auto max-w-3xl space-y-4" data-demo="scorecard">
       {/* picker */}
       <Card>
         <CardContent className="space-y-3 p-4">

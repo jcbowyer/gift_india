@@ -18,7 +18,7 @@ there is no separate compile step):
   table that dbt resolves to facility_ids (silver -> gold) on the normalized
   ``match_name`` / ``brand_key`` (the same entity-resolution keys the JCI seed
   uses). List-valued fields are stored pipe-delimited, like
-  ``bronze.facilities.specialties``.
+  ``bronze.facilities_virtue.specialties``.
 
 Like ``src.load_jci`` it targets local Postgres or Databricks Lakebase, and loads
 are **idempotent**: ``mvt_id`` is the source hospital id (e.g. ``H001``), so

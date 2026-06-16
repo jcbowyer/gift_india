@@ -47,7 +47,7 @@ models:
       - name: match_confidence
         description: Named-entity-resolution confidence score (0-1).
 
-  - name: silver_jci_accreditations
+  - name: silver_facilities_jci
     description: >-
       Cleaned, typed, deduped JCI-accredited organizations in India, with the
       canonical entity-resolution keys (`match_name`, `brand_key`) re-derived via
@@ -72,7 +72,7 @@ models:
           - accepted_values:
               values: ['jci']
 
-  - name: silver_nabh_accreditations
+  - name: silver_facilities_nabh
     description: >-
       Cleaned, typed, deduped NABH-accredited / -certified / -empanelled facilities
       in India, with the canonical entity-resolution keys (`match_name`, `brand_key`)

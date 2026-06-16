@@ -1,9 +1,9 @@
-"""Land the JCI-accredited-organizations seed into ``bronze.jci_accreditations``.
+"""Land the JCI-accredited-organizations seed into ``bronze.facilities_jci``.
 
 ``src.jci_scraper`` compiles India's JCI-accredited hospitals (curated aggregator
 seed + best-effort official portal) and writes ``data/jci/jci_accredited.json``.
 This module reads that output and loads one **bronze** row per organization into
-``bronze.jci_accreditations`` — the raw accreditation REFERENCE landing table that
+``bronze.facilities_jci`` — the raw accreditation REFERENCE landing table that
 dbt resolves to facility_ids (silver -> gold) to flag ``jci_accredited``.
 
 Like ``src.load_crawl`` it targets local Postgres or Databricks Lakebase, and
@@ -45,7 +45,7 @@ _JCI_COLS = [
 
 
 def jci_rows(out_dir: Path = DEFAULT_OUT_DIR) -> list[tuple]:
-    """Build ``bronze.jci_accreditations`` rows from ``jci_accredited.json``."""
+    """Build ``bronze.facilities_jci`` rows from ``jci_accredited.json``."""
     records_path = out_dir / "jci_accredited.json"
     if not records_path.exists():
         raise FileNotFoundError(
@@ -74,7 +74,7 @@ def _load(conn, schema: str, rows: list[tuple]) -> int:
         f"{c} = EXCLUDED.{c}" for c in _JCI_COLS if c != "jci_org_id"
     )
     sql = (
-        f"INSERT INTO {schema}.jci_accreditations ({cols}) "
+        f"INSERT INTO {schema}.facilities_jci ({cols}) "
         f"VALUES ({placeholders}) "
         f"ON CONFLICT (jci_org_id) DO UPDATE SET {updates}"
     )
@@ -137,7 +137,7 @@ def main(argv: list[str] | None = None) -> int:
         affected = _load(conn, args.schema, rows)
 
     logger.success(
-        "Upserted {} JCI org(s) into {}.jci_accreditations on {}.",
+        "Upserted {} JCI org(s) into {}.facilities_jci on {}.",
         affected, args.schema, where,
     )
     return 0

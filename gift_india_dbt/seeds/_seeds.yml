@@ -33,3 +33,17 @@ seeds:
       - name: description
         tests:
           - not_null
+
+  - name: state_aliases
+    description: >-
+      Normalised spellings / city labels in Virtue scraped data mapped to canonical
+      Survey-of-India state names. Join on `geo_norm(raw_label) = raw_norm`.
+    columns:
+      - name: raw_norm
+        tests:
+          - not_null
+          - unique
+      - name: state
+        description: Canonical state / UT name (matches state_codes.state).
+        tests:
+          - not_null
