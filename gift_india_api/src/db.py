@@ -1,8 +1,10 @@
-"""Database connectivity for Governance, Integrity, & Facility Trust Desk.
+"""Database connectivity for Governance, Integrity, & Facility Trust (GIFT) Gauge.
 
 One code path serves two targets:
 
-* **Local Postgres** (docker compose) for fast iteration — set ``GIFT_INDIA_DB_URL``.
+* **Local Postgres** (system PostgreSQL on `localhost:5432`) — set ``GIFT_INDIA_DB_URL``
+  or ``GIFT_INDIA_PG*`` in the repo ``.env``. Do **not** use Docker for local dev
+  unless explicitly requested (see ``claude.md``).
 * **Databricks Lakebase** (managed serverless Postgres) — resolve the endpoint
   host and a short-lived OAuth credential via the Databricks CLI, then connect
   over SSL.
@@ -24,27 +26,32 @@ import psycopg
 # which is left to the managed Postgres / Lakebase system objects). dbt promotes
 # bronze -> silver -> gold; serving reads gold.
 DEFAULT_SCHEMA = os.getenv("GIFT_INDIA_DB_SCHEMA", "bronze")
-LOCAL_DEFAULT_DSN = "postgresql://gift_india:gift_india@localhost:5432/gift_india"
+LOCAL_DEFAULT_DSN = "postgresql://postgres@localhost:5432/gift_india"
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
-_ENV_FILE = _PROJECT_ROOT / ".env"
+_REPO_ROOT = _PROJECT_ROOT.parent
 _dotenv_loaded = False
 
 
 def _load_dotenv() -> None:
-    """Best-effort load of a local ``.env`` (no extra dependency)."""
+    """Best-effort load of repo ``.env`` / ``.env.local`` (no extra dependency)."""
     global _dotenv_loaded
     if _dotenv_loaded:
         return
     _dotenv_loaded = True
-    if not _ENV_FILE.exists():
-        return
-    for raw in _ENV_FILE.read_text().splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, _, val = line.partition("=")
-        os.environ.setdefault(key.strip(), val.strip().strip('"').strip("'"))
+    from .pg_env import load_env_files, sync_from_url
+
+    load_env_files()
+    sync_from_url()
+    # Legacy: gift_india_api/.env if present (lowest precedence).
+    legacy = _PROJECT_ROOT / ".env"
+    if legacy.exists():
+        for raw in legacy.read_text().splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            os.environ.setdefault(key.strip(), val.strip().strip('"').strip("'"))
 
 
 def database_url() -> str | None:

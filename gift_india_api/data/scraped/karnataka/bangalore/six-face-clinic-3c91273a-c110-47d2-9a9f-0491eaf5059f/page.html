@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+  	<meta charset="utf-8">
+  	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  	<meta name="viewport" content="width=device-width, initial-scale=1">
+  	<meta name="title" content="">
+  	<meta name="keywords" content="">
+  	<title>Book.HealthPlix.com</title>
+  	<link rel="shortcut icon" href="https://book.healthplix.com/assets/images/hplx_title_logo.png" type="image/x-icon">
+  	<link rel="icon" href="https://book.healthplix.com/assets/images/hplx_title_logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap">
+    <link rel="stylesheet" href="https://book.healthplix.com/assets/css/toastr.min.css">
+    <link rel="stylesheet" href="https://book.healthplix.com/assets/css/bxslider.min.css" />
+  	<link href="https://book.healthplix.com/assets/css/bootstrap-4.5.min.css" rel="stylesheet" type="text/css" />
+  	<link rel="stylesheet" href="https://book.healthplix.com/assets/css/book.css?version=1.0.4">
+	  <link rel="stylesheet" href="https://book.healthplix.com/assets/ladda/ladda-themeless.min.css" />
+    <link rel="stylesheet" href="https://book.healthplix.com/assets/css/bxslider.min.css" />
+  </head>
+<body>
+<!-- Google Tag Manager - added for Patient app banners -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-THCNRVZX');</script>
+<!-- End Google Tag Manager -->
+  <script type="text/javascript">
+    var assets_base_url = 'https://book.healthplix.com/assets';
+    var g_branch_code = 'dr-b-rajasekhar-consulting-physician-indiranagar-bangalore';
+    var g_analytic_key = 'G-DQTVS3T2ZG';
+  </script>
+<!-- Google tag (gtag.js) -->
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DQTVS3T2ZG"></script>
+
+<script>
+
+window.dataLayer = window.dataLayer || [];
+
+function gtag(){dataLayer.push(arguments);}
+
+gtag('js', new Date());
+
+gtag('config', 'G-DQTVS3T2ZG');
+
+</script>
+  <div id="loadingContainer" class="loader">
+    <div id="outerRing">
+      <div id="innerRing"></div>
+      <div id="bPlus"></div>
+      <div id="mPlus"></div>
+      <div id="sPlus"></div>
+    </div>
+    <div class="loader-overlay"></div>
+  </div>
+  <div class="header-fixed">
+      <nav class="navbar navbar-expand-sm max-width">
+          <a class="navbar-brand logo-sec mr-2" href="#"></a>
+          <!-- <div class="dropdown langMobile d-none">
+              <a aria-expanded="false" aria-haspopup="true" role="button" data-toggle="dropdown" class="dropdown-toggle" href="#">
+                <span id="selectedMobile">En</span></a>
+                  <ul class="dropdown-menu langChange">
+                  </ul>
+
+          </div> -->
+         <!-- <div class="d-md-none" style="position: absolute;right:20px"><img src="/images/hplx-logo.svg" style="height: 100%; width: 100px"></div> -->
+
+
+          <div class="header-details d-none" style="border-left: 1px solid #233A5B;margin-left: 10px;">
+            <div class="doctors-sec d-flex align-items-center justify-content-between" style="margin-left: 10px;">
+              <figure class="profile-mobile header-profile-mobile">
+                <div>
+                  <img class="head_profile_img" src="" alt="profile">
+                </div>
+              </figure>
+              <div class="flex-1 doctors-details pl-3">
+                <h4 class="head_doctor_name"></h4>
+                <h6 class="head_doctor_speciality"></h6>
+              </div>
+            </div>
+          </div>
+          <div class="collapse navbar-collapse header-limiter p-0 d-none" id="navbarHeader">
+              <ul class="navbar-nav ml-auto">
+                <div class="dropdown langSelection d-none">
+                    <a aria-expanded="false" aria-haspopup="true" role="button" data-toggle="dropdown" class="dropdown-toggle changeLangTrigger" href="#">
+                      <span id="langChange" ><span class="lang">Lang:</span> &nbsp; English</span></a>
+                        <ul class="dropdown-menu langChange">
+                        </ul>
+                </div>
+              </ul>
+          </div> 
+          <div style="position: absolute; right:14px;top: 14px;">
+            <img src="https://book.healthplix.com/assets/images/hplx-logo.svg" style="height: 28px; width: 120px"> 
+            <span style="right: 0;position: absolute;top: 20px;font-size: 12px;color:#233A5B">Virtual Clinic</span>
+          </div> 
+             
+      </nav>
+  </div>
+  <div class="header-details-mobile mt-1 d-none">
+    <div class="doctors-sec d-flex align-items-center justify-content-between" style="margin-left: 20px;">
+      <figure class="profile-mobile header-profile-mobile">
+        <div>
+          <img class="head_profile_img" src="" alt="profile">
+        </div>
+      </figure>
+      <div class="flex-1 doctors-details pl-3">
+        <h4 class="head_doctor_name"></h4>
+        <h6 class="head_doctor_speciality"></h6>
+      </div>
+    </div>
+  </div>
+
+
+<div id="languageModal" class="modal fade langSec d-none">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Choose your language</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+               <div class="selectLang d-flex">
+                <ul class="d-flex langChange">
+                </ul>
+            </div>      
+            </div>
+            <div class="modal-footer">
+              <div class="langFooter d-flex align-items-center justify-content-between">
+               <div>
+                    <label class="checkbox">Don’t ask me again
+                      <input type="checkbox" checked="checked" class="langCheck">
+                      <span class="checkmark"></span>
+                    </label>
+                </div>
+                <div class="okay" id="langBtn">
+                      <button class="btnBlueS d-flex justify-content-center align-items-center" data-style="zoom-in" data-sotrigger="soEditProfile">Okay</button>
+                </div>
+            </div> 
+        </div>     
+        </div>
+    </div>
+</div>
+<main class="max-width" id="main-section">
+   <div class="container-fluid mt-lg-4 mt-3" id="main-div">
+      	<div class="row justify-content-center consultant-sec">
+	        <div class="col-lg-8 doc-consultant" id="all_doctor_details">
+	            <div class="d-flex flex-wrap align-items-center justify-content-between mb-2">
+					<h4 class="page-title clinic-doctor m-sm-3 my-md-0 lang-text" lang-attr="Clinic Doctors">Clinic Doctors</h4>
+					<!-- <div class="search-container">
+					<input type="text" class="searchText lang-text" lang-attr="Search Doctors" placeholder="Search Doctors" name="search">
+					<button type="submit" class="submit-btn"><img src="./assets/images/search.svg" alt=""></button>
+					</div> -->
+				</div>
+	            <div class="filter-mobile d-none">
+	               <span><img alt="" src=""></span>
+	            </div>
+	            
+	        	<section id="doctor_list"></section>
+	        </div>
+	         
+	        <div class="col-lg-4 contact-details" id="contact-details">
+	        </div>
+      	</div>
+      	<div class="row doctor-profile d-none">
+	    	<div class="col-md-12">
+	       		<div class="profile-text">
+	       			<span><a href="#"><img src="/assets/images/back-arrow.svg" alt=""></a></span>
+	       			<h4>Doctor Profile</h4>
+	       		</div>
+	       		<div class="doctor-details-sec">
+	       			<div class="row no-gutters justify-content-center details-div">
+						<div class="profile-img col-lg-6 col-md-4 col-sm-12">
+							<div class="" id="doctor_profile_image">
+								
+							</div>
+						</div>
+						<div class="profile-details pt-3 pl-4 col-lg-8 col-md-6 col-sm-5">
+							<div class="row">
+							</div>
+						</div>
+	           		</div>
+	           	</div>
+	       	</div>
+	    </div>
+   </div>
+   <div class="container-fluid d-none" id="inner-consult"></div>
+   <div class="razorpay_html d-none"></div>
+</main>
+<footer class="footer-margin">
+	<div class="footer text-center mt-5 footer-fixed" id="landing-page-footer">
+	</div>
+	<div class="success-footer text-center mt-5">
+	</div>
+</footer>
+<script>
+var g_doctor_details = {};
+var g_current_date = '2026-06-16';
+var g_doctor_code = '';
+/*$(document).ready(function(){
+    $('.menu-mobile').click(function() {
+      	$('nav').toggle(); 
+    });
+});*/
+</script>	
+<script src="/assets/js/jquery-3.3.1.min.js" ></script>
+<script src="/assets/js/popper.min.js"></script>
+<script src="/assets/js/bootstrap.min.js"></script>
+<script src="/assets/js/bootstrap-datepicker.min.js"></script>
+<script src="/assets/js/toastr.min.js"></script>
+<script src="/assets/ladda/spin.min.js"></script>
+<script src="/assets/ladda/ladda.min.js"></script>
+<script src="/assets/ladda/ladda.jquery.min.js"></script>
+
+<script src="/config.js?version=1.0.1"></script>
+<script src="/assets/js/utility.js?version=1.0.10"></script>
+<script src="/assets/js/app.js?version=1.0.12"></script>
+<script src="/assets/js/booking.js?version=1.0.12"></script>
+<script src="/assets/js/clinic_details.js?version=1.0.6"></script>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script type="text/javascript">
+// Navbar Outside Click Collapse
+$(document).click(function (event) {
+    var clickover = $(event.target);
+    var _opened = $(".navbar-collapse").hasClass("show");
+    if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+        $("button.navbar-toggler").click();
+    }
+});
+</script>
+</body>
+</html>

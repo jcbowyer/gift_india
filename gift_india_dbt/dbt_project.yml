@@ -1,9 +1,12 @@
-name: gift_india
+# Postgres (serving) medallion — what the web app reads. Distinct from the
+# Databricks upstream project in ../dbt_project (adapter: databricks); these are
+# two separate dbt projects in the pipeline, not duplicates. See ../README.md.
+name: gift_india_postgres
 version: "1.0.0"
 config-version: 2
 
 # Maps to the profile in profiles.yml (this dir; run with DBT_PROFILES_DIR=.).
-profile: gift_india
+profile: gift_india_postgres
 
 model-paths: ["models"]
 seed-paths: ["seeds"]
@@ -29,7 +32,10 @@ vars:
 # generate_schema_name (see macros/) makes these literal schema names, not
 # the dbt default `<target>_<schema>` prefix.
 models:
-  gift_india:
+  gift_india_postgres:
+    +persist_docs:
+      relation: true
+      columns: true
     silver:
       +materialized: view
       +schema: silver
@@ -38,8 +44,11 @@ models:
       +schema: gold
 
 seeds:
-  gift_india:
+  gift_india_postgres:
     +schema: silver
+    +persist_docs:
+      relation: true
+      columns: true
     state_codes:
       +column_types:
         state: text

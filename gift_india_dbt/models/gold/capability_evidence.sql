@@ -16,6 +16,41 @@ facilities as (
     select * from {{ ref('facilities') }}
 ),
 
+-- Most-recent successful website crawl per facility (silver dedupes the bronze
+-- crawl history). Empty until `make crawl` lands real pages, so the website
+-- evidence below simply contributes zero rows in the synthetic dev dataset.
+crawls as (
+    select * from {{ ref('silver_facility_web_crawl') }}
+),
+
+-- Capability → distinctive page-text terms. A term appearing in the official
+-- website's stripped text is a real, self-reported corroborating signal. Terms
+-- are multi-character phrases to avoid boilerplate false positives.
+capability_terms as (
+    select * from (values
+        ('maternity', 'maternity'),
+        ('maternity', 'obstetric'),
+        ('maternity', 'gynaec'),
+        ('maternity', 'labour ward'),
+        ('maternity', 'antenatal'),
+        ('emergency', 'emergency department'),
+        ('emergency', 'emergency care'),
+        ('emergency', 'casualty'),
+        ('emergency', 'accident and emergency'),
+        ('trauma', 'trauma'),
+        ('trauma', 'orthopaedic'),
+        ('trauma', 'orthopedic'),
+        ('oncology', 'oncology'),
+        ('oncology', 'cancer'),
+        ('oncology', 'chemotherapy'),
+        ('oncology', 'radiotherapy'),
+        ('icu', 'intensive care'),
+        ('icu', 'critical care'),
+        ('nicu', 'neonatal'),
+        ('nicu', 'nicu')
+    ) as t(capability, term)
+),
+
 base as (
     select
         a.facility_id,
@@ -144,12 +179,48 @@ surgery_evidence as (
       and offers_surgery
 ),
 
+-- Official website page text actually mentioning the capability. One evidence
+-- row per (facility, capability): the alphabetically-first matching term wins,
+-- and the snippet quotes a real ~160-char window of the crawled text around it
+-- (whitespace-collapsed) — sourced, never fabricated.
+website_text_evidence as (
+    select distinct on (b.facility_id, b.capability)
+        b.facility_id,
+        b.capability,
+        b.facility_id || ':' || b.capability || ':website_text' as evidence_id,
+        'website_crawl' as source_type,
+        'Official website — page text' as source_label,
+        coalesce(c.final_url, c.website_url) as source_url,
+        'supports' as stance,
+        0.50 as weight,
+        'Official website text: “…'
+            || regexp_replace(
+                 substring(
+                     c.raw_text
+                     from greatest(1, position(lower(ct.term) in lower(c.raw_text)) - 40)
+                     for 160
+                 ),
+                 '\s+', ' ', 'g'
+               )
+            || '…”' as snippet
+    from base b
+    join crawls c
+        on c.facility_id = b.facility_id
+       and c.crawl_ok
+       and c.raw_text is not null
+    join capability_terms ct
+        on ct.capability = b.capability
+       and c.raw_text ilike '%' || ct.term || '%'
+    order by b.facility_id, b.capability, ct.term
+),
+
 unioned as (
     select * from specialty_evidence
     union all select * from type_evidence
     union all select * from beds_evidence
     union all select * from entity_evidence
     union all select * from website_evidence
+    union all select * from website_text_evidence
     union all select * from surgery_evidence
 )
 

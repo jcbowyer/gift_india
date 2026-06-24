@@ -1,0 +1,20 @@
+{
+  "facilityId": "IN0710000123",
+  "facilityName": "All India Institute of Medical Sciences",
+  "facilityTypeCode": "5",
+  "facilityType": "Hospital",
+  "totalNumberOfBeds": 2478,
+  "countIpdBedsWithOxygen": 1200,
+  "countIpdBedsWithoutOxygen": 800,
+  "countIcuBedsWithVentilators": 120,
+  "countIcuBedsWithoutVentilators": 30,
+  "countHduBedsWithVentilators": 15,
+  "countHduBedsWithoutVentilators": 10,
+  "countHduBedsWithFunctionalVentilators": 12,
+  "countDayCareBedsWithOxygen": 5,
+  "countDayCareBedsWithoutOxygen": 3,
+  "totalNumberOfVentilators": 150,
+  "specialities": ["s6", "s13"],
+  "imagingServices": ["CT", "MRI"],
+  "diagnosticServices": ["Pathology"]
+}

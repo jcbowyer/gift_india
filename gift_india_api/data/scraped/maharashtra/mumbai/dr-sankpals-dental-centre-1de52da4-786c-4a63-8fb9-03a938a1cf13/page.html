@@ -1,0 +1,677 @@
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-gb" lang="en-gb" dir="ltr">
+	<head>
+				<!-- Needed for Slideshow -->
+	<link rel="stylesheet" href="/templates/realestate/slideshow/assets/refineslide.css" type="text/css" />	
+	<link rel="stylesheet" href="/templates/realestate/slideshow/assets/css/refineslide-theme-dark.css" />
+    <script src="/templates/realestate/slideshow/assets/js/modernizr.js"></script>
+    <script src="/templates/realestate/slideshow/assets/js/jquery.js"></script>
+
+    <script>
+        jQuery(function () {
+            var $upper = $('#upper');
+
+            jQuery('#images').refineSlide({
+                transition : 'fade',
+                onInit : function () {
+                    var slider = this.slider,
+                       $triggers = $('.translist').find('> li > a');
+
+                    $triggers.parent().find('a[href="#_'+ this.slider.settings['transition'] +'"]').addClass('active');
+
+                    $triggers.on('click', function (e) {
+                       e.preventDefault();
+
+                        if (!$(this).find('.unsupported').length) {
+                            $triggers.removeClass('active');
+                            $(this).addClass('active');
+                            slider.settings['transition'] = $(this).attr('href').replace('#_', '');
+                        }
+                    });
+
+                    function support(result, bobble) {
+                        var phrase = '';
+
+                        if (!result) {
+                            phrase = ' not';
+                            $upper.find('div.bobble-'+ bobble).addClass('unsupported');
+                            $upper.find('div.bobble-js.bobble-css.unsupported').removeClass('bobble-css unsupported').text('JS');
+                        }
+                    }
+
+                    support(this.slider.cssTransforms3d, '3d');
+                    support(this.slider.cssTransitions, 'css');
+                }
+            });
+        });
+    </script>  		
+<!-- END -->
+
+	<script>
+		jQuery(function() {
+			var pull 		= $('#pull');
+				menu 		= $('nav ul');
+				menuHeight	= menu.height();
+
+			jQuery(pull).on('click', function(e) {
+				e.preventDefault();
+				menu.slideToggle();
+			});
+
+			jQuery(window).resize(function(){
+        		var w = $(window).width();
+        		if(w > 320 && menu.is(':hidden')) {
+        			menu.removeAttr('style');
+        		}
+    		});
+		});
+	</script>
+
+	<base href="https://drsankpalsdentalcentre.com/" />
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="generator" content="Joomla! - Open Source Content Management" />
+	<title>Home</title>
+	<link href="/?format=feed&amp;type=rss" rel="alternate" type="application/rss+xml" title="RSS 2.0" />
+	<link href="/?format=feed&amp;type=atom" rel="alternate" type="application/atom+xml" title="Atom 1.0" />
+	<link href="/templates/realestate/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon" />
+	<link href="https://drsankpalsdentalcentre.com/modules/mod_je_social/css/style.css" rel="stylesheet" type="text/css" />
+	<link href="https://drsankpalsdentalcentre.com/modules/mod_j51carousel/css/owl.carousel.css" rel="stylesheet" type="text/css" />
+	<link href="https://drsankpalsdentalcentre.com/modules/mod_j51carousel/css/owl.theme.css" rel="stylesheet" type="text/css" />
+	<link href="https://drsankpalsdentalcentre.com/modules/mod_j51carousel/css/style.css" rel="stylesheet" type="text/css" />
+	<link href="/modules/mod_responsive_contact_form/css/style.css" rel="stylesheet" type="text/css" />
+	<style type="text/css">
+
+#je_socialicons .jeSocial a{ width:24px; height:24px; margin:0; padding:0; text-indent:-9999px; display:block}
+#je_socialicons .jeSocial span { display: inline-block; padding:5px; -webkit-border-radius:20px;-moz-border-radius:20px;border-radius:20px;}
+#je_socialicons .jeSocial span:hover {box-shadow: 0 1px 4px rgba(0,0,0,.3); -webkit-box-shadow: 0 1px 4px rgba(0,0,0,.3); -moz-box-shadow: 0 1px 4px rgba(0,0,0,.3); -o-box-shadow: 0 1px 4px rgba(0,0,0,.3);}
+
+
+		#owl-carousel122 .item {
+
+			border:1px solid #ddd;
+
+			padding:20px;
+			text-align: center;
+
+		}
+
+	
+#je_socialicons .jeSocial a{ width:24px; height:24px; margin:0; padding:0; text-indent:-9999px; display:block}
+#je_socialicons .jeSocial span { display: inline-block; padding:5px;}
+#je_socialicons .jeSocial span:hover {box-shadow: 0 1px 4px rgba(0,0,0,.3); -webkit-box-shadow: 0 1px 4px rgba(0,0,0,.3); -moz-box-shadow: 0 1px 4px rgba(0,0,0,.3); -o-box-shadow: 0 1px 4px rgba(0,0,0,.3);}
+
+	</style>
+	<script src="/media/jui/js/jquery.min.js" type="text/javascript"></script>
+	<script src="/media/jui/js/jquery-noconflict.js" type="text/javascript"></script>
+	<script src="/media/jui/js/jquery-migrate.min.js" type="text/javascript"></script>
+	<script src="/media/system/js/caption.js" type="text/javascript"></script>
+	<script src="/media/system/js/mootools-core.js" type="text/javascript"></script>
+	<script src="/media/system/js/core.js" type="text/javascript"></script>
+	<script src="/media/system/js/mootools-more.js" type="text/javascript"></script>
+	<script src="/media/jui/js/bootstrap.min.js" type="text/javascript"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
+	<script src="/modules/mod_responsive_contact_form/js/jqBootstrapValidation.min.js" type="text/javascript"></script>
+	<script type="text/javascript">
+jQuery(window).on('load',  function() {
+				new JCaption('img.caption');
+			});jQuery.noConflict();jQuery(function () { jQuery("input,select,textarea").not("[type=submit]").jqBootstrapValidation(); } );
+	</script>
+
+
+ <!--[if lte IE 9]>
+<link rel="stylesheet" href="/templates/realestate/css/ie8.css" type="text/css" />
+<![endif]-->
+
+
+<link href='http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/templates/realestate/css/styles.css" type="text/css" />
+<link rel="stylesheet" href="/templates/realestate/css/template.css" type="text/css" />
+<link rel="stylesheet" href="/templates/realestate/css/style2.css" type="text/css" charset="utf-8" />	
+<link rel="stylesheet" href="/templates/realestate/css/normalize.css" type="text/css" />
+<link rel="stylesheet" href="/templates/realestate/css/bootstrap.css" type="text/css" />
+<script type="text/javascript" src="/templates/realestate/modules/analytics.js"></script><script type="text/javascript" src="/templates/realestate/html/com_content/archive/jscript.js"></script>	
+ <script type="text/javascript" src="/templates/realestate/modules/jscroll.js"></script>	
+<meta name="viewport" content="width=device-width, initial-scale=1.0">		<script type="text/javascript" src="/templates/realestate/slideshow/assets/refineslide.js"></script>
+                <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+                 <link href="'http://fonts.googleapis.com/css?family=Sanchez:400,400italic'" rel="'stylesheet'" type="'text/css'">
+   <link href="http://fonts.googleapis.com/css?family=" rel="stylesheet" property="stylesheet" type="text/css" media="all">
+   <link href="http://fonts.googleapis.com/css?family=Sanchez%3A300%2C400" rel="stylesheet" property="stylesheet" type="text/css" media="all">
+       <link href="https://fonts.googleapis.com/css?family=Sanchez:400,400italic" rel="stylesheet" type="text/css">
+           <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i" rel="stylesheet">
+	</head>
+
+<body class="background">
+
+		<div id="header-w">
+			<div id="header">
+            <div class="top_header">      
+	
+<div id="online"><a href="https://www.practo.com/mumbai/doctor/dr-rajendra-sankpal-dentist" target="_blank">ONLINE APPOINTMENT</a>
+</div>
+<div id="tel">Call <a href="tel:+919769246111">+91 9769246111 </a></div>
+</div>
+            <div class="main-container">
+            
+			<div class="logo-container">
+						<div class="logo"><a href="/"><img src="/templates/realestate/images/logo.png" alt="logo" ></a></div> 
+			 
+			</div>
+			<div class="slogan">Custom slogan</div>
+			 		<div class="search-bg">
+<div  id="je_socialicons">
+    <div class="jeSocial">
+		           <span class="icon1"><a href="https://www.facebook.com/drsankpaldentalcentre/" class="icon1" target="_blank" rel="nofollow" title="Facebook"></a></span>
+                   <span class="icon2"><a href="https://twitter.com/DrSankpal1" class="icon2" target="_blank" rel="nofollow" title="Twitter"></a></span>
+                   <span class="icon4"><a href="https://www.youtube.com/channel/UCHOj7XnjqpqomO_iFiK0-xg" class="icon4" target="_blank" rel="nofollow" title="Youtube"></a></span>
+                   <span class="icon6"><a href="https://www.instagram.com/dr_rajendra_sankpal" class="icon6" target="_blank" rel="nofollow" title="Instagram"></a></span>
+                   <span class="icon8"><a href="https://www.linkedin.com/in/dr-rajendra-sankpal-20b74429" class="icon8" target="_blank" rel="nofollow" title="LinkedIn"></a></span>
+            </div>
+</div>
+
+<a href="http://jextensions.com/social-icons-module/" id="jExt95">joomla social media module</a>
+<script type="text/javascript">
+  var el = document.getElementById('jExt95');
+  if(el) {el.style.display += el.style.display = 'none';}
+</script>
+
+
+<div class="customcallUs"  >
+	<div id="onlineandtel">
+<div id="online"><a href="https://www.practo.com/mumbai/doctor/dr-rajendra-sankpal-dentist" target="_blank">Book Your Appointment Online</a>
+<div class="divider">|</div>
+</div>
+<div id="tel">+91 22 2570 5669 / +91 22 2570 5667</div>
+</div></div>
+</div>                       
+			</div>
+           
+				<nav class="clearfix">
+					<div id="nav"> <div class="main-container"><ul class="nav menu">
+<li class="item-101 default current active"><a href="/" >Home</a></li><li class="item-102 deeper parent"><a href="/about" >About</a><ul class="nav-child unstyled small"><li class="item-185"><a href="/about/about-us" >About Us</a></li><li class="item-147"><a href="/about/achievements-and-awards" >Achievements  and Awards</a></li><li class="item-148"><a href="/about/extra-curricular-activities" >Extra Curricular Activities</a></li></ul></li><li class="item-103 deeper parent"><a href="/services" >Services</a><ul class="nav-child unstyled small"><li class="item-106 deeper parent"><a href="/services/dental-implants" >Dental Implants</a><ul class="nav-child unstyled small"><li class="item-171"><a href="/services/dental-implants/single-tooth-implant" >Single tooth Implant</a></li><li class="item-172"><a href="/services/dental-implants/all-on-4" >All on 4 </a></li><li class="item-173"><a href="/services/dental-implants/implant-supported-bridge" >Implant supported Bridge</a></li><li class="item-174"><a href="/services/dental-implants/all-on-4-plus" >All-on-4 plus</a></li><li class="item-175"><a href="/services/dental-implants/implant-supported-dentures" >Implant Supported Dentures</a></li><li class="item-176"><a href="/services/dental-implants/direct-and-indirect-sinus-grafting-and-bone-regenarion-procedures" >Direct and indirect Sinus</a></li></ul></li><li class="item-153"><a href="/services/cosmetic-dentistry" >Cosmetic Dentistry</a></li><li class="item-151"><a href="/services/in-depth-consultation" >In Depth Consultation</a></li><li class="item-157"><a href="/services/homedentalcare" >Home Dental Care</a></li><li class="item-111"><a href="/services/teeth-whitening" >Teeth Whitening</a></li><li class="item-168"><a href="/services/dental-tourism" >Dental Tourism</a></li><li class="item-169"><a href="/services/computer-guided-implant-surgery" >Comp Guided Implant Surgery</a></li><li class="item-170"><a href="/services/digital-smile-design" >Digital Smile Design</a></li><li class="item-158"><a href="/services/children-dental-health" >Children Dental Health</a></li><li class="item-154"><a href="/services/full-mouth-rehabilitation" >Full Mouth Rehabilitation</a></li><li class="item-104"><a href="/services/orthodontics-and-aligners" >Orthodontics and Aligners</a></li><li class="item-155"><a href="/services/painless-root-canaltreatment" >Painless Root CanalTreatment</a></li><li class="item-156"><a href="/services/inmanaligner" >INMAN aligner</a></li><li class="item-159"><a href="/services/dentalhealthinpregnancy" >Dental Healthin Pregnancy </a></li><li class="item-161"><a href="/services/infection-control" >Infection Control</a></li><li class="item-162"><a href="/services/gum-treatment" >Gum  Treatment</a></li><li class="item-163"><a href="/services/oral-surgery" >Oral Surgery</a></li><li class="item-164"><a href="/services/laser-dentistry" >Laser Dentistry</a></li><li class="item-165"><a href="/services/anti-snoring-therapy" >Anti Snoring Therapy</a></li><li class="item-166"><a href="/services/tooth-jewelley" >Tooth Jewelley</a></li><li class="item-167"><a href="/services/teeth-in-an-hour" >Teeth in an hour</a></li></ul></li><li class="item-116"><a href="/gallery" >Gallery</a></li><li class="item-117"><a href="/dental-tourism" >Dental Tourism</a></li><li class="item-118"><a href="/contact" >Contact</a></li><li class="item-119"><a href="/membership" >Membership</a></li></ul>
+</div></div>
+					<a href="#" id="pull"></a>
+				</nav>	
+			
+			</div> <!-- end header -->
+		</div><!-- end header-w -->
+
+ <div class="" id="relative">
+<!-- Slideshow -->
+	<div id="slideshow">	
+					 
+
+<center>
+ <div class="topline"></div>
+    <div class="group section-wrap upper" id="upper">
+        <div class="wrap group">
+            <div class="section-2 group">
+				<ul id="images" class="rs-slider">
+				
+				  
+		<li class="group"><img src="/images/new1.jpg" alt="1" /><div class="rs-caption rs-bottom"><p>Description slide 1</p></div></li>
+		
+		<li class="group"><img src="/images/new2.jpg" alt="2" /><div class="rs-caption rs-bottom"><p>Description slide 2</p></div></li>
+		
+		<li class="group"><img src="/images/new3.jpg" alt="3" /><div class="rs-caption rs-bottom"><p>Description slide 3</p></div></li>
+		
+       
+        	
+			
+											
+				</ul>
+            </div> <!-- /.section-2 -->
+        </div> <!-- /.wrap -->
+    </div> <!-- /#upper -->
+</center>
+			</div>
+<!-- END Slideshow -->			  
+
+<div id="wrapper">
+	<div id="main-content">	
+   
+
+    	
+
+<!-- Left Sidebar -->		  
+    	  
+
+<!-- Center -->	
+	<div id="centercontent_one">
+		<div class="clearpad"><div class="blog-featured" itemscope itemtype="https://schema.org/Blog">
+
+
+
+
+</div>
+</div>
+		        
+
+<div class="custom welcome_content"  >
+	<div class="main-container">
+<div class="welcome_content_heading">
+<h2 class="about-h2 text-center">About Our Center</h2>
+<h4 style="color: #515151;">Awarded Best Dentists in Mumbai</h4>
+</div>
+<div class="welcome_content_discription">
+<p>Dr Sankpals Dental Centre is dedicated to providing excellence in the field of Dentistry. With world-class dental facilities, cutting-edge technology, wonderful support staff &amp; soothing environment in the Hiranandani Gardens, Powai area, our team is committed to making you smile everyday, in every way.</p>
+<p>Combining Cosmetic Dentistry, Dental Implants, Orthodontics, Full mouth Rehab,Oral Surgery, Zoom Teeth Whitening &amp; Dental Lasers, we’ve been tagged as the Best Dental Care providers in Mumbai. Our positive testimony from our patients &amp; our best practices form a part of our innovation, culture and care that we follow at our centre.</p>
+<p>Our general dentists &amp; hygienists advise children &amp; adults on how best to care for their teeth and gums to prevent dental problems, as well as fixing current ones. Cosmetic dentistry focuses on smile aesthetics with bespoke veneers, white fillings and crowns and teeth whitening to provide that extra sparkle. Our Smile Makeover in a Day is ideal for those short of time and seeking the perfect smile. We also treat patients with gingivitis (inflamed or bleeding gums) or periodontal disease (which affects the gums and underlying bone). Dental implants are the ideal solution after dental trauma and a permanent alternative to dentures, allowing patients to eat and smile with confidence.</p>
+</div>
+</div></div>
+
+
+<div class="custom about_dr"  >
+	<div class="main-container">
+<h2 class="about-h2">About Dr. Rajendra Sankpal</h2>
+<div class="home_about_dr_hide_img"><img src="/images/profile_img.png" alt="" /></div>
+<div class="home_about_dr">
+<p>Dr. Rajendra K Sankpal is a Dental Surgeon and an Oral Implantologist &amp; he has over 26 yrs of clinical experience in the field of dentistry. Dr. R. K. Sankpal graduated from Government Dental College and Hospital Mumbai. He was an ex-assistant lecturer at Government Dental College, Mumbai before he started his private practice in 1993. He worked as assistant lecturer in the department of prosthetic dentistry at Government Dental College and Hospital Mumbai. Dr Sankpal has also worked as a clinical assistant at Government Dental College and Hospital Mumbai.</p>
+<p>Dr Sankpal has always believed in upgrading his knowledge &amp; techniques in the field of dentistry. Thus resulting in attending many national &amp; international dental conferences. He is trained in computer guided implant dentistry at Leuven University (Belgium ), 3D digital dentistry-materialize dental (Belgium). He is also certified by the Academy of Cosmetic Dentistry in India &amp; is the winner of “Scholastic Award” from Indian Dental Association Mumbai.<a class="about_readmore" href="/about"> Read more... </a></p>
+</div>
+<div class="home_about_dr_img"><img src="/images/profile_img.png" alt="" /></div>
+</div></div>
+
+        	
+	</div>		
+	
+<!-- Right Sidebar -->	
+    			<div id="rightbar-w">
+			<div id="sidebar">	<div class="module">
+        <div class="inner">
+				<div class="h3c"><div class="h3r"><div class="h3l"><h3 class="module-title">Services</h3></div></div></div>
+			    <div class="module-body">
+	        
+
+<div class="custom"  >
+	<div class="our_services">
+<div class="main-container">
+<h3 class="our_services_h3">Services</h3>
+<div class="services_section">
+<div class="service_inner">
+<div class="service-pd"><a href="/dental-implants">Dental Implants</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/digital-smile-design"> Dental Smile Design</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/infection-control"> Infection Control</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/cosmetic-dentistry"> Cosmetic Dentistry</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/children-dental-health"> Children Dental Health</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/gum-treatment"> Gum Treatment</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/services/in-depth-consultation"> In Depth Consultation</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/full-mouth-rehabilitation">Full Mouth Rehabilitation </a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/oral-surgery">Oral Surgery </a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/home-dental-care"> Home Dental Care</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/orthodontics"> Orthodontics &amp; Aligners</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/laser-dentistry"> Laser Dentistry</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/teeth-whitening">Teeth Whitening </a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/painless-root-canal-treatment"> Painless Root Canal Treatment</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/anti-snoring-therapy"> Anti Snoring Therapy</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/dentaltourism">Dental Tourism </a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/inman-aligner"> INMAN Alligner </a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/tooth-jewelley"> Tooth Jewellery</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/computer-guided-implant-surgery"> Computer Guided Implant Surgery </a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/dental-health-in-pregnancy"> Dental Health In Pregnancy</a></div>
+</div>
+<div class="service_inner">
+<div class="service-pd"><a href="/teeth-in-an-hour"> Teeth In An Hour</a></div>
+</div>
+</div>
+</div>
+</div></div>
+        </div>
+        </div>
+	</div>
+		<div class="module">
+        <div class="inner">
+				<div class="h3c"><div class="h3r"><div class="h3l"><h3 class="module-title">What Our Patients Say</h3></div></div></div>
+			    <div class="module-body">
+	        
+
+<div class="main-container">
+<h3 class="patients_say_h3">What Our Patients Say</h3>
+<div id="owl-carousel122" class="owl-carousel owl-theme">
+
+
+
+
+	<div class="item" style="margin-top: 10px; margin-bottom: 10px;">
+
+			<p class="testo-height">Having spent almost a decade with Dr.Sankpal. I can vouch for the feel – good factor, congenial Ambience and speedy recovery. We need such Professionals in the society though we may not Want to visit one frequently.My best wishes to All the patients for a speedy recovery &amp; a Scintillating smile.</p>
+<p><strong>Sachin Mallya </strong></p>
+	</div>
+
+
+	<div class="item" style="margin-top: 10px; margin-bottom: 10px;">
+
+			<p class="testo-height">One of the fine quality job done &amp; satisfaction Was very important to me.Doctor is very Humble &amp; kind.Thanks to Raveena Mam &amp; Muneera.</p>
+<p><strong>Sayad Arif</strong></p>
+	</div>
+
+
+	<div class="item" style="margin-top: 10px; margin-bottom: 10px;">
+
+			<p class="testo-height">Great service &amp; a remarkable result,great guy and friendly staff.Thank you see you again</p>
+<p><strong>Albie</strong></p>
+	</div>
+
+
+	<div class="item" style="margin-top: 10px; margin-bottom: 10px;">
+
+			<p class="testo-height">Having spent almost a decade with Dr.Sankpal. I can vouch for the feel – good factor, congenial Ambience and speedy recovery. We need such Professionals in the society though we may not Want to visit one frequently.My best wishes to All the patients for a speedy recovery &amp; a Scintillating smile.</p>
+<p><strong>Sachin Mallya </strong></p>
+	</div>
+
+
+	<div class="item" style="margin-top: 10px; margin-bottom: 10px;">
+
+			<p class="testo-height">One of the fine quality job done &amp; satisfaction Was very important to me.Doctor is very Humble &amp; kind.Thanks to Raveena Mam &amp; Muneera.</p>
+<p><strong>Sayad Arif</strong></p>
+	</div>
+
+
+	<div class="item" style="margin-top: 10px; margin-bottom: 10px;">
+
+			<p class="testo-height">Great service &amp; a remarkable result,great guy and friendly staff.Thank you see you again</p>
+<p><strong>Albie</strong></p>
+	</div>
+
+</div>
+</div>
+
+
+
+
+
+<script type="text/javascript" src="/modules/mod_j51carousel/js/owl.carousel.min.js"></script>
+
+<script type="text/javascript">
+
+jQuery(document).ready(function() {
+
+     
+
+    jQuery("#owl-carousel122").owlCarousel({
+
+     	
+
+     	autoplaySpeed : 700,
+
+     	navText: ["Prev","Next"],
+
+     	navClass: ["btn","btn"],
+
+     	loop: true,
+
+	    margin: 10,
+
+	    items: 1,
+
+	    nav: false,
+
+    	autoplay: true,
+
+    	autoplayTimeout: 5000,
+
+    	dots: true,
+
+    	
+	    responsive:{
+
+	        0:{
+
+	            items:1,
+
+	        },
+
+	        440:{
+
+	            items:1,
+
+	        },
+
+	        767:{
+
+	            items:1,
+
+	        },
+
+	        959:{
+
+	            items:1,
+
+	        },
+
+	        1024:{
+
+	            items:3,
+
+	        }
+
+	    },
+
+     
+
+    });
+
+     
+
+ });
+
+
+
+</script>
+
+        </div>
+        </div>
+	</div>
+		<div class="module">
+        <div class="inner">
+			    <div class="module-body">
+	        <section id="contact">
+ <div class="main-container"> 
+<div class="div-half">
+<h2>Opening Hours</h2>
+<div class="openinghourse">
+<div class="inner-box">
+<h4>DR. Sankpals Dental Centre</h4>
+<p><strong>Monday</strong>10 AM  to 6 PM </p>
+<p><strong>Tuesday</strong>10 AM  to 6 PM </p>
+<p><strong>Wednesday</strong>10 AM  to 6 PM </p>
+<p><strong>Thursday</strong>10 AM  to 6 PM </p>
+<p><strong>Friday</strong>10 AM  to 6 PM </p>
+<p><strong>Saturday</strong>10 AM  to 6 PM </p>
+<p><strong>Sunday</strong>10 AM  to 6 PM </p>
+</div>
+<div class="inner-box1">
+<h4>Powai Dental Clinic</h4>
+<p><strong>Monday</strong>10 AM to 1 PM, 5:30 PM to 9:30 PM</p>
+<p><strong>Tuesday</strong>10 AM to 1 PM, 5:30 PM to 9:30 PM</p>
+<p><strong>Wednesday</strong>10 AM to 1 PM, 5:30 PM to 9:30 PM</p>
+<p><strong>Thursday</strong>10 AM to 1 PM, 5:30 PM to 9:30 PM</p>
+<p><strong>Friday</strong>10 AM to 1 PM, 5:30 PM to 9:30 PM</p>
+<p><strong>Saturday</strong>10 AM to 1 PM, 5:30 PM to 9:30 PM</p>
+<p><strong>Sunday</strong>10 AM to 1 PM, 5:30 PM to 9:30 PM</p>
+</div>
+</div></div>
+<div class="div-half1">
+ 	<script type="text/javascript">
+		 var RecaptchaOptions = {
+			theme : "red"
+		 };
+	 </script>
+	<form action="/" method="POST" class="form-horizontal" id="contact-form" novalidate>
+     <h2>CONTACT US</h2>
+	  <input type='hidden' name='form_key' id='form_key' value='372b4921236899802e042ef83cfdf8da' />	  <fieldset>
+		<!-- Alert Box-->
+				
+				
+		<!-- Name Field -->
+		  <div class="control-group">
+			<label class="control-label" for="inputName">Your Name</label>
+			<div class="controls">
+			  <input class="input-80" name="name" type="text" id="inputName" placeholder="Your Name" required>
+			  <p class="help-block"></p>
+			</div>
+		  </div>
+		 
+		 <!-- E-mail Field -->
+		  			  
+		  <div class="control-group">
+			<label class="control-label" for="inputEmail">Your Email</label>
+			<div class="controls">
+			  <input class="input-80" name="email" type="email" id="inputEmail" placeholder="Your Email" required>
+			  <p class="help-block"></p>
+			</div>
+		  </div>
+		  		  
+		  <!-- Phone Field -->
+		  <div class="control-group">
+			<label class="control-label" for="inputPhone">Your Telephone</label>
+			<div class="controls">
+			  <input class="input-80" name="phone" type="text" id="inputPhone" placeholder="Your Telephone" required>
+			  <p class="help-block"></p>
+			</div>
+		  </div>
+		  		 
+		 <!-- Subject Field -->
+		<!-- <div class="control-group">
+			<label class="control-label" for="selectSubject">Subject</label>
+			<div class="controls">
+										<input class="input-80" name="type" type="text" id="selectSubject" placeholder="Subject" required>
+						<p class="help-block"></p>
+							</div>
+		  </div> -->
+		  		 
+		 <!-- Message Field -->
+		  <div class="control-group">
+			<label class="control-label" for="inputMessage">Message</label>
+			<div class="controls">
+			  <textarea class="text-area" name="message" rows="6" id="inputMessage" placeholder="Please include as much detail as possible." minlength="0" required></textarea>
+			  <p class="help-block"></p>
+			</div>
+		  </div>
+		  		 
+		 <!-- Submit Button -->
+		  <div class="control-group">
+			<div class="controls">
+			  <button type="submit" name="sbutton" value="Send" class="btn btn-primary">Send</button>
+			</div>
+		  </div>
+		  		</fieldset>
+	</form>
+    </div>
+    </div>
+</section>        </div>
+        </div>
+	</div>
+	</div>
+						</div>
+    	  
+
+	<div class="clr"></div>	
+	</div><!-- main-content end -->
+    
+</div><!-- wrapper end -->
+	  
+
+	<div id="bottomwide">
+    <div class="bottom_contact_info"> 
+    <div class="contact_title"><strong>Contact Us</strong></div>
+	<div  class="contact_appointment"><a href="https://www.practo.com/mumbai/doctor/dr-rajendra-sankpal-dentist" target="_blank">Online Appointment </a></div>
+     <div class="contact_call">Call <a href="tel:+919769246111">+91 9769246111</a></div>
+     <div class="contact_email">Email us at <a href="mailto:info@drsankpalsdentalcentre.com" target="_top">info@drsankpalsdentalcentre.com</a></div>
+      <div class="contact_map"><a href="https://goo.gl/maps/kZGY92v4mjM2" target="_blank">Map Location</a></div>
+    </div>
+		<div id="bottom">
+			<div class="user1">		<div class="moduletable">
+						
+
+<div class="custom"  >
+	<p><img src="/images/dr_logo.png" alt="" /></p></div>
+		</div>
+			<div class="moduletable">
+						
+<div  id="je_socialicons">
+    <div class="jeSocial">
+		           <span class="icon1"><a href="https://www.facebook.com/drsankpaldentalcentre/" class="icon1" target="_blank" rel="nofollow" title="Facebook"></a></span>
+                   <span class="icon2"><a href="https://twitter.com/DrSankpal1" class="icon2" target="_blank" rel="nofollow" title="Twitter"></a></span>
+                   <span class="icon3"><a href="https://plus.google.com/+drrajendraSankpal/" class="icon3" target="_blank" rel="nofollow" title="Google"></a></span>
+                   <span class="icon4"><a href="https://www.youtube.com/channel/UCHOj7XnjqpqomO_iFiK0-xg" class="icon4" target="_blank" rel="nofollow" title="Youtube"></a></span>
+            </div>
+</div>
+
+<a href="http://jextensions.com/social-icons-module/" id="jExt103">joomla social media module</a>
+<script type="text/javascript">
+  var el = document.getElementById('jExt103');
+  if(el) {el.style.display += el.style.display = 'none';}
+</script>
+		</div>
+	</div>
+			<div class="user2">		<div class="moduletable">
+						<ul class="nav menu">
+<li class="item-120"><a href="/cosmetic-dentistry" >Cosmetic Dentistry</a></li><li class="item-121"><a href="/teeth-whitening" >Teeth Whitening</a></li><li class="item-122"><a href="/dental-implants" >Dental Implants</a></li><li class="item-123"><a href="/orthodontics" >Orthodontics</a></li><li class="item-124"><a href="/full-mouth-rehabilitation" >Full Mouth Rehabilitation</a></li><li class="item-125"><a href="/painless-root-canal-treatment" >Painless Root Canal Treatment</a></li><li class="item-126"><a href="/inman-aligner" >INMAN aligner</a></li></ul>
+		</div>
+	</div>
+			<div class="user3">		<div class="moduletable">
+						<ul class="nav menu">
+<li class="item-127"><a href="/home-dental-care" >Home Dental Care</a></li><li class="item-128"><a href="/children-dental-health" >Children Dental Health</a></li><li class="item-129"><a href="/dental-health-in-pregnancy" >Dental Health in Pregnancy</a></li><li class="item-130"><a href="/gum-treatment" >Gum Treatment</a></li><li class="item-131"><a href="/infection-control" >Infection Control</a></li><li class="item-132"><a href="/oral-surgery" >Oral Surgery</a></li><li class="item-133"><a href="/laser-dentistry" >Laser Dentistry</a></li></ul>
+		</div>
+	</div>
+			<div class="user4">		<div class="moduletable">
+						<ul class="nav menu">
+<li class="item-134"><a href="/anti-snoring-therapy" >Anti Snoring Therapy</a></li><li class="item-135"><a href="/tooth-jewelley" >Tooth Jewelley</a></li><li class="item-136"><a href="/teeth-in-an-hour" >Teeth in an hour</a></li><li class="item-137"><a href="/dentaltourism" > DentalTourism</a></li><li class="item-138"><a href="/computer-guided-implant-surgery" >Computer Guided Implant Surgery</a></li><li class="item-139"><a href="/digital-smile-design" >Digital Smile Design</a></li></ul>
+		</div>
+	</div>
+					
+		</div>
+        <div id="tg">
+         <div class="main-container">
+					<div class="footer-left">
+	<!--	Copyright © 2018 Dr Sankpals Dental Center - Powered by EazyBridge. Website Architecture by The Social Mango-->
+		Copyright © 2021 Dr Sankpals Dental Center - Powered by <a class="eazybridge" target="_blank" href="http://www.eazybridge.com/">EazyBridge</a>.	
+        Website Design & Architecture by <a class="eazybridge" target="_blank" href="https://www.thesocialmango.com/">The Social Mango</a>.				
+					</div>
+					</div>	
+                    </div>
+			<div style="display:none;" class="nav_up" id="nav_up"></div>			
+	</div>
+	</div><!--/.fluid-container -->
+</body>
+</html>

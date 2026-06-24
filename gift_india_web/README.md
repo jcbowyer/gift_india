@@ -1,4 +1,4 @@
-# Governance, Integrity, & Facility Trust Desk
+# Governance, Integrity, & Facility Trust (GIFT) Gauge
 
 A Databricks App powered by [AppKit](https://www.databricks.com/devhub/docs/appkit/v0/), featuring React, TypeScript, and Tailwind CSS.
 

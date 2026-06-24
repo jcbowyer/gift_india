@@ -1,7 +1,7 @@
 ---
 title: Medallion Architecture & Metric Store Data Model
 description: >-
-  How Governance, Integrity, & Facility Trust Desk lands, refines, and serves Virtue Foundation data —
+  How Governance, Integrity, & Facility Trust (GIFT) Gauge lands, refines, and serves Virtue Foundation data —
   a bronze → silver → gold medallion, a Databricks-agent free-text extraction
   step in silver, and a row-based (long-format) metric store in gold that
   correlates indicators and initiatives with surgical-care success.
@@ -10,7 +10,7 @@ sidebar_label: Medallion & Metric Store
 
 # Medallion Architecture & Metric Store Data Model
 
-Governance, Integrity, & Facility Trust Desk recommends **where to place visiting surgical teams** across
+Governance, Integrity, & Facility Trust (GIFT) Gauge recommends **where to place visiting surgical teams** across
 India to close the surgical-care gap. The recommendation engine is only as good
 as the data behind it, and the source data is **web-scraped, semi-structured,
 and messy**. This document describes the data platform that turns that raw input
@@ -109,7 +109,7 @@ flowchart LR
 
 ## 2. Silver: crawl facility websites → free text → structured data
 
-This is the heart of the "Data Readiness Desk." Facility websites describe
+This is the heart of the "Data Readiness Gauge." Facility websites describe
 specialties, bed counts, surgical volumes, and outreach **initiatives** in prose.
 We need rows and columns.
 
@@ -186,7 +186,7 @@ primary key with a `match_confidence` score. The resulting
 in [`src/data.py`](../../src/data.py)): `facility_id`, `name`, `type`,
 `district`, `state`, `lat`, `lon`, `beds`, `annual_surgeries`, `offers_surgery`,
 `specialties`, `match_confidence`. Records below a confidence threshold (today
-`< 0.70`, surfaced in the Data Readiness Desk tab) are flagged for review rather
+`< 0.70`, surfaced in the Data Readiness Gauge tab) are flagged for review rather
 than dropped.
 
 ---

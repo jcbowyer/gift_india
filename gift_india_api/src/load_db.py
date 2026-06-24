@@ -91,11 +91,11 @@ def _load(conn, schema: str, force: bool) -> tuple[int, int]:
 
     with conn.cursor() as cur:
         cur.execute(
-            f"TRUNCATE {schema}.facilities, {schema}.districts "
+            f"TRUNCATE {schema}.facilities_virtue, {schema}.districts "
             "RESTART IDENTITY CASCADE"
         )
         _copy(cur, f"{schema}.districts", _DISTRICT_COLS, districts)
-        _copy(cur, f"{schema}.facilities", _FACILITY_COLS, facilities)
+        _copy(cur, f"{schema}.facilities_virtue", _FACILITY_COLS, facilities)
     conn.commit()
     return len(districts), len(facilities)
 

@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/include/images/favicon.ico" sizes="any">
+    <title>Chandan Hospital Limited | Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/include/css/style.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .search-dropdown {
+            position: absolute;
+            width: 94.2%;
+            background-color: #efefef;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 999;
+            margin-top: -50px;
+            margin-left: 36px;
+            border-top-left-radius: 0px;
+            border-top-right-radius: 0px;
+        }
+
+        .search-dropdown .item {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .search-dropdown .item:hover {
+            background: #f2f2f2;
+        }
+
+        /* Location input dropdown */
+        #locationSelector { position: relative; }
+        #locationDropdown {
+            display: none;
+            position: absolute;
+            top: calc(100%);
+            left: 0;
+            width: 390px;
+            max-height: 220px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 0 0 10px 10px;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-top: -50px;
+            margin-left: 36px;
+        }
+
+        #locationDropdown .city-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f1f1;
+            text-align: left;
+        }
+
+        #locationDropdown .city-option:last-child { border-bottom: 0; }
+        #locationDropdown .city-option:hover { background: #f8f8f8; }
+
+        .mobile-slider { display: none; }
+        @media (max-width: 767px) {
+            .mobile-slider {
+                display: block !important;
+            }
+            .desktop-slider {
+                display: none !important;
+            }
+            #content-below-hero-slider {
+                margin-top: 55px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+    <!--============================== Header Start ==============================-->
+    <header id="header">
+    <div class="lm-top_header">
+        <div class="container">
+            <div class="cs_top_header d-flex flex-wrap">
+                <div class="cs_top_left">
+                    <ul class="cs_top_nav d-flex flex-wrap align-items-center cs_fs_12 text-white m-0 p-0">
+                        <!-- <li><a href="/success-stories.php">Success Stories</a></li> -->
+                        <li><a href="/blog.php">Blog</a></li>
+                        <!-- <li><a href="/research.php">Research</a></li> -->
+                        <!-- <li><a href="/csr.php">CSR</a></li> -->
+                        <li><a href="/careers.php">Careers</a></li>
+                        <!-- <li><a href="https://chandanhospital.in/admin/login.php" target="_blank">Admin</a></li> -->
+                    </ul>
+                </div>
+                <div class="cs_top_right">
+                    <ul class="cs_top_nav d-flex flex-wrap align-items-center">
+                        <li><a target="_blank" href="https://www.facebook.com/HospitalChandan/"><i class="fa-brands fa-facebook-f"></i></a></li>
+                        <li><a target="_blank" href="https://x.com/chandanhosp"><i class="fa-brands fa-x-twitter"></i></a></li>
+                        <li><a target="_blank" href="https://www.instagram.com/hospitalchandan/"><i class="fab fa-instagram"></i></a></li>
+                        <li><a target="_blank" href="https://www.youtube.com/@hospitalchandan/"><i class="fa-brands fa-youtube"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="navbar navbar-expand-xl">
+        <div class="container">
+            <div class="nav-inside d-flex align-items-center justify-content-between">
+                <a class="navbar-brand " href="/"><img style="max-width:150px;" src="/include/images/logo.png" alt="" /></a>
+                <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <div class="navbar-inside ml-auto">
+                        <ul class="navbar-nav">
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="about" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Hospitals <i class="fas fa-sort-down"></i></a>
+                                <ul class="dropdown-menu" aria-labelledby="about">
+
+                                    <li>
+                                        <a class="dropdown-item" href="/set-city.php?city=lucknow">
+                                            Chandan Hospital, Lucknow
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item" href="/set-city.php?city=haldwani">
+                                            Chandan Hospital, Haldwani
+                                        </a>
+                                    </li>
+
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="about" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">About Us <i class="fas fa-sort-down"></i></a>
+                                <ul class="dropdown-menu" aria-labelledby="about">
+                                    <li><a class="dropdown-item" href="/about-chandan-group.php">Chandan Group</a></li>
+                                    <li><a class="dropdown-item" href="/about-vision-mission.php">Vision & Mission</a></li>
+                                    <li><a class="dropdown-item" href="/about-chairman-desk.php">Chairman's Desk</a></li>
+                                    <li><a class="dropdown-item" href="/about-milestones.php">Milestones</a></li>
+                                    <li><a class="dropdown-item" href="/about-quality.php">Quality</a></li>
+                                    <li><a class="dropdown-item" href="/about-accreditations.php">Accreditations</a></li>
+                                    <li><a class="dropdown-item" href="/about-affiliation.php">Affiliation</a></li>
+                                    <li><a class="dropdown-item" href="/about-awards.php">Awards</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item home-dropdown-link"><a class="nav-link" href="#"> Departments<i class="fas fa-sort-down"></i></a>
+                                <div class="hm-dropdown-open">
+                                    <div class="hm-hover-block d-flex flex-wrap">
+                                        <div class="nv-left d-flex flex-wrap">
+                                            <!-- <div class="menu-hover-tab">
+                                                    <button class="tablinks" onclick="openService(event, 'diseases')" id="defaultOpen">Specialities<span><i class="fa-solid fa-chevron-right"></i></span></button>
+                                                    <button class="tablinks" onclick="openService(event, 'treatments')">Treatments & Procedures<span><i class="fa-solid fa-chevron-right"></i></span></button>
+                                                    <button class="tablinks" onclick="openService(event, 'symptoms-guide')">Symptoms Guide<span><i class="fa-solid fa-chevron-right"></i></span></button>
+                                                    <button class="tablinks" onclick="openService(event, 'health-technology')">Health Technology<span><i class="fa-solid fa-chevron-right"></i></span></button>
+                                                    <button class="tablinks" onclick="openService(event, 'diagnostics')">Diagnostics & Tests<span><i class="fa-solid fa-chevron-right"></i></span></button>
+                                                    
+                                                </div> -->
+                                            <div class="sm-right-side">
+                                                <div id="diseases" class="hm-tabcontent">
+                                                    <div class="menu-services d-flex flex-wrap">
+                                                        <div class="ms-list">
+                                                            <ul class="ms-data">
+                                                                <li><a href="/speciality-cancer.php">Chandan Cancer Institute</a></li>
+                                                                <li><a href="/speciality-emergency-trauma.php">Chandan Emergency & Trauma Centre</a></li>
+                                                                <li><a href="/speciality-cardiology-cardiac-sciences.php">Chandan Heart Institute</a></li>
+                                                                <li><a href="/speciality-blood-bank.php">Chandan Blood Centre</a></li>
+                                                                <li><a href="/speciality-bone-joint-orthopaedics.php">Chandan Institute of Orthopaedics & Rehabilitation</a></li>
+                                                                <li><a href="/speciality-critical-care-anaesthesiology.php">Chandan Critical Care & Anaesthesiology</a></li>
+                                                                <li><a href="/speciality-dental-maxillofacial-surgery.php">Chandan Institute of Dentistry and Maxilofacial Surgery</a></li>
+                                                                <li><a href="/speciality-dermatology.php">Chandan Institute of Dermatology</a></li>
+                                                                <li><a href="/speciality-endocrinology.php">Chandan Institute of Endocrinology</a></li>
+                                                            </ul>
+                                                        </div>
+                                                        <div class="ms-list">
+                                                            <ul class="ms-data">
+                                                                <li><a href="/speciality-gastrointestinal-minimal-access-surgery.php">Chandan Institute of Gastroenterology & Gastro Surgery</a></li>
+                                                                <!-- <li><a href="/speciality-gastroenterology-liver-biliary-sciences.php">Gastroenterology, Liver & Biliary Sciences</a></li> -->
+                                                                <li><a href="/speciality-hematology-haemato-oncology.php">Chandan Institute Hematology & Haemato-Oncology</a></li>
+                                                                <li><a href="/speciality-internal-medicine.php">Chandan Institute of Internal Medicine</a></li>
+                                                                <li><a href="/speciality-liver-transplant-hpb-surgery.php">Chandan Institute of Liver Transplant & HPB Surgery</a></li>
+                                                                <li><a href="/speciality-neurosciences.php">Chandan Institute of Neurosciences</a></li>
+                                                                <!-- <li><a href="/speciality-nuclear-medicine.php">Chandan Institute of Nuclear Medicine</a></li> -->
+                                                                <li><a href="/speciality-obstetrics-gynaecology.php">Chandan Institute of Obstetrics & Gynaecology</a></li>
+                                                                <li><a href="/speciality-ophthalmology-lasik-surgery.php">Chandan Institute of Ophthalmology & LASIK Surgery</a></li>
+                                                                <li><a href="/speciality-paediatrics-neonatology.php">Chandan Institute of Paediatics & Neonatology</a></li>
+                                                            </ul>
+                                                        </div>
+                                                        <div class="ms-list">
+                                                            <ul class="ms-data">
+                                                                <!-- <li><a href="/speciality-pain-management.php">Chandan Institute of Pain Management</a></li> -->
+                                                                <li><a href="/speciality-plastic-aesthetic-reconstructive-surgery.php">Chandan Institute of Plastic, Aesthetic & Reconstructive Surgery</a></li>
+                                                                <li><a href="/speciality-psychiatry-psychological-sciences.php">Chandan Institute of Psychology & Psychiatry</a></li>
+                                                                <li><a href="/speciality-radiodiagnosis-interventional-radiology.php">Chandan Institute of Radiodiagnosis & Interventional Radiology</a></li>
+                                                                <li><a href="/speciality-renal-sciences-kidney-transplant.php">Chandan Institute of Renal Sciences & Kidney Transplant</a></li>
+                                                                <li><a href="/speciality-respiratory-sleep-medicine.php">Chandan Institute of Respiratory & Sleep Medicine</a></li>
+                                                                <li><a href="/speciality-ent-head-neck-surgery.php">Chandan Institute of ENT, Head & Neck Surgery</a></li>
+                                                                <!-- <li><a href="/speciality-spine-surgery.php">Spine Surgery</a></li> -->
+                                                                <!-- <li><a href="/speciality-specialty-laboratory-services.php">Specialty Laboratory Services</a></li> -->
+                                                                <li><a href="/speciality-rheumatology-clinical-immunology.php">Chandan Institute of Rheumatology & Immunology</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- <div id="treatments" class="hm-tabcontent">
+                                                      <h3>Treatments & Procedures</h3> 
+                                                    </div>
+
+                                                    <div id="symptoms-guide" class="hm-tabcontent">
+                                                      <h3>Symptoms Guide</h3>
+                                                    </div> -->
+                                            </div>
+                                        </div>
+                                        <div class="nv-right" style="display: none;">
+                                            <div class="hd-quick-link">
+                                                <h6>Quick Links</h6>
+
+                                                <ul class="ql-link">
+
+                                                    <!-- Helpline -->
+                                                    <li>
+                                                        <a href="tel:05226666666" class="ql-box">
+                                                            <p>Helpline</p>
+                                                            <h4>0522 666 6666</h4>
+                                                        </a>
+                                                    </li>
+
+                                                    <!-- Lucknow -->
+                                                    <li>
+                                                        <a href="tel:05226666666" class="ql-box">
+                                                            <p>Chandan Hospital, Lucknow</p>
+                                                            <h4>0522 666 6666</h4>
+                                                        </a>
+                                                    </li>
+
+                                                    <!-- Haldwani -->
+                                                    <li>
+                                                        <a href="tel:05946696666" class="ql-box">
+                                                            <p>Chandan Hospital, Haldwani</p>
+                                                            <h4>05946 696 666</h4>
+                                                        </a>
+                                                    </li>
+
+                                                </ul>
+
+                                                <ul class="appoint-link">
+
+                                                    <li>
+                                                        <a target="_blank" href="https://chandandiagnostic.com/">
+                                                            Health Checkups <i class="fa-solid fa-right-long"></i>
+                                                        </a>
+                                                    </li>
+
+                                                    <li>
+                                                        <a href="/book-appointment.php">
+                                                            Find Doctors <i class="fa-solid fa-right-long"></i>
+                                                        </a>
+                                                    </li>
+
+                                                    <li>
+                                                        <a href="/contact.php">
+                                                            Contact Us <i class="fa-solid fa-right-long"></i>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="nav-item"><a class="nav-link" href="/health-checkups.php">Health Checkups</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/report.php">My Reports</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/contact.php">Contact Us</a></li>
+                            <li class="nav-item "><a class="nav-link" href="/book-appointment.php">Book Appointment</a></li>
+                            <li class="nav-item"><a class="nav-link" href=""><i style="color: #ED801F;" class="fa fa-phone"></i> 0522 666 6666</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+</header>
+<div id="floatingEmergencyWidget" class="floating-emergency">
+    <button id="floatingEmergencyBtn" class="floating-emergency-btn" aria-expanded="false" aria-controls="floatingEmergencyPanel">
+        <span>Contact us now</span>
+    </button>
+    <div id="floatingEmergencyPanel" class="floating-emergency-panel" role="region" aria-label="Emergency contact details">
+        <button id="floatingEmergencyClose" class="floating-emergency-close" aria-label="Close emergency contact panel">&times;</button>
+        <div class="floating-emergency-items">
+            <div class="emergency-item">
+                <div class="icon"><i class="fa-solid fa-ambulance"></i></div>
+                <div>
+                    <strong>Helpline</strong>
+                    <a href="tel:05226666669"><strong>0522 666 6669</strong></a>
+                </div>
+            </div>
+            <div class="emergency-item">
+                <div class="icon"><i class="fa-solid fa-hospital"></i></div>
+                <div>
+                    <strong>Chandan Hospital, Lucknow</strong>
+                    <a href="tel:05226666666">0522 666 6666</a>
+                </div>
+            </div>
+            <div class="emergency-item">
+                <div class="icon"><i class="fa-solid fa-hospital"></i></div>
+                <div>
+                    <strong>Chandan Hospital, Haldwani</strong>
+                    <a href="tel:05946696666">0594 669 6666</a>
+                </div>
+            </div>
+            <a href="/book-appointment.php" class="emergency-item">
+                <div class="icon"><i class="fa-solid fa-stethoscope"></i></div>
+                <div>
+                    <strong>Find Doctors</strong>
+                </div>
+            </a>
+            <a target="_blank" href="https://chandandiagnostic.com/" class="emergency-item">
+                <div class="icon"><i class="fa-solid fa-kit-medical"></i></div>
+                <div>
+                    <strong>Health Checkups</strong>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+<style>
+    .floating-emergency {
+        position: fixed;
+        top: 34%;
+        right: 0;
+        z-index: 9999;
+    }
+    .floating-emergency-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.7rem;
+        height: 288px;
+        border: none;
+        background: #513D6F;
+        color: white;
+        cursor: pointer;
+        border-radius: 12px 0 0 12px;
+        transform: translateX(0) rotate: 90deg;
+        transform-origin: right center;
+        position: relative;
+        right: -1px;
+        transition: all 0.22s linear;
+        box-shadow: #9f7cd3 1px 1px 3px 1px !important;
+    }
+    #floatingEmergencyWidget.already-open .floating-emergency-btn {
+        right: 260px;
+        transition: all 0.22s linear;
+    }
+    .floating-emergency-btn span {
+        font-size: 15px;
+        letter-spacing: 1.3px;
+        text-transform: uppercase;
+        transform: rotate(-90deg);
+        width: 270px !important;
+        display: block;
+        white-space: nowrap;
+        font-weight: 800;
+        text-shadow: #7aaa 1px 1px 1px;
+    }
+    .floating-emergency-panel {
+        position: absolute;
+        top: 0;
+        right: 0px;
+        width: 260px;
+        background: white;
+        /* border-radius: 12px 0 0 12px; */
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        padding: 1rem;
+        transform: translateX(100%);
+        transition: transform 0.25s linear;
+        pointer-events: none;
+        opacity: 1;
+    }
+    .floating-emergency-panel.open {
+        transform: translateX(0);
+        pointer-events: auto;
+        transition: transform 0.25s linear;
+    }
+    .floating-emergency-close {
+        border: none;
+        background: transparent;
+        color: #333;
+        font-size: 24px;
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        cursor: pointer;
+    }
+    .floating-emergency-items {
+        display: flex;
+        flex-direction: column;
+        gap: 0.60rem;
+        margin-top: 0.25rem;
+        margin-bottom: 0.15rem;
+    }
+    .emergency-item {
+        display: flex;
+        gap: 0.6rem;
+        align-items: center;
+    }
+    .emergency-item .icon {
+        width: 32px;
+        height: 32px;
+        background: #f5f5f5;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        color: #513D6F;
+    }
+    .emergency-item strong {
+        display: block;
+        font-size: 14px;
+        color: #111;
+    }
+    .emergency-item a {
+        font-size: 14px;
+        color: #333;
+        text-decoration: none;
+        top: -5px;
+        position: relative;
+    }
+    @media (max-width: 992px) {
+        .floating-emergency {
+            top: auto;
+            bottom: 25%;
+            right: 0px;
+        }
+        .floating-emergency-btn {
+            /* display: none; */
+        }
+        .floating-emergency-panel {
+            right: 0px;
+            width: min(90vw, 320px);
+        }
+
+        .already-open #floatingEmergencyBtn {
+            right: 320px !important;
+        }
+    }
+</style>
+<script>
+(function(){
+    var btn = document.getElementById('floatingEmergencyBtn');
+    var panel = document.getElementById('floatingEmergencyPanel');
+    var close = document.getElementById('floatingEmergencyClose');
+    if (!btn || !panel || !close) return;
+    function openPanel() {
+        panel.classList.add('open');
+        btn.setAttribute('aria-expanded','true');
+        document.getElementById("floatingEmergencyWidget").classList.add("already-open");
+    }
+    function closePanel(){
+        panel.classList.remove('open');
+        btn.setAttribute('aria-expanded','false');
+        document.getElementById("floatingEmergencyWidget").classList.remove("already-open");
+    }
+    btn.addEventListener('click', function(e){ e.preventDefault(); panel.classList.contains('open')? closePanel() : openPanel(); });
+    close.addEventListener('click', function(e){ e.preventDefault(); closePanel(); });
+    document.addEventListener('click', function(e){ if(!panel.contains(e.target) && !btn.contains(e.target)){ closePanel(); }});
+})();
+</script>
+    <!--============================== Header End ==============================-->
+
+    <!--============================== Main Start ==============================-->
+    <main id="main">
+
+        <!--============================== Content Start ==============================-->
+        <div class="hero-slider desktop-slider">
+            <div class="hero-slide" style="background: url(include/images/slide-3.png);">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="hero-slide-text os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                                <h2 style="color:#ffffff;">Advanced Multi-Specialty Healthcare in the Heart of <span>Lucknow</span>.</h2>
+                                <p style="color:#ffffff;">From robotic surgeries to comprehensive super-specialty services, Chandan Hospital Lucknow provides world-class healthcare under one roof, 24×7.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-slide" style="background: url(include/images/slide-4.png);">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="hero-slide-text os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                                <h2 style="color:#ffffff;">World-Class Multi-Specialty Healthcare Serving <span>Haldwani</span> & Uttarakhand.</h2>
+                                <p style="color:#ffffff;">A 200-bed multi-disciplinary super-specialty hospital in Haldwani, offering advanced diagnostics, critical care, and emergency services with <br />state-of-the-art infrastructure.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-slider mobile-slider">
+            <div class="hero-slide" style="background: url(include/images/mobile/slide-1.jpeg); height: 550px; width: 100vw;">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="hero-slide-text os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-slide" style="background: url(include/images/mobile/slide-2.jpeg); height: 550px; width: 100vw;">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="hero-slide-text os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container" id="content-below-hero-slider">
+            <!-- <div class="row os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s"> -->
+            <div class="row" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                <div class="col-lg-12">
+                    <div class="top-shift">
+                        <ul class="book-checkup d-flex flex-wrap">
+                            <li>
+                                <a href="/book-appointment.php" class="bk-health d-block">
+                                    <div class="bk-icon"><img src="include/images/bookappt_icon.png" alt="" /></div>
+                                    <div class="bk-text">
+                                            <h5>Book Appointment</h5>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/health-checkups.php" class="bk-health d-block">
+                                    <div class="bk-icon"><img src="include/images/bookhelathcheck_icon.png" alt="" /></div>
+                                    <div class="bk-text">
+                                            <h5>Book Health Check-Up</h5>
+                                        <!-- <p>Lorem ipsum dollar</p> -->
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/book-appointment.php" class="bk-health d-block">
+                                    <div class="bk-icon"><img src="include/images/buymedicines_icon.png" alt="" /></div>
+                                    <div class="bk-text">
+                                            <h5>Consult Online</h5>
+                                        <!-- <p>Lorem ipsum dollar</p> -->
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/book-appointment.php" class="bk-health d-block">
+                                    <div class="bk-icon"><img src="include/images/findhsptl_icon.png" alt="" /></div>
+                                    <div class="bk-text">
+                                        <h5>Find Doctor</h5>
+                                        <!-- <p>Lorem ipsum dollar</p> -->
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/report.php" class="bk-health d-block">
+                                    <div class="bk-icon"><img src="include/images/finddoctor_icon.png" alt="" /></div>
+                                    <div class="bk-text">
+                                        <h5>My Reports</h5>
+                                        <!-- <p>Lorem ipsum dollar</p> -->
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="sch-appoint">
+                            <h5 class="text-center">Schedule Your Appointment Online</h5>
+                            <div class="appoint-srch d-flex flex-wrap justify-content-between">
+                                <div class="sr-box">
+                                    <div class="form-group">
+                                        <div class="input-group" id="locationSelector" style="cursor:pointer;">
+                                            <span class="input-group-text"><i class="fa-solid fa-location-dot"></i></span>
+                                            <input type="text" id="locationInput" class="form-control" placeholder="Select Location" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="sr-box">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                            <input type="text" id="searchInput" class="form-control" placeholder="Search for doctor or specialty">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="sr-box">
+                                    <div class="book-btn">
+                                        <button class="btn btn-default">Book an appointment</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="searchResultBox"></div>
+                        <div id="locationDropdown"></div>
+                        <div id="locationPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+                            <div style="background:#fff; width:300px; margin:100px auto; padding:20px; border-radius:10px; text-align:center;">
+                                <h5>Select Location</h5>
+                                <div id="cityButtons" class="d-flex flex-wrap justify-content-center mt-3">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--============================== Content End ==============================-->
+
+        <!--============================== Content Start ==============================-->
+        <div class="content-container grey-bg">
+            <div class="container">
+                <div class="row os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                    <div class="col-lg-12">
+                        <div class="heading text-center">
+                            <h3>Comprehensive Specialties Under One Roof</h3>
+                            <p>Delivering a full spectrum of specialty and super-specialty healthcare through advanced technology, experienced doctors, and integrated services ensuring seamless, high-quality, patient-centric treatment under one roof.</p>
+                        </div>
+
+                        <div class="exp-center">
+                            <ul class="nav nav-pills ex-ctr-list" id="pills-tab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="pills-speciality-tab" data-bs-toggle="pill" data-bs-target="#pills-speciality" type="button" role="tab" aria-controls="pills-speciality" aria-selected="true">Specialities</button>
+                                </li>
+                                <!-- <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pills-procedure-tab" data-bs-toggle="pill" data-bs-target="#pills-procedure" type="button" role="tab" aria-controls="pills-procedure" aria-selected="false">Procedures</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pills-prohealth-tab" data-bs-toggle="pill" data-bs-target="#pills-prohealth" type="button" role="tab" aria-controls="pills-prohealth" aria-selected="false">ProHealth</button>
+                            </li>    -->
+                            </ul>
+                            <div class="tab-content" id="pills-tabContent">
+                                <div class="tab-pane fade show active" id="pills-speciality" role="tabpanel" aria-labelledby="pills-speciality-tab">
+                                    <div class="speciality-box d-flex flex-wrap">
+                                        <div class="spc-left">
+                                            <div class="spc-img">
+                                                <img src="include/images/side-image-2.jpeg" alt="" />
+                                            </div>
+                                        </div>
+                                        <div class="spc-right">
+                                            <ul class="spc-list d-flex flex-wrap text-center">
+                                                <li>
+                                                    <a href="speciality-cancer.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD1.jpg" alt="" /></div>
+                                                        <div class="spc-name">Cancer</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-emergency-trauma.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD2.jpg" alt="" /></div>
+                                                        <div class="spc-name">Emergency</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-cardiology-cardiac-sciences.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD4.jpg" alt="" /></div>
+                                                        <div class="spc-name">Cardiology</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-blood-bank.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD29.jpg" alt="" /></div>
+                                                        <div class="spc-name">Blood</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-bone-joint-orthopaedics.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD5.jpg" alt="" /></div>
+                                                        <div class="spc-name">Orthopaedics</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-critical-care-anaesthesiology.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD6.jpg" alt="" /></div>
+                                                        <div class="spc-name">Anaesthesiology</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-dental-maxillofacial-surgery.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD7.jpg" alt="" /></div>
+                                                        <div class="spc-name">Dental</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-dermatology.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD8.jpg" alt="Dermatology" /></div>
+                                                        <div class="spc-name">Dermatology</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-endocrinology.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD9.jpg" alt="" /></div>
+                                                        <div class="spc-name">Endocrinology</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-ent-head-neck-surgery.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD10.jpg" alt="ENT" /></div>
+                                                        <div class="spc-name">ENT</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-gastrointestinal-minimal-access-surgery.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD12.jpg" alt="Gastrointestinal" /></div>
+                                                        <div class="spc-name">Gastrointestinal</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-gastroenterology-liver-biliary-sciences.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD11.jpg" alt="Gastroenterology" /></div>
+                                                        <div class="spc-name">Gastroenterology</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-hematology-haemato-oncology.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD55.jpg" alt="Hematology" /></div>
+                                                        <div class="spc-name">Hematology</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-internal-medicine.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD13.jpg" alt="Medicine" /></div>
+                                                        <div class="spc-name">Medicine</div>
+                                                    </a>
+                                                </li>
+
+                                                <li>
+                                                    <a href="speciality-neurosciences.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD16.jpg" alt="Neurosciences" /></div>
+                                                        <div class="spc-name">Neurosciences</div>
+                                                    </a>
+                                                </li>
+
+                                                <li>
+                                                    <a href="speciality-obstetrics-gynaecology.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD17.jpg" alt="Gynaecology" /></div>
+                                                        <div class="spc-name">Gynaecology</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-ophthalmology-lasik-surgery.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD18.jpg" alt="Ophthalmology" /></div>
+                                                        <div class="spc-name">Ophthalmology</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-paediatrics-neonatology.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD19.jpg" alt="Paediatrics" /></div>
+                                                        <div class="spc-name">Paediatrics</div>
+                                                    </a>
+                                                </li>
+
+
+                                                <li>
+                                                    <a href="speciality-pain-management.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD20.jpg" alt="Pain Management" /></div>
+                                                        <div class="spc-name">Pain</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-psychiatry-psychological-sciences.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD22.jpg" alt="Psychiatry" /></div>
+                                                        <div class="spc-name">Psychiatry</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-radiodiagnosis-interventional-radiology.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD14.jpg" alt="Radiodiagnosis" /></div>
+                                                        <div class="spc-name">Radiodiagnosis</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-renal-sciences-kidney-transplant.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD15.jpg" alt="Kidney" /></div>
+                                                        <div class="spc-name">Kidney</div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="speciality-respiratory-sleep-medicine.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD23.jpg" alt="Respiratory" /></div>
+                                                        <div class="spc-name">Respiratory</div>
+                                                    </a>
+                                                </li>
+
+
+                                                <li>
+                                                    <a href="speciality-spine-surgery.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD24.jpg" alt="Spine" /></div>
+                                                        <div class="spc-name">Spine</div>
+                                                    </a>
+                                                </li>
+
+                                                <li>
+                                                    <a href="speciality-specialty-laboratory-services.php" class="spc-list-item d-block">
+                                                        <div class="spc-icon"><img src="include/images/icons/WD26.jpg" alt="Laboratory" /></div>
+                                                        <div class="spc-name">Laboratory</div>
+                                                    </a>
+                                                </li>
+                                                <!-- <li>
+                                                <div class="spc-list-item">
+                                                    <div class="spc-icon"><img src="include/images/icons/WD65.jpg" alt="" /></div>
+                                                    <a href="speciality-rheumatology-clinical-immunology.php"><div class="spc-name">Rheumatology</div></a>
+                                                </div>
+                                            </li> -->
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="pills-procedure" role="tabpanel" aria-labelledby="pills-procedure-tab">recruite</div>
+                                <div class="tab-pane fade" id="pills-prohealth" role="tabpanel" aria-labelledby="pills-prohealth-tab">educate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--============================== Content End ==============================-->
+
+        <!--============================== Content Start ==============================-->
+        <div class="content-container">
+            <div class="container">
+                <div class="row os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                    <div class="col-lg-12">
+                        <div class="hsp-ntrk d-flex flex-wrap">
+                            <div class="ntrk-box">
+                                <div class="ntrk-orange">
+                                    <h3>Our <br>Hospital Network</h3>
+                                    <p>Delivering trusted, multi-specialty healthcare across multiple locations with consistent quality, advanced infrastructure, and patient-focused medical excellence.</p>
+                                </div>
+                            </div>
+                            <div class="ntrk-box">
+                                <div class="nt-box-shadow">
+                                    <div class="ntwrk-img">
+                                        <img src="include/images/chandan-lucknow.png" alt="" />
+                                    </div>
+                                    <div class="ntwrk-content">
+                                        <!-- <div class="nc-head d-flex justify-content-between">
+                                            <div class="nch-left d-flex align-items-center">
+                                               <img src="include/images/google.svg" alt="" />
+                                               <p>  <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                </p> 
+                                            </div>
+                                            <div class="nch-right">4.9</div>
+                                        </div> -->
+                                        <a href="index-lucknow.php">
+                                            <p class="ntwrk-name">Chandan Hospital, Lucknow</p>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ntrk-box">
+                                <div class="nt-box-shadow">
+                                    <div class="ntwrk-img">
+                                        <img src="include/images/chandan-haldwani.png" alt="" />
+                                    </div>
+                                    <div class="ntwrk-content">
+                                        <!-- <div class="nc-head d-flex justify-content-between">
+                                            <div class="nch-left d-flex align-items-center">
+                                               <img src="include/images/google.svg" alt="" />
+                                               <p>  <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fa-solid fa-star"></i>
+                                                </p> 
+                                            </div>
+                                            <div class="nch-right">4.9</div>
+                                        </div> -->
+                                        <a href="index-haldwani.php">
+                                            <p class="ntwrk-name">Chandan Hospital, Haldwani</p>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--============================== Content Start ==============================-->
+        <!-- <div class="content-container expert-container">
+        <div class="container">
+            <div class="dr-img-right">
+                <div class="row os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                    <div class="col-lg-6">
+                        <div class="exp-content">
+                            <h3>Looking for an Expert</h3>
+                            <p>CHL Healthcare is home to some of the eminent doctors in the world.</p>
+                            <div class="exp-btn">
+                                <button class="btn btn-default">Find a doctor</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        
+                    </div>
+                </div>
+                <div class="exp-img">
+                    <img src="include/images/expert-img.png" alt="" />
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+        <!--============================== Content End ==============================-->
+
+        <!--============================== Content Start ==============================-->
+        <div class="content-container why-choose-container grey-bg">
+            <div class="container">
+                <div class="row os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                    <div class="col-lg-12">
+                        <div class="wc-box d-flex flex-wrap">
+                            <div class="wcb-left">
+                                <div class="wcb-img">
+                                    <img src="include/images/side-img-2.png" alt="" />
+                                </div>
+                            </div>
+                            <div class="wcb-right">
+                                <div class="wc-content">
+                                    <div class="heading">
+                                        <h3>Why Choose Us?</h3>
+                                        <p>We combine advanced medical technology, experienced specialists, and compassionate care to deliver reliable healthcare outcomes. With comprehensive specialties, 24/7 emergency services, modern infrastructure, and patient-first values, we ensure trusted, seamless, and high-quality treatment for every patient, every time.</p>
+                                    </div>
+                                    <ul class="why-choose-list d-flex flex-wrap">
+                                        <li>
+                                            <div class="wcl-box d-flex flex-wrap">
+                                                <div class="wcl-icon">
+                                                    <img src="include/images/counters-hospitals.png" alt="" />
+                                                </div>
+                                                <div class="wcl-content">
+                                                    <h4>2</h4>
+                                                    <p>Private healthcare network of Hospitals</p>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <!-- <li>
+                                            <div class="wcl-box d-flex flex-wrap">
+                                                <div class="wcl-icon">
+                                                    <img src="include/images/Counters-Clinics.png" alt="" />
+                                                </div>
+                                                <div class="wcl-content">
+                                                    <h4>2</h4>
+                                                    <p>Largest private network of clinics across India</p>
+                                                </div>
+                                            </div>
+                                        </li> -->
+                                        <li>
+                                            <div class="wcl-box d-flex flex-wrap">
+                                                <div class="wcl-icon">
+                                                    <img src="include/images/diagnostic-centres.png" alt="" />
+                                                </div>
+                                                <div class="wcl-content">
+                                                    <h4>50+</h4>
+                                                    <p>Diagnostic centres across India</p>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="wcl-box d-flex flex-wrap">
+                                                <div class="wcl-icon">
+                                                    <img src="include/images/Pharmacies.png" alt="" />
+                                                </div>
+                                                <div class="wcl-content">
+                                                    <h4>50+</h4>
+                                                    <p>Pharmacies</p>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="wcl-box d-flex flex-wrap">
+                                                <div class="wcl-icon">
+                                                    <img src="include/images/Clip-path-group.png" alt="" />
+                                                </div>
+                                                <div class="wcl-content">
+                                                    <h4>1000+</h4>
+                                                    <p>Pin codes Served across India</p>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="wcl-box d-flex flex-wrap">
+                                                <div class="wcl-icon">
+                                                    <img src="include/images/doctors.png" alt="" />
+                                                </div>
+                                                <div class="wcl-content">
+                                                    <h4>200+</h4>
+                                                    <p>Doctors</p>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="wcl-box d-flex flex-wrap">
+                                                <div class="wcl-icon">
+                                                    <img src="include/images/clip-bed.png" alt="" />
+                                                </div>
+                                                <div class="wcl-content">
+                                                    <h4>500+</h4>
+                                                    <p>Beds</p>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--============================== Content End ==============================-->
+
+
+        <!--============================== Content End ==============================-->
+        <div class="content-container">
+            <div class="container">
+                <div class="row os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                    <div class="col-lg-12">
+                        <div class="heading text-center margin-50">
+                            <h3>Our Video Gallery</h3>
+                        </div>
+
+                        <div class="hp-gallery d-flex flex-wrap">
+
+                            <!-- LEFT MAIN VIDEO -->
+                            <div class="hp-glry-left">
+                                <div class="glry-video">
+
+                                    <!-- MAIN VIDEO IFRAME -->
+                                    <iframe id="mainVideo"
+                                        width="100%"
+                                        height="315"
+                                        src="https://www.youtube.com/embed/U7a6j7oQMcA?si=ymrueXwTmERSZ5-m"
+                                        frameborder="0"
+                                        allow="autoplay; encrypted-media"
+                                        allowfullscreen>
+                                    </iframe>
+
+                                    <!-- PLAY BUTTON (OPTIONAL) -->
+                                    <!-- <a href="javascript:void(0)" onclick="changeContent('V2JJke9hT9I')" class="play-icon">
+                                        <img src="include/images/play-icon.svg" alt="" />
+                                    </a> -->
+
+                                </div>
+
+                                <div class="glry-details">
+                                    <h5 id="mainVideoTitle">Early Symptoms of Oral Cancer You Must Not Ignore | Expert Guide | Chandan Diagnostics</h5>
+                                    <p id="mainVideoDescription">
+                                        Oral cancer often starts with small, painless symptoms that people tend to ignore. In this video, our expert explains the early warning signs of oral cancer, such as non-healing mouth ulcers,
+                                        red or white patches, lumps in the mouth, difficulty chewing or swallowing, persistent mouth pain, and changes in voice.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- RIGHT VIDEO LIST -->
+                            <div class="hp-glry-right">
+                                <ul class="glry-list">
+
+                                    <li class="active" data-id="U7a6j7oQMcA">
+                                        <div onclick="changeContent('U7a6j7oQMcA', this)" class="gl-list-box d-flex flex-wrap align-items-center" style="cursor:pointer;">
+                                            <div class="gl-list-img"><img src="include/images/yt-thumbnails/mqdefault-1.jpg" alt="" /></div>
+                                            <div class="gl-list-content">
+                                                <h5 class="two-line-ellipsis">Early Symptoms of Oral Cancer You Must Not Ignore | Expert Guide | Chandan Diagnostics</h5>
+                                                <p class="two-line-ellipsis">
+                                                    Oral cancer often starts with small, painless symptoms that people tend to ignore. In this video, our expert explains the early warning signs of oral cancer, such as non-healing mouth ulcers,
+                                                    red or white patches, lumps in the mouth, difficulty chewing or swallowing, persistent mouth pain, and changes in voice.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </li>
+
+                                    <li data-id="V2JJke9hT9I">
+                                        <div onclick="changeContent('V2JJke9hT9I', this)" class="gl-list-box d-flex flex-wrap align-items-center" style="cursor:pointer;">
+                                            <div class="gl-list-img"><img src="include/images/yt-thumbnails/mqdefault-2.jpg" alt="" /></div>
+                                            <div class="gl-list-content">
+                                                <h5 class="two-line-ellipsis">World Heart Day 2025 | Chandan Hospital Cardiac Experts Share Heart Care Tips</h5>
+                                                <p class="two-line-ellipsis">
+                                                    On this World Heart Day, our expert cardiologists at Chandan Hospital - Dr. Jigar Kiritkumar Shah, Dr. Ritesh Kumar Pandey, Dr. Mukul Misra, and Dr. Danish Hasan Kazmi - urge everyone to make healthier lifestyle choices, follow a balanced diet, and prioritize heart health.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </li>
+
+                                    <li data-id="dGzeBSPgrhc">
+                                        <div onclick="changeContent('dGzeBSPgrhc', this)" class="gl-list-box d-flex flex-wrap align-items-center" style="cursor:pointer;">
+                                            <div class="gl-list-img"><img src="include/images/yt-thumbnails/dGzeBSPgrhc-SD.jpg" alt="" /></div>
+                                            <div class="gl-list-content">
+                                                <h5 class="two-line-ellipsis">
+                                                    Early Detection of Breast Cancer 💗 | Dr. Anshika Arora Explains Breast Self-Examination
+                                                </h5>
+                                                <p class="two-line-ellipsis">
+                                                    In this video, Dr. Anshika Arora, Surgical Oncologist, explains the importance of Breast Self-Examination (BSE)—a simple monthly habit that can help detect breast cancer at an early, more treatable stage.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </li>
+
+                                    <li data-id="qo1nk-yKcdE">
+                                        <div onclick="changeContent('qo1nk-yKcdE', this)" class="gl-list-box d-flex flex-wrap align-items-center" style="cursor:pointer;">
+                                            <div class="gl-list-img"><img src="include/images/yt-thumbnails/qo1nk-yKcdE-SD.jpg" alt="" /></div>
+                                            <div class="gl-list-content">
+                                                <h5 class="two-line-ellipsis">Liver Cirrhosis Warning Signs You Must Not Ignore | Tests That Detect It Early</h5>
+                                                <p class="two-line-ellipsis">
+                                                    Many people discover Liver Cirrhosis too late — because the early signs are often ignored. In this video, our medical expert explains the key warning symptoms, risk indicators, and essential tests that help detect Liver Cirrhosis at an early stage.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </li>
+
+                                </ul>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--============================== Content Start ==============================-->
+        <div class="content-container testimonial-container">
+            <div class="container">
+                <div class="row os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                    <div class="col-lg-4">
+                        <div class="heading">
+                            <h5>Patient Testimonials</h5>
+                            <h2>What Our Patients Say About Us</h2>
+                            <p>Real experiences shared by patients and families who trusted us with their health and recovery.</p>
+                        </div>
+                        <div class="custom-arrow custom-arrow-2">
+                            <ul>
+                                <li class="prev1 prev"><i class="fas fa-long-arrow-alt-left"></i></li>
+                                <li class="next1 next"><i class="fas fa-long-arrow-alt-right"></i></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <ul class="testimonial-list">
+                            <li>
+                                <div class="tst-box">
+                                    <div class="tst-content">
+                                        <div class="str-icon">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                        <p class="tst-review">
+                                            The doctors and nursing staff were extremely supportive throughout my treatment.
+                                            From diagnosis to recovery, everything was well-coordinated and reassuring.
+                                        </p>
+                                        <div class="tst-user d-flex flex-wrap">
+                                            <!-- <div class="user-img">
+                                        <img src="include/images/user-1.png" alt="Patient testimonial" />
+                                    </div> -->
+                                            <div class="user-name">
+                                                <h5>Rajesh Verma</h5>
+                                                <p>Cardiology Patient</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li>
+                                <div class="tst-box">
+                                    <div class="tst-content">
+                                        <div class="str-icon">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                        <p class="tst-review">
+                                            Excellent facilities and compassionate care. The emergency team acted quickly
+                                            and kept us informed at every step. We are truly grateful.<br /><br />
+                                        </p>
+                                        <div class="tst-user d-flex flex-wrap">
+                                            <!--  <div class="user-img">
+                                        <img src="include/images/user-2.png" alt="Patient testimonial" />
+                                    </div> -->
+                                            <div class="user-name">
+                                                <h5>Anita Sharma</h5>
+                                                <p>Emergency Care Patient’s Relative</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li>
+                                <div class="tst-box">
+                                    <div class="tst-content">
+                                        <div class="str-icon">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                        <p class="tst-review">
+                                            Clean environment, advanced technology, and doctors who genuinely listen.
+                                            My surgery and recovery were smooth and stress-free.<br /><br />
+                                        </p>
+                                        <div class="tst-user d-flex flex-wrap">
+                                            <!-- <div class="user-img">
+                                        <img src="include/images/user-3.png" alt="Patient testimonial" />
+                                    </div> -->
+                                            <div class="user-name">
+                                                <h5>Mohd. Irfan</h5>
+                                                <p>Orthopaedic Surgery Patient</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!--============================== Content End ==============================-->
+
+        <!-- <div class="content-container">
+        <div class="container">
+            <div class="row os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                <div class="col-lg-12">
+                    <div class="heading text-center margin-50">
+                        <h3>Latest posts & articles</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="row os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                <div class="col-lg-4">
+                    <ul class="article-list">
+                        <li>
+                            <a href="#" class="article-box d-flex flex-wrap">
+                                <div class="artc-img"><img src="include/images/article-1.jpg" alt="" /></div>
+                                <div class="artc-content">
+                                    <div class="blog-info d-flex flex-wrap">
+                                        <div class="blog-date"><i class="far fa-calendar-alt"></i> AUgust 29.2024</div>
+                                        <div class="blog-author"><i class="far fa-user"></i> Admin</div>
+                                    </div>
+                                    <div class="blog-title">What’s the reason so many older adults aren’t active?</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="article-box d-flex flex-wrap">
+                                <div class="artc-img"><img src="include/images/article-2.jpg" alt="" /></div>
+                                <div class="artc-content">
+                                    <div class="blog-info d-flex flex-wrap">
+                                        <div class="blog-date"><i class="far fa-calendar-alt"></i> AUgust 29.2024</div>
+                                        <div class="blog-author"><i class="far fa-user"></i> Admin</div>
+                                    </div>
+                                    <div class="blog-title">What’s the reason so many older adults aren’t active?</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="article-box d-flex flex-wrap">
+                                <div class="artc-img"><img src="include/images/article-3.jpg" alt="" /></div>
+                                <div class="artc-content">
+                                    <div class="blog-info d-flex flex-wrap">
+                                        <div class="blog-date"><i class="far fa-calendar-alt"></i> AUgust 29.2024</div>
+                                        <div class="blog-author"><i class="far fa-user"></i> Admin</div>
+                                    </div>
+                                    <div class="blog-title">What’s the reason so many older adults aren’t active?</div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-lg-8">
+                    <div class="latest-blog">
+                        <a href="#" class="article-box d-flex flex-wrap">
+                            <div class="artc-img"><img src="include/images/article-3.jpg" alt="" /></div>
+                            <div class="artc-content">
+                                <div class="blog-info d-flex flex-wrap">
+                                    <div class="blog-date"><i class="far fa-calendar-alt"></i> AUgust 29.2024</div>
+                                    <div class="blog-author"><i class="far fa-user"></i> Admin</div>
+                                </div>
+                                <div class="blog-title">Lorem Ipsum is simply dummy text of the printing and typesetting industry Lorem Ipsum has been the industry Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry</div>
+                                <div class="blog-desp">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+        <div class="content-container award-container">
+            <div class="container">
+                <div class="row os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                    <div class="col-lg-8 offset-lg-2">
+                        <div class="heading text-center">
+                            <h3>Awards & Recognitions</h3>
+                            <p>Honored for excellence in healthcare, innovation, patient safety, and commitment to quality medical services.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.7s">
+                    <div class="col-lg-12">
+                        <ul class="awrad-list">
+                            <li>
+                                <div class="awrad-box">
+                                    <div class="awrd-head">
+                                        <div class="icon-text">Jagran Health Care & Wellness Award-2025</div>
+                                        <div class="icon-logo"><img src="include/images/award-logo.svg" alt="" /></div>
+                                    </div>
+                                    <div class="awrd-name">
+                                        (Dainik Jagran Group) for Contribution to Medical Field & Excellence.
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="awrad-box">
+                                    <div class="awrd-head">
+                                        <div class="icon-text">Business Excellence Award 2024</div>
+                                        <div class="icon-logo"><img src="include/images/award-logo.svg" alt="" /></div>
+                                    </div>
+                                    <div class="awrd-name">
+                                        (Amar Ujala) in Dubai.<br /><br /><br />
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="awrad-box">
+                                    <div class="awrd-head">
+                                        <div class="icon-text">Emerging Star in Liver Transplant Award</div>
+                                        <div class="icon-logo"><img src="include/images/award-logo.svg" alt="" /></div>
+                                    </div>
+                                    <div class="awrd-name">
+                                        (Times Network) for Dr. Ashish Kumar Mishra.<br /><br />
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="awrad-box">
+                                    <div class="awrd-head">
+                                        <div class="icon-text">Best Employer Brand 2018</div>
+                                        <div class="icon-logo"><img src="include/images/award-logo.svg" alt="" /></div>
+                                    </div>
+                                    <div class="awrd-name">
+                                        Pride of India Awards<br /><br /><br />
+                                    </div>
+                                </div>
+                            </li>
+                            <!-- <li>
+                            <div class="awrad-box">
+                                <div class="awrd-head">
+                                    <div class="icon-text">Quality and Accreditation Institute (QAI)</div>
+                                    <div class="icon-logo"><img src="include/images/award-logo.svg" alt="" /></div>
+                                </div>
+                                <div class="awrd-name">
+                                    Quality and Accreditation Institute (QAI)
+                                </div>
+                            </div>
+                        </li> -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!--============================== Main End ==============================-->
+    <!--============================== Footer Start ==============================-->
+    <footer id="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="footer-top d-flex flex-wrap align-items-center">
+                    <div class="ft-logo"><a href="/"><img style="width:150px;" src="/include/images/footer-logo.png" alt="" /></a></div>
+                    <div class="ft-email">
+                        <div class="cs_newsletter d-flex flex-wrap align-items-center">
+                            <div class="subs-text">Subscribe Our Newsletter</div>
+                            <div class="subs-detail">
+                                <form action="#" class="cs_newsletter_form position-relative">
+                                    <input type="email" class="form-control" placeholder="Enter your email ID">
+                                    <button class="btn btn-default">
+                                        <span>Submit</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ft-brand">
+                        <ul class="ft-brand-list d-flex flex-wrap justify-content-center">
+                            <li>
+                                <div class="bnd-box">
+                                    <img src="/include/images/ft-logo-1.svg" alt="" />
+                                </div>
+                            </li>
+                            <li>
+                                <div class="bnd-box">
+                                    <img src="/include/images/ft-logo-2.svg" alt="" />
+                                </div>
+                            </li>
+                            <!-- <li>
+                                <div class="bnd-box">
+                                    <img src="/include/images/ft-logo-3.svg" alt="" />
+                                </div>
+                            </li> -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-2">
+                <div class="ft-list">
+                    <h5>Patient Care</h5>
+                    <ul class="footer-list">
+                        <li><a href="/about-chandan-group.php">About Us</a></li>
+                        <li><a href="/book-appointment.php">Find A Doctor</a></li>
+                        <li><a href="/health-checkups.php">Health Checkups</a></li>
+                        <li><a href="/report.php">My Reports</a></li>
+                        <li><a href="/book-appointment.php">Book Appointment</a></li>
+                    </ul>
+                </div>
+                <div class="ft-list">
+                    <h5>Quick Links</h5>
+                    <ul class="footer-list">
+                        <!-- <li><a href="/success-stories.php">Success Stories</a></li> -->
+                        <li><a href="/blog.php">Blog</a></li>
+                        <li><a href="/careers.php">Careers</a></li>
+                        <li><a href="/admin/login.php">Admin</a></li>
+                        <!-- <li><a href="/research.php">Research</a></li> -->
+
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="ft-list">
+                    <h5>Speciality</h5>
+                    <ul class="footer-list">
+                        <li><a href="/speciality-cancer.php">Cancer</a></li>
+                        <li><a href="/speciality-emergency-trauma.php">Emergency & Trauma</a></li>
+                        <li><a href="/speciality-cardiology-cardiac-sciences.php">Cardiology & Cardiac Sciences</a></li>
+                        <li><a href="/speciality-blood-bank.php">Blood Bank</a></li>
+                        <li><a href="/speciality-bone-joint-orthopaedics.php">Bone & Joint (Orthopaedics)</a></li>
+                        <li><a href="/speciality-critical-care-anaesthesiology.php">Critical Care & Anaesthesiology</a></li>
+                        <li><a href="/speciality-dental-maxillofacial-surgery.php">Dental & Maxillofacial Surgery</a></li>
+                        <li><a href="/speciality-dermatology.php">Dermatology</a></li>
+                        <li><a href="/speciality-endocrinology.php">Endocrinology</a></li>
+                        <li><a href="/speciality-ent-head-neck-surgery.php">ENT & Head–Neck Surgery</a></li>
+                        <li><a href="/speciality-rheumatology-clinical-immunology.php">Rheumatology & Clinical Immunology</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="ft-list">
+                    <h5>Speciality</h5>
+                    <ul class="footer-list">
+                        <li><a href="/speciality-gastrointestinal-minimal-access-surgery.php">Gastrointestinal & Minimal Access Surgery</a></li>
+                        <li><a href="/speciality-gastroenterology-liver-biliary-sciences.php">Gastroenterology, Liver & Biliary Sciences</a></li>
+                        <li><a href="/speciality-hematology-haemato-oncology.php">Hematology & Haemato-Oncology</a></li>
+                        <li><a href="/speciality-internal-medicine.php">Internal Medicine</a></li>
+                        <li><a href="/speciality-liver-transplant-hpb-surgery.php">Liver Transplant & HPB Surgery</a></li>
+                        <li><a href="/speciality-neurosciences.php">Neurosciences</a></li>
+                        <li><a href="/speciality-nuclear-medicine.php">Nuclear Medicine</a></li>
+                        <li><a href="/speciality-obstetrics-gynaecology.php">Obstetrics & Gynaecology</a></li>
+                        <li><a href="/speciality-ophthalmology-lasik-surgery.php">Ophthalmology & LASIK Surgery</a></li>
+                        <li><a href="/speciality-paediatrics-neonatology.php">Paediatrics & Neonatology</a></li>
+                        <li><a href="/speciality-specialty-laboratory-services.php">Specialty Laboratory Services</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-2">
+                <div class="ft-list">
+                    <h5>Speciality</h5>
+                    <ul class="footer-list">
+                        <li><a href="/speciality-pain-management.php">Pain Management</a></li>
+                        <li><a href="/speciality-plastic-aesthetic-reconstructive-surgery.php">Plastic, Aesthetic & Reconstructive Surgery</a></li>
+                        <li><a href="/speciality-psychiatry-psychological-sciences.php">Psychiatry & Psychological Sciences</a></li>
+                        <li><a href="/speciality-radiodiagnosis-interventional-radiology.php">Radiodiagnosis & Interventional Radiology</a></li>
+                        <li><a href="/speciality-renal-sciences-kidney-transplant.php">Renal Sciences & Kidney Transplant</a></li>
+                        <li><a href="/speciality-respiratory-sleep-medicine.php">Respiratory & Sleep Medicine</a></li>
+                        <li><a href="/speciality-spine-surgery.php">Spine Surgery</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-2">
+                <div class="ft-list">
+                    <h5>Support</h5>
+                    <ul class="footer-list">
+                        <li><a href="/privacy-policy.php">Privacy Policy</a></li>
+                        <li><a href="/cookie.php">Cookie Policy</a></li>
+                        <li><a href="/disclaimer.php">Disclaimer</a></li>
+                        <li><a href="/terms.php">Terms & Conditions</a></li>
+                        <li><a href="/contact.php">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="ft-list">
+                    <h5>Hospitals</h5>
+                    <ul class="footer-list">
+                        <li>
+                            <a class="" href="/index-lucknow.php">
+                                Chandan Hospital, Lucknow
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="" href="/index-haldwani.php">
+                                Chandan Hospital, Haldwani
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="cs_copyright">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-4">
+                    <div class="download-btn">
+                        <a target="_blank" href="https://play.google.com/store/apps/details?id=com.chandanpharmacy"><img src="/include/images/play-store.png" alt="" /></a>
+                        <a target="_blank" href="https://apps.apple.com/in/app/chandan-24x7/id1476509541"><img src="/include/images/app-store.png" alt="" /></a>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <p class="discl-links">© 2026 Chandan Hospital Limited. All Rights Reserved.</p>
+                </div>
+                <div class="col-lg-4">
+                    <ul class="footer-link d-flex justify-content-end">
+                        <li><a target="_blank" href="https://www.facebook.com/HospitalChandan/"><i class="fa-brands fa-facebook-f"></i></a></li>
+                        <li><a target="_blank" href="https://x.com/chandanhosp"><i class="fa-brands fa-x-twitter"></i></a></li>
+                        <li><a target="_blank" href="https://www.instagram.com/hospitalchandan/"><i class="fab fa-instagram"></i></a></li>
+                        <li><a target="_blank" href="https://www.youtube.com/@hospitalchandan/"><i class="fa-brands fa-youtube"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</footer>    <!--============================== Footer End ==============================-->
+    <script src="/include/js/jquery.min.js"></script>
+<script src="/include/js/main.js"></script>
+<script src="/include/js/custom.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        setTimeout(function () {
+            $('.inner-header').removeAttr('style');
+            $('.inner-header').css({
+                'background-image': 'url(https://media.istockphoto.com/id/1194838679/vector/hospital-reception.jpg?s=612x612&w=0&k=20&c=wr3mw7CZ_FnxviRHXbDbMik2fvHACuuNTFkKD0tKpp0=)',
+                'background-position': '50% -55px'
+            }, 200);
+        })
+
+    })
+    var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+    (function () {
+        var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+        s1.async = true;
+        s1.src = 'https://embed.tawk.to/5b09265810b99c7b36d453d9/default';
+        s1.charset = 'UTF-8';
+        s1.setAttribute('crossorigin', '*');
+        s0.parentNode.insertBefore(s1, s0);
+    })();
+</script>    <script>
+        let selectedCity = null;
+
+        function setCity(city) {
+            selectedCity = city;
+
+            // set location input
+            const locationInput = document.getElementById("locationInput");
+            if (locationInput) {
+                locationInput.value = city.charAt(0).toUpperCase() + city.slice(1);
+            }
+
+            // hide both dropdown and popup
+            document.getElementById("locationPopup").style.display = "none";
+            document.getElementById("locationDropdown").style.display = "none";
+
+            // trigger search updates when appropriate
+            const value = document.getElementById("searchInput").value.trim();
+            if (value.length >= 1) {
+                fetchResults(value);
+            }
+        }
+
+        const searchInput = document.getElementById("searchInput");
+
+        if (searchInput) {
+            searchInput.addEventListener("input", async function() {
+                const value = this.value.trim();
+
+                if (value.length < 1) {
+                    document.getElementById("searchResultBox").innerHTML = "";
+                    return;
+                }
+
+                if (!selectedCity) {
+                    // keep existing modal behavior for non-index or fallback flows
+                    document.getElementById("locationPopup").style.display = "block";
+                    return;
+                }
+
+                fetchResults(value);
+            });
+        }
+
+        async function fetchResults(value) {
+            try {
+                const res = await fetch(`/api/search.php?q=${value}&city=${selectedCity}`);
+                const data = await res.json();
+
+                renderSearchResults(data.data, selectedCity);
+            } catch (err) {
+                console.error("Search error:", err);
+            }
+        }
+
+        function renderSearchResults(data, city) {
+            if (!data || (!data.specialities.length && !data.doctors.length)) {
+                document.getElementById("searchResultBox").innerHTML = "";
+                return;
+            }
+
+            let html = `<div class="search-dropdown">`;
+
+            if (data.specialities.length) {
+                html += `<h6 class="px-2 mt-2">Specialities</h6>`;
+
+                data.specialities.forEach(spec => {
+                    html += `
+                <a class="item d-block" href="${getSpecialityLink(spec.page_slug, city)}">🩺 ${spec.name}</a>
+            `;
+                });
+            }
+
+            if (data.doctors.length) {
+                html += `<h6 class="px-2 mt-2">Doctors</h6>`;
+
+                data.doctors.forEach(doc => {
+                    html += `
+                <a class="item d-block" href="${getDoctorLink(doc.slug)}">👨‍⚕️ ${doc.doctor_name}</a>
+            `;
+                });
+            }
+
+            html += `</div>`;
+            document.getElementById("searchResultBox").innerHTML = html;
+        }
+
+        function goToSpeciality(slug, city) {
+            window.location.href = `${window.location.origin}/${slug}`;
+        }
+
+        function getSpecialityLink(slug, city) {
+            return `${window.location.origin}/${slug}`;
+        }
+
+        function goToDoctor(slug) {
+            window.location.href = `${window.location.origin}/doctor/${slug}`;
+        }
+
+        function getDoctorLink(slug) {
+            return `${window.location.origin}/doctor/${slug}`;
+        }
+
+        function loadAllCities() {
+            $.get(`${window.location.origin}/api/cities.php`, function(data) {
+                if (data.status) {
+                    const cities = data.data;
+                    let buttonHtml = '';
+                    let dropdownHtml = '';
+
+                    cities.forEach(c => {
+                        buttonHtml += `<button onclick="setCity('${c.city.toLowerCase()}')" class="btn btn-primary m-2">${c.city}</button>`;
+                        dropdownHtml += `<div class="city-option" data-city="${c.city.toLowerCase()}">${c.city}</div>`;
+                    });
+
+                    document.getElementById("cityButtons").innerHTML = buttonHtml;
+                    document.getElementById("locationDropdown").innerHTML = dropdownHtml;
+                }
+            });
+        }
+
+        $("#locationSelector").click(function(event) {
+            event.stopPropagation();
+            $("#locationDropdown").toggle();
+            $("#locationPopup").hide();
+        });
+
+        $(document).on('click', '#locationDropdown .city-option', function() {
+            const city = $(this).data('city');
+            setCity(city);
+        });
+
+        $(document).click(function(event) {
+            if (!$(event.target).closest('#locationSelector, #locationDropdown').length) {
+                $("#locationDropdown").hide();
+            }
+        });
+
+        loadAllCities();
+    </script>
+
+    <script>
+        function changeContent(videoId, thisElement) {
+            jQuery(".hp-gallery .hp-glry-right ul li").removeClass("active");
+            jQuery(thisElement).closest("li").addClass("active");
+            document.getElementById("mainVideo").src = "https://www.youtube.com/embed/" + videoId + "?autoplay=1";
+            const videoTitle = thisElement.querySelector(".gl-list-content h5").textContent;
+            document.getElementById("mainVideoTitle").textContent = videoTitle; // Highlight selected video title
+            const videoDescription = thisElement.querySelector(".gl-list-content p") ? thisElement.querySelector(".gl-list-content p").textContent : "";
+            document.getElementById("mainVideoDescription").textContent = videoDescription; // Update
+        }
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"8dd7d4af3fd043e0b6dc526aae05da78","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+
+</html>

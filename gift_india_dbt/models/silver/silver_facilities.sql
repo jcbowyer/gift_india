@@ -11,7 +11,7 @@
 -- highest `match_confidence`. Feeds gold.facilities.
 
 with facilities as (
-    select * from {{ source('bronze', 'facilities') }}
+    select * from {{ source('bronze', 'facilities_virtue') }}
 ),
 
 state_codes as (

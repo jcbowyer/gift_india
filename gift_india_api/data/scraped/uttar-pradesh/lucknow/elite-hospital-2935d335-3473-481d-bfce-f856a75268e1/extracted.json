@@ -1,0 +1,15 @@
+{
+  "source_url": "https://www.google.com/maps/place/Elite+Hospital+Lko/@26.9010751,80.9352433,333m/data=!3m1!1e3!4m5!3m4!1s0x0:0x1926471e590c0d3c!8m2!3d26.9009791!4d80.9359238?hl=en&shorturl=1",
+  "title": "Google Maps",
+  "heading": null,
+  "description": "Find local businesses, view maps and get driving directions in Google Maps.",
+  "emails": [],
+  "phones": [],
+  "addresses": [],
+  "text": "Google Maps",
+  "text_truncated": false,
+  "extracted_at": "2026-06-16T02:48:29+00:00",
+  "facility_id": "2935d335-3473-481d-bfce-f856a75268e1",
+  "facility_name": "Elite Hospital",
+  "http_status": 200
+}

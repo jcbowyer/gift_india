@@ -1,0 +1,1036 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mehtaeyeinstitute</title>
+    <link href="StyleSheet.css" rel="stylesheet" />
+    <link href="responsive.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="images/Mehta%20eye.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+
+    <script>
+        function setGoogleTranslateCookie(lang) {
+            document.cookie = "googtrans=/en/" + lang + ";path=/";
+            document.cookie = "googtrans=/en/" + lang + ";path=/;domain=" + location.hostname;
+        }
+    </script>
+    <script>
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,ar',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+
+
+    
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+   
+<title>Mehta International Eye Institute – Premier Eye Care in Mumbai</title>
+<meta name="description" content="Experience top-tier ophthalmic services at Mehta International Eye Institute, offering advanced treatments for cataracts, glaucoma, and more in Mumbai."/>
+
+       <style>
+    #home{
+        color:#B43041;
+    } 
+</style>
+
+
+</head>
+<body>
+    <div class="saki">
+        <!----top header--->
+        <div class="header-contact">
+            <div class="contact-info">
+                <a href="https://wa.me/919820031041" class="whatsapp" target="_blank">
+                    <i class="fa-brands fa-whatsapp"></i>+91 98200 21041
+                </a>
+                <a href="tel:+919137188334" class="phone">
+                    <i class="fa-solid fa-phone"></i>+91 91371 88334
+                </a>
+
+                
+                <a href="/contact-us.aspx" class="write-us-btn">Write to Us</a>
+            </div>
+            <div class="social-icons">
+                <a href="https://www.facebook.com/keiki.mehta" class="facebook" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="https://x.com/keiki_mehta" target="_blank" class="social-icon">
+                    <img src="images/twitter.png" alt="X" class="x-icon-img">
+                </a>
+                <a href="https://www.instagram.com/keiki_mehta/" class="instagram" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                <a href="http://www.linkedin.com/in/keiki-mehta/" class="linkedin" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+            </div>
+        </div>
+
+        <!------header------>
+
+        <header class="main-header">
+            <div class="header-container">
+
+                <div class="logo-container">
+                    <div class="logo">
+                        <a href="/">
+                            <img src="images/mehtalogo.png" alt="Logo">
+                        </a>
+                    </div>
+                </div>
+
+                <div class="nav-container">
+                    <nav class="navbar">
+                        <ul class="nav-links">
+                            <li><a href="/" id="home">HOME</a></li>
+                            <li><a href="/about.aspx" id="about-us">ABOUT US</a></li>
+                            <li class="dropdown">
+                                <a href="/services.aspx" id="services">SERVICES <span class="arrow">&#9660;</span></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="/lasik.aspx" id="lasik">LASIK</a></li>
+                                    <li><a href="/relex-smile.aspx" id="relax">ReLEx® Smile</a></li>
+                                    <li><a href="/cataract.aspx" id="cataract">Cataract</a></li>
+                                    <li><a href="/glaucoma.aspx" id="glaucoma">Glaucoma</a></li>
+                                    <li><a href="/vitreoretinal.aspx" id="vitre">Vitreoretinal</a></li>
+                                    <li><a href="/cornea.aspx" id="cornea">Cornea</a></li>
+                                    <li><a href="/squint.aspx" id="squint">Squint</a></li>
+                                    <li><a href="/paediatric-services.aspx" id="Paedia">Paediatric Services</a></li>
+                                    <li><a href="/low-vision-clinic.aspx" id="Low">Low Vision Clinic</a></li>
+                                    <li><a href="/contact-lens-services.aspx" id="co">Contact Lens Services</a></li>
+                                    <li><a href="/other-facilities.aspx" id="other">Other Facilities</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="/awards.aspx" id="aws">AWARDS</a></li>
+                            <li><a href="/community-service.aspx" id="com">COMMUNITY SERVICES</a></li>
+                            <li><a href="/testimonials.aspx" id="test">TESTIMONIALS</a></li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="lang-select">
+                    <select id="languageSwitcher" class="notranslate">
+                        <option value="en" class="notranslate">English</option>
+                        <option value="ar" class="notranslate">Arabic</option>
+                    </select>
+
+                </div>
+                <div id="google_translate_element" style="display: none"></div>
+
+
+
+
+
+
+            </div>
+        </header>
+
+        <script>
+            const header = document.querySelector('.main-header');
+            let isShrunk = false;
+            const threshold = 50;
+            const buffer = 40;
+
+            window.addEventListener('scroll', () => {
+                const y = window.scrollY;
+                if (!isShrunk && y >= threshold + buffer) {
+                    header.classList.add('shrink');
+                    isShrunk = true;
+                } else if (isShrunk && y <= threshold - buffer) {
+                    header.classList.remove('shrink');
+                    isShrunk = false;
+                }
+            });
+
+        </script>
+
+
+
+        <!---------- mobile header ----------->
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <div class="logo">
+                <a href="/">
+                    <img src="images/mehtalogo.png" alt="Logo">
+                </a>
+            </div>
+            <div class="mobile-toggle" id="mobileToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <div class="mobile-menu" id="mobileMenu">
+            <ul class="mobile-nav">
+                <li><a href="/">HOME</a></li>
+                <li><a href="/about.aspx">ABOUT US</a></li>
+                <li class="mobile-dropdown">
+                    <span>SERVICES</span>
+                    <ul class="mobile-submenu">
+                        <li><a href="/lasik.aspx">LASIK</a></li>
+                        <li><a href="/relex-smile.aspx">ReLEx® Smile</a></li>
+                        <li><a href="/cataract.aspx">Cataract</a></li>
+                        <li><a href="/glaucoma.aspx">Glaucoma</a></li>
+                        <li><a href="/vitreoretinal.aspx">Vitreoretinal</a></li>
+                        <li><a href="/cornea.aspx">Cornea</a></li>
+                        <li><a href="/squint.aspx">Squint</a></li>
+                        <li><a href="/paediatric-services.aspx">Paediatric Services</a></li>
+                        <li><a href="/low-vision-clinic.aspx">Low Vision Clinic</a></li>
+                        <li><a href="/contact-lens-services.aspx">Contact Lens Services</a></li>
+                        <li><a href="/other-facilities.aspx">Other Facilities</a></li>
+                    </ul>
+                </li>
+
+                <li><a href="/awards.aspx">AWARDS</a></li>
+                <li><a href="/community-service.aspx">COMMUNITY SERVICES</a></li>
+                <li><a href="/testimonials.aspx">TESTIMONIALS</a></li>
+            </ul>
+
+            <div class="social-icons">
+                <a href="https://www.facebook.com/keiki.mehta" class="facebook" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="https://x.com/keiki_mehta" target="_blank" class="social-icon">
+                    <img src="images/twitter.png" alt="X" class="x-icon-img">
+                </a>
+                <a href="https://www.instagram.com/keiki_mehta/" class="instagram" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                <a href="http://www.linkedin.com/in/keiki-mehta/" class="linkedin" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+            </div>
+            <div class="contact-info-toggle">
+                
+                <a href="/contact-us.aspx" class="write-us-btn-toggle">Write to Us</a>
+            </div>
+
+        </div>
+
+
+        
+    <!--- top swipper--->
+        <div class="desktop">
+  <div class="swiper fullSwiper">
+    <div class="swiper-wrapper">
+
+      <div class="swiper-slide">
+        <a href="/appointment.aspx">
+          <img src="images/banne1.png" />
+        </a>
+      </div>
+
+      <div class="swiper-slide">
+        <a href="/appointment.aspx">
+          <img src="images/banner2.png" />
+        </a>
+      </div>
+
+      <div class="swiper-slide">
+        <a href="/appointment.aspx">
+          <img src="images/banner3.png" />
+        </a>
+      </div>
+
+      <div class="swiper-slide">
+        <a href="/appointment.aspx">
+          <img src="images/banner4.png" />
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Arrows -->
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
+
+    
+  </div>
+</div>
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        var swiper = new Swiper(".fullSwiper", {
+            autoplay: {
+            delay: 4000,
+        disableOnInteraction: false,
+     },
+        pagination: {
+            el: ".swiper-pagination",
+        clickable: true,
+     },
+        navigation: {
+            nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+     },
+   });
+</script> 
+       <!-----------  mobile -------------->
+                <div class="mobile">
+  <div class="swiper fullSwiper">
+    <div class="swiper-wrapper">
+
+      <div class="swiper-slide">
+        <a href="/appointment.aspx">
+          <img src="images/j1.png" />
+        </a>
+      </div>
+
+      <div class="swiper-slide">
+        <a href="/appointment.aspx">
+          <img src="images/j2.png" />
+        </a>
+      </div>
+
+      <div class="swiper-slide">
+        <a href="/appointment.aspx">
+          <img src="images/j3.png" />
+        </a>
+      </div>
+
+      <div class="swiper-slide">
+        <a href="/appointment.aspx">
+          <img src="images/j4.png" />
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Arrows -->
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
+
+    
+  </div>
+</div>
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        var swiper = new Swiper(".fullSwiper", {
+            autoplay: {
+                delay: 4000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+            },
+            navigation: {
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev",
+            },
+        });
+    </script> 
+
+            <!------National Accreditation Board------->
+        <section>
+        <footer class="accreditation-footer">
+ <div class="accreditation-section">
+  <div class="accred-item left">
+    <img src="images/logo1.png" alt="NABH Logo">
+    <p>NATIONAL ACCREDITATION BOARD FOR<br>HOSPITALS &amp; HEALTHCARE PROVIDERS<br>(NABH) CERTIFIED INSTITUTE</p>
+  </div>
+ 
+  <div class="accred-item right">
+    <img src="images/logo2.png" alt="BSI Logo">
+   
+  </div>
+</div>
+
+</footer>
+            </section>
+
+    <!------ About Mehta International Eye Institute ---->
+   <section class="about3">
+  <div class="about3-container">
+    <div class="about3-text">
+      <h2>
+        ABOUT<br>
+        MEHTA INTERNATIONAL<br>
+        EYE INSTITUTE
+      </h2>
+      <p>Mehta International Eye Institute is a recognized center for patient care, vision research
+          and physician education our state-of-the-art facility is oriented towards providing
+          patient-friendly care.</p>
+      <p>Our internationally renowned physicians possess the clinical and surgical expertise 
+          to provide consultations and medical-surgical care for complex ophthalmic problems.</p>
+      <p>Mehta International Eye Institute strives to maintain the most &amp; up-to-date 
+          facilities so patients receive the best care possible. Mehta International Eye
+          Institute has an eye care team that provides the professional support necessary
+          to ensure that every patient receives personal attention. Our dedicated staff is
+          highly trained in the art of patient care and draws on their many years of collective
+          experience in assisting you.</p>
+      <a href="/about.aspx" class="read-more3">Read More →</a>
+    </div>
+    <div class="about3-slider">
+      <div class="swiper slider3">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide slider3-slide"><img src="images/about1.png" alt=""></div>
+          <div class="swiper-slide slider3-slide"><img src="images/about2.png" alt=""></div>
+          <div class="swiper-slide slider3-slide"><img src="images/about3.png" alt=""></div>
+          <div class="swiper-slide slider3-slide"><img src="images/about 4.png" alt=""></div>
+          <div class="swiper-slide slider3-slide"><img src="images/about5.png" alt=""></div>
+        </div>
+        <div class="swiper-button-prev slider3-prev"></div>
+        <div class="swiper-button-next slider3-next"></div>
+        <div class="swiper-pagination slider3-pag"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<!-- Initialize Swiper (unique instance slider3) -->
+<script>
+    new Swiper('.slider3', {
+        autoplay: { delay: 4000, disableOnInteraction: false },
+        pagination: { el: '.slider3-pag', clickable: true },
+        navigation: { nextEl: '.slider3-next', prevEl: '.slider3-prev' },
+        allowTouchMove: true,
+        preventClicks: false,
+        preventClicksPropagation: false,
+        shortSwipes: true,
+        longSwipes: true
+    });
+</script>
+
+    <!--------- Services -------->
+    <section class="services-section">
+  <h2 class="section-title">SERVICES</h2>
+
+  <div class="services-columns">
+    <div class="services-column">
+      <div class="service-card reveal">
+        <a href="\lasik.aspx">
+          <img src="images/S1.png" alt="LASIK">
+          <p>LASIK</p>
+        </a>
+      </div>
+      <div class="service-card reveal">
+        <a href="\glaucoma.aspx">
+          <img src="images/S4.png" alt="Glaucoma">
+          <p>Glaucoma</p>
+        </a>
+      </div>
+    </div>
+
+    <div class="services-column">
+      <div class="service-card reveal">
+        <a href="\relex-smile.aspx">
+          <img src="images/S2.png" alt="ReLEx SMILE">
+          <p>ReLEx® SMILE</p>
+        </a>
+      </div>
+      <div class="service-card reveal">
+        <a href="\vitreoretinal.aspx">
+          <img src="images/S5.png" alt="Vitreoretinal">
+          <p>Vitreoretinal</p>
+        </a>
+      </div>
+    </div>
+
+    <div class="services-column">
+      <div class="service-card reveal">
+        <a href="\cataract.aspx">
+          <img src="images/S3.png" alt="Cataract">
+          <p>Cataract</p>
+        </a>
+      </div>
+      <div class="service-card reveal">
+        <a href="\cornea.aspx">
+          <img src="images/S6.png" alt="Cornea">
+          <p>Cornea</p>
+        </a>
+      </div>
+    </div>
+  </div>
+
+ 
+        <div class="view-more-container">
+        <a href="/services.aspx" class="view-more-btn">View All Services →</a>
+            </div>
+</section>
+
+
+<script>
+    // Reveal on scroll animation
+    window.addEventListener("scroll", function () {
+        const reveals = document.querySelectorAll(".reveal");
+        reveals.forEach((el) => {
+            const windowHeight = window.innerHeight;
+            const elementTop = el.getBoundingClientRect().top;
+            const revealPoint = 150;
+
+            if (elementTop < windowHeight - revealPoint) {
+                el.classList.add("active");
+            }
+        });
+    });
+</script>
+
+    <!----- video and community section---->
+     <div class="youtube">
+
+    <!-- Image 1: YouTube Video Link -->
+    <a href="https://www.youtube.com/watch?v=q5nGmdOxS6Y" target="_blank" class="image-link">
+      <img src="images/youtube.png" alt="Video Link">
+    </a>
+
+    <!-- Image 2: Internal Community Page -->
+    <a href="/community-service.aspx" class="image-link">
+      <img src="images/community.png" alt="Community Page">
+    </a>
+
+  </div>
+    <!-----------+++++++++MEET THE DOCTOR+++++++----------->
+    <section class="doctor-section">
+    <div class="doctor-container">
+
+      <!-- Doctor Image -->
+      <div class="doctor-image">
+        <img src="images/mehta.png" alt="Dr. Keiki R. Mehta">
+        <h2>Prof. (Dr.) Keiki R. Mehta</h2>
+        <p class="degrees">
+          M.B.B.S., D.O.M.S., M.S. (OPHTH.), D.O. (IRELAND),<br>
+            R.C.P. & S (IRELAND), D.O. (LONDON), R.C.P. (LONDON), R.C.S. (ENGLAND),<br> 
+           F.A.I.C.O, F.N.E.R.F. (U.S.A.),
+          F.R.S.H. (LONDON), F.I.C.O.R, F.I.O.S. (U.S.A.).
+        </p>
+        <p class="position">Consultant Ophthalmic Surgeon, Medical Director & Chief</p>
+        <p class="award">Awarded <strong>PADMASHREE</strong> by President of India</p>
+      </div>
+
+      <!-- Doctor Text -->
+      <div class="doctor-text">
+        <h3>MEET THE DOCTOR</h3>
+        <h4>THE MOST <span>QUALIFIED</span>, <span>SKILLFUL</span><br> AND PROFESSIONAL DOCTOR</h4>
+        <p>
+          Dr. Keiki. R. Mehta, the surgical chief and director of Mehta International Eye Institute, 
+          graduated from Christian Medical College and completed his post-graduation.
+        </p>
+        <a href="/about.aspx" class="read-more">Read More →</a>
+      </div>
+
+    </div>
+  </section>
+    <!----------+++++++++++ Details +++++++++--------->
+    <section>
+      <div class="details-container">
+    <div class="detail detail--email">
+      <div class="detail__icon">
+        <img src="images/email.png" alt="Email">
+      </div>
+      <div class="detail__info">
+        <div class="detail__title">Email</div>
+        <a href="mailto:drkeiki@mehtaeyeinstitute.com" class="detail__link">
+          drkeiki@mehtaeyeinstitute.com
+        </a>
+      </div>
+    </div>
+
+    <div class="detail detail--emergency">
+      <div class="detail__icon">
+        <img src="images/emergency.png" alt="Emergency">
+      </div>
+      <div class="detail__info">
+        <div class="detail__title">Emergency (24×7)</div>
+        <div class="detail__text">+91 98200 31041</div>
+        <div class="detail__text">+91 98197 60702</div>
+        <div class="detail__text">+91 98920 68684</div>
+      </div>
+    </div>
+<div class="extra-detail">
+    <div class="detail detail--hours">
+      <div class="detail__icon">
+        <img src="images/time.png" alt="Hours">
+      </div>
+      <div class="detail__info">
+        <div class="detail__text"><strong>Monday to Saturday :</strong> 10 AM – 09 PM</div>
+        <div class="detail__text"><strong>Sunday:</strong> Closed</div>
+        <div class="detail__text"><strong>Call to book an Appointment to meet us</strong></div>
+      </div>
+        </div>
+    </div>
+  </div>
+    </section>
+    <!-------------- Make An Appointment ------------->
+    <section>
+      <div class="appointment-container">
+    <div class="form-section">
+      <p class="subheading">MAKE AN APPOINTMENT</p>
+      <h1 class="heading">
+        WE ARE SERVING PEOPLE FOR <br>
+        OVER <span class="highlight">46 YEARS</span><br>
+        <span class="highlight">BOOK AN APPOINTMENT</span>
+      </h1>
+
+      <!-- ✅ Form replaced with div -->
+      <div class="appointment-form">
+        <div class="input-row">
+          <input type="text"  id="name" placeholder="Name" />
+          <input type="email"  id="email-id" placeholder="Email Id" />
+        </div>
+        <div class="input-row">
+          <input type="tel"  id="phone" placeholder="Mobile No" />
+          <input type="date" id="date" />
+        </div>
+        <textarea  id="query" placeholder="Write here..."></textarea>
+        <button type="submit" class="button" id="btn-submit" >Send</button>
+      </div>
+    </div>
+
+    <div class="image-section">
+      <img src="images/girl.png" alt="Eye Checkup" />
+    </div>
+  </div>
+    </section>
+<!------ Our Quality Policy ------->
+<!-- Quality Policy Section -->
+<section class="quality-section">
+  <div class="quality-content">
+    <h2>OUR QUALITY POLICY</h2>
+    <p>
+      We at Mehta International Eye Institute will provide the best quality of loving and caring humane services 
+      to our patients through our committed, professionally oriented team. We aspire for total customer Satisfaction 
+      in all ophthalmological services we undertake and will constantly strive for continual improvement.
+    </p>
+  </div>
+</section>
+
+<!---------Mission - Vision----------->
+    <section>
+      <div class="mission-container">
+  <div class="mission-box mission slide-from-right">
+    <img src="images/mission.png" alt="Mission Icon" class="mission-icon" />
+    <div class="mission-content">
+      <h3>MISSION</h3>
+      <p>
+        We want you to see as well many years from now as you do today, 
+          so we spend extra time conducting a variety of tests you may not have experienced elsewhere.
+      </p>
+    </div>
+  </div>
+
+  <div class="mission-box vision slide-from-left">
+    <img src="images/vision.png" alt="Vision Icon" class="mission-icon" />
+    <div class="mission-content">
+      <h3>VISION</h3>
+      <p>
+        Mehta International Eye Institute strives to maintain the most & up-to-date
+          facilities so patients receive the best care possible.
+      </p>
+    </div>
+  </div>
+</div>
+
+
+        <script>
+            function initMissionBoxes() {
+                const boxes = document.querySelectorAll('.mission-box');
+
+                // only run IntersectionObserver if on larger screen
+                if (window.innerWidth > 1024) {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('show');
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, {
+                        threshold: 0.2
+                    });
+                    boxes.forEach(box => observer.observe(box));
+                } else {
+                    // For small screens, directly show content (no animation)
+                    boxes.forEach(box => {
+                        box.classList.add('show');
+                    });
+                }
+            }
+
+            // Run on load
+            window.addEventListener('DOMContentLoaded', initMissionBoxes);
+            // Optionally, re-run on resize if layout changes on resize
+            window.addEventListener('resize', () => {
+                // you might want to throttle/debounce this
+                initMissionBoxes();
+            });
+
+
+        </script>
+
+
+    </section>
+
+
+
+
+
+        <!------National Accreditation Board------->
+        <section>
+            <footer class="accreditation-footer">
+                <div class="accreditation-section">
+                    <div class="accred-item left">
+                        <img src="images/logo1.png" alt="NABH Logo">
+                        <p>
+                            NATIONAL ACCREDITATION BOARD FOR<br>
+                            HOSPITALS &amp; HEALTHCARE PROVIDERS<br>
+                            (NABH) CERTIFIED INSTITUTE
+                        </p>
+                    </div>
+
+                    <div class="accred-item right">
+                        <img src="images/logo2.png" alt="BSI Logo">
+                    </div>
+                </div>
+
+            </footer>
+        </section>
+
+
+        <!--- footer --->
+
+        <footer class="footer-top">
+            <div class="footer-container">
+                <!-- Column 1: Logo and About Text -->
+                <div class="footer-col about-col">
+                    <div class="logo-box">
+                        <a href="/">
+                            <img src="images/footer.png" alt="Mehta International Eye Institute Logo" class="footer-logo">
+                        </a>
+                    </div>
+                    <div class="text-wrapper">
+                        <p class="about-text">
+                            Mehta International Eye Institute is a recognized center for patient care, 
+          vision research and physician education. Our state-of-the-art facility is 
+          oriented toward providing patient-friendly care.
+                        </p>
+                        <p class="about-text">
+                            Our internationally renowned physicians possess the clinical and surgical 
+             expertise to provide consultations and medical-surgical care for complex 
+             ophthalmic problems.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Column 2: Useful Links -->
+                <div class="footer-col links-col">
+                    <h4>Useful Links</h4>
+                    <ul class="quick-links">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/about.aspx">About Us</a></li>
+                        <li><a href="/awards.aspx">Awards</a></li>
+                        <li><a href="/other-facilities.aspx">Other Facilities</a></li>
+                        <li><a href="/testimonials.aspx">Testimonials</a></li>
+                        <li><a href="/milestone.aspx" id="mile">Milestone</a></li>
+                        <li><a href="/community-service.aspx">Community Services</a></li>
+                        <li><a href="/appointment.aspx" id="appo">Appointment</a></li>
+                        <li><a href="/contact-us.aspx" id="con">Contact Us</a></li>
+                        <li><a href="/brochures-downloads.aspx" id="broc">Brochures</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 3: Our Services -->
+                <div class="footer-col services-col">
+                    <h4>Our Services</h4>
+                    <ul class="quick-links">
+                        <li><a href="/lasik.aspx">LASIK</a></li>
+                        <li><a href="/relex-smile.aspx">ReLEx® Smile</a></li>
+                        <li><a href="/cataract.aspx">Cataract</a></li>
+                        <li><a href="/glaucoma.aspx">Glaucoma</a></li>
+                        <li><a href="/vitreoretinal.aspx">Vitreoretinal</a></li>
+                        <li><a href="/cornea.aspx">Cornea</a></li>
+                        <li><a href="/squint.aspx">Squint</a></li>
+                        <li><a href="/paediatric-services.aspx">Paediatric Services</a></li>
+                        <li><a href="/low-vision-clinic.aspx">Low Vision Clinic</a></li>
+                        <li><a href="/contact-lens-services.aspx">Contact Lens Services</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 4: Contact Info -->
+                <div class="footer-col contact-col">
+                    <h4>Get In Touch</h4>
+                    <address>
+                        <em>Mehta International Eye Institute</em><br />
+                        <em>Sea Side Building, 147,</em><br />
+                        <em>Shahid Bhagat Singh Road,</em><br />
+                        <em>Near Colaba Bus Station,</em><br />
+                        <em>Colaba, Mumbai – 400005,</em><br />
+                        <em>Maharashtra, India</em>
+                    </address>
+                    <div class="phone">
+                        <div class="phone-img">
+                            <img src="images/Telephone.png" />
+                        </div>
+                        <div >
+                            <p>022 2215 1303 / 0082 / 1676</p></div>
+                    </div>
+                    <p><span class="mobile-icon">📞</span>91371 88383 / 91371 88334 / 96531 69244</p>
+                    <p>
+                        <span class="whatsapp-icon">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </span>
+                        +91 98200 21041
+                    </p>
+                    <p><span class="mail-icon">✉️</span>drkeiki@mehtaeyeinstitute.com</p>
+                    <div class="social-icons">
+                        <a href="https://www.facebook.com/keiki.mehta" class="facebook" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="https://x.com/keiki_mehta" target="_blank" class="social-icon">
+                            <img src="images/twitter.png" alt="X" class="x-icon-img">
+                        </a>
+                        <a href="https://www.instagram.com/keiki_mehta/" class="instagram" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="http://www.linkedin.com/in/keiki-mehta/" class="linkedin" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>Copyright © 2026 Abhishek Millennium Contracts Pvt. Ltd.</p>
+                <p>Powered by 2 Tech Brothers</p>
+            </div>
+        </footer>
+
+
+    </div>
+    
+    <script type="text/javascript">
+        (function () {
+            const TO_EMAIL = 'drkeiki@mehtaeyeinstitute.com';
+            const SUBJECT = 'Enquiry Details from mehtaeyeinstitute.com';
+
+            const $name = document.querySelector('[id$=name]');
+            const $emailid = document.querySelector('[id$=email-id]');
+            const $date = document.querySelector('[id$=date]');
+            const $phone = document.querySelector('[id$=phone]');
+            const $requirement = document.querySelector('[id$=query]');
+
+            const $error = document.querySelector('.error-new');
+            const $loader = document.querySelector('.wait_back');
+
+            function showError(msg) {
+                if ($error) {
+                    $error.innerHTML = msg;
+                    $error.style.display = 'block';
+                }
+            }
+
+            function reset() {
+                if ($error) $error.style.display = 'none';
+                if ($name) $name.value = '';
+                if ($emailid) $emailid.value = '';
+                if ($date) $date.value = '';
+                if ($phone) $phone.value = '';
+                if ($requirement) $requirement.value = '';
+            }
+
+            function validation() {
+                const emailRx = /^([\w-\.]+)@([\w-]+\.)+[\w-]{2,4}$/;
+                const mobileRx = /^[0-9-+]+$/;
+
+                const name = $name?.value.trim() || '';
+                const emailid = $emailid?.value.trim() || '';
+                const date = $date?.value.trim() || '';
+                const phone = $phone?.value.trim() || '';
+                const query = $requirement?.value.trim() || '';
+
+                if (!name) return showError('Name field is required');
+                if (!emailid) return showError('Email field is required');
+                if (!emailRx.test(emailid)) return showError('Invalid E-mail Address');
+                if (!date) return showError('Date field is required');
+                if (!phone) return showError('Phone Number field is required');
+                if (!query) return showError('Message field is required');
+
+                if ($error) $error.style.display = 'none';
+                sendEnquiry();
+            }
+
+            function sendEnquiry() {
+                const payload = {
+                    name: $name.value.trim(),
+                    emailid: $emailid.value.trim(),
+                    date: $date.value.trim(),
+                    subject: SUBJECT,
+                    phone: $phone.value.trim(),
+                    query: $requirement.value.trim(),
+                    to: TO_EMAIL
+                };
+
+
+                //           Show Loader     //
+
+                if ($loader) $loader.style.display = 'block';
+
+                fetch('https://generalenquiryapi.vercel.app/api/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json; charset=UTF-8'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                    .then(response => response.json())
+                    .then(res => {
+                        if (res.error) showError(res.error);
+                        else {
+                            reset();
+                            window.location.href = 'thankyou.aspx';
+                        }
+                    })
+                    .catch(() => {
+                        showError('Server error. Please try again later.');
+                    })
+                    .finally(() => {
+                        if ($loader) $loader.style.display = 'none';
+                    });
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const btnSubmit = document.getElementById('btn-submit');
+                if (btnSubmit) {
+                    btnSubmit.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        validation();
+                    });
+                }
+            });
+        })();
+    </script>
+
+    <!----------------- Back to Top botton------------------->
+    <section>
+        <button id="backToTop" class="back-to-top" aria-label="Back to top">
+            <!-- Inline SVG icon for crisp rendering -->
+            <img src="images/newarrow.png" viewbox="0 0 24 24" width="24" height="24" aria-hidden="true">
+            <rect width="24" height="24" fill="none" />
+            <path d="M12 8l-5 5h10l-5-5z" fill="white" />
+
+        </button>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const btn = document.getElementById('backToTop');
+
+                window.addEventListener('scroll', function () {
+                    if (window.scrollY > 200) {
+                        btn.classList.add('show1');
+                    } else {
+                        btn.classList.remove('show1');
+                    }
+                });
+
+                btn.addEventListener('click', function () {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+
+        </script>
+    </section>
+
+    <!------ mobile toggle------->
+    <script>
+
+        const toggleBtn = document.getElementById("mobileToggle");
+        const menu = document.getElementById("mobileMenu");
+
+        toggleBtn.addEventListener("click", () => {
+            menu.classList.toggle("open");
+            toggleBtn.classList.toggle("open");
+            document.body.classList.toggle("menu-open");
+        });
+
+
+        document.querySelectorAll(".mobile-dropdown > span").forEach(link => {
+            link.addEventListener("click", (e) => {
+                const submenu = link.nextElementSibling;
+                if (submenu && submenu.classList.contains("mobile-submenu")) {
+                    e.preventDefault();
+                    link.parentElement.classList.toggle("open");
+                }
+            });
+        });
+
+
+
+    </script>
+
+    <!---------------------------googe transalte----------------------------->
+
+
+    <script>
+        (function () {
+            function killGoogleBar() {
+                const iframe = document.querySelector('.goog-te-banner-frame');
+                if (iframe) {
+                    iframe.remove();
+                    document.body.style.top = '0px';
+                    document.documentElement.style.marginTop = '0px';
+                }
+            }
+
+            // run multiple times (refresh safe)
+            setInterval(killGoogleBar, 50);
+
+            // also run after full load
+            window.addEventListener('load', killGoogleBar);
+        })();
+    </script>
+
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const langSelect = document.getElementById("languageSwitcher");
+
+            // 1️⃣ Force English on page load (cookie for Google Translate)
+            function setEnglishByDefault() {
+                document.cookie = "googtrans=/en/en;path=/";
+                document.cookie = "googtrans=/en/en;path=/;domain=" + location.hostname;
+            }
+            setEnglishByDefault();
+
+            // 2️⃣ Ensure dropdown shows English on load
+            langSelect.value = "en";
+
+            // 3️⃣ Function to change language via dropdown
+            function setLanguage(lang) {
+                const interval = setInterval(() => {
+                    const combo = document.querySelector(".goog-te-combo");
+                    if (combo) {
+                        combo.value = lang;
+                        combo.dispatchEvent(new Event("change"));
+                        clearInterval(interval);
+                    }
+                }, 100);
+            }
+
+            // 4️⃣ Dropdown change event
+            langSelect.addEventListener("change", function () {
+                if (this.value) {
+                    setLanguage(this.value);
+                }
+            });
+        });
+    </script>
+
+    <script>
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,ar',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <script>
+        window.addEventListener("load", () => {
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 200);
+        });
+    </script>
+
+</body>
+</html>

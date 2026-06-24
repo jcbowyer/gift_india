@@ -1,4 +1,12 @@
-# gift_india — dbt medallion pipeline
+# gift_india (Databricks) — upstream dbt medallion
+
+> **This is one of two dbt projects.** This one (`dbt_project/`, dbt project
+> name `gift_india_databricks`, adapter **databricks**) is the **upstream**
+> medallion in the lakehouse. The sibling [`../gift_india_dbt/`](../gift_india_dbt)
+> (project name `gift_india_postgres`, adapter **postgres**) is the **serving**
+> medallion the web app reads. They are a pipeline — Databricks gold is synced
+> to Lakebase, then the Postgres project serves it — **not duplicates**. See the
+> [repo README](../README.md) for the full architecture.
 
 Transforms the governed **Virtue Foundation** dataset (read via Delta Sharing)
 into a `bronze → silver → gold` medallion on Databricks, and ships as a

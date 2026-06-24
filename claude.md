@@ -1,8 +1,8 @@
-# Monorepo Architecture & Rules — Governance, Integrity, & Facility Trust Desk
+# Monorepo Architecture & Rules — Governance, Integrity, & Facility Trust (GIFT) Gauge
 
 ## Tech Stack
 - **Backend:** FastAPI (Python 3.11+)
-- **Data:** dbt Core + SQL (PostgreSQL — local warehouse on `localhost:5433`)
+- **Data:** dbt Core + SQL (PostgreSQL — **system** Postgres on `localhost:5433`, not Docker)
 - **Frontend:** React (Vite, TypeScript); Docusaurus for documentation
 - **Data apps / demos:** Streamlit (Python) — lightweight analytical/data-exploration UIs and hackathon demos that read from the warehouse or a package loader. Use for internal dashboards and rapid prototypes, **not** as a replacement for the React product UI in `web_app/`.
 - **Tooling:** **uv** for Python dependency management & the workspace (NOT Poetry); Ruff for lint/format; Node.js for the frontend
@@ -63,12 +63,24 @@
 - Do **not** seed components, fixtures-as-defaults, or fallback constants with realistic-looking numbers. Test fixtures stay in tests; never let them leak into a served code path.
 - When unsure whether a value is real, **treat it as unavailable** and surface the gap rather than guessing.
 
-## Database Access
-- **Host:** `localhost:5433` (ALREADY RUNNING — do not suggest new Docker PG instances).
-- **Database:** `gift_india` (primary).
-- **API Access:** Use the `public` schema in `gift_india`. Avoid direct `bronze` access.
-- **Keys:** Every table/model exposed in `public` MUST declare an explicit primary key and foreign keys for all relationships (enforced via dbt constraints / `schema.yml`).
-- **CAUTION:** Never delete or suggest deleting `data/cache/`.
+## Database Access — Local PostgreSQL (NO Docker)
+
+**CRITICAL for agents:** This developer does **not** use Docker Compose for local Postgres. Do **not** run `make db-up`, do **not** suggest `docker compose up`, and **do not use `docker-compose.yml`**. Port `5433` is **not** Docker here — it is the **system/WSL PostgreSQL** listen port for this machine.
+
+- **Local warehouse:** **system PostgreSQL** at `localhost:5433`, database `gift_india`. **Every** local connection string, loader, dbt profile, and web-app env var must use port **`5433`** — never `5432` (that is a different Postgres instance on this host and will fail auth).
+- **Credentials:** come from the repo `.env` and `gift_india_web/.env` — `GIFT_INDIA_DB_URL` for Python loaders / the web app, and `GIFT_INDIA_PG*` for dbt (`gift_india_dbt/profiles.yml`). Read what is already in `.env`; do not invent passwords.
+- **Lakebase `PG*` vars:** `gift_india_web/.env` also carries `PGHOST` / `PGPORT` / `PGSSLMODE` for the deployed Lakebase endpoint. Those are **only** for AppKit's Lakebase plugin when `GIFT_INDIA_DB_URL` is unset. Local dev must connect via explicit fields parsed from `GIFT_INDIA_DB_URL` (host `localhost`, port `5433`) — `pg` will otherwise inherit `PGHOST` from the shell and hit the wrong server.
+- **Stale shell exports:** Node's `--env-file` does **not** override existing env vars. If the dev server was started with an old `GIFT_INDIA_DB_URL` on `:5432`, restart it after fixing `.env` (or `unset GIFT_INDIA_DB_URL GIFT_INDIA_PG*` before `./startup.sh`).
+- **Lakebase:** deployed / shared target only — use when explicitly publishing or running against the remote endpoint, not for routine local `make dbt`.
+- **Serving vs bronze:** the app reads `gold.*`; loaders land `bronze.*`; dbt promotes bronze → silver → gold.
+- **`docker-compose.yml`:** **ignore** — legacy optional path; this project does not use Docker for Postgres.
+
+When Postgres connection errors appear (`password authentication failed`, empty API 500s), check in order:
+1. `.env` and `gift_india_web/.env` both point at **`localhost:5433`** (not `5432`).
+2. Restart the dev server so env-file values win over stale shell exports.
+3. Verify with `PGPASSWORD=… psql -h localhost -p 5433 -U postgres -d gift_india -c 'SELECT COUNT(*) FROM gold.facilities'`.
+
+Never “fix” connection errors by switching to Docker or port `5432`.
 
 ## Documentation Rules (Docusaurus)
 - **MANDATORY:** ALL docs go in `web_docs/docs/` subdirectories.
@@ -98,6 +110,33 @@ When a result tile/card is shown **because of a topic, keyword, cause, question,
 - **No filter term in the record ⇒ it should not be a result.** If you cannot produce a real matched passage for a tile under an active content filter, that is a signal the match is spurious (or matched only on metadata) — surface *that* honestly; do not invent a quote to justify the tile.
 - **Plain browse (no content filter) is exempt.** With no topic/keyword filter in effect there's nothing to "highlight"; a contextual lead-in (e.g. the start of the decision statement) is fine. The requirement applies whenever a content filter is what produced the result set.
 - **Canonical reference:** `api/routes/search_postgres.py` (`ts_headline` snippet → `SearchResult.description` for the meeting, document, and decision legs) feeding `web_app/src/pages/UnifiedSearch.tsx` (`toStoryCard` / `toTranscriptCard` → `StoryCard.excerpt` via `highlightSnippet`). New filtered surfaces must follow this pattern.
+
+## Copy & Presentation Voice (MANDATORY for README, DEMO.md, in-app demo)
+
+GIFT Gauge copy is **Smart Brevity** (Axios-style) mixed with **you-don't-know-Jack** directness — punchy, human, zero corporate fog. Write like you're telling a smart friend what's actually at stake, not like you're filling out a grant template.
+
+### Primary framing
+- **Lead title / demo opener:** **Beyond the Hospital Directory** — subtitle **Grounding Improved Patient Care**. Always say **hospital directory** (never bare "directory" or vague "provider directory").
+- **Product name:** **GIFT Gauge** — Governance, Integrity & Facility Trust.
+- **Avoid weak thematic titles** that could mean anything (e.g. generic "Hospital Patient Care"). If it doesn't name the problem (messy hospital directories, unverified claims), it's too soft.
+
+### Smart Brevity habits
+- **One beat, one idea.** Short section headers; 2–3 tight sentences max before a line break in talk tracks.
+- **Why it matters first.** Stakes before stack — patient safety, Priya's morning, the ICU tonight — then architecture.
+- **Concrete numbers.** "847 facilities claim an ICU" beats "thousands of rows."
+- **Name the persona.** Priya runs allocation; she's not "the user."
+- **Bottom line lands.** End beats on a punchline, a question, or a verb ("stop guessing, start steering") — not a trailing participle.
+
+### You-don't-know-Jack tone
+- Plain English. No "leveraging," "synergies," or "best-in-class."
+- Assume the room is smart but **has been burned by hospital directories** — don't over-explain Databricks; do explain why the dial matters.
+- Second person when it hits: *You've* stared at the list. *You* can't tell if the ICU is real.
+- Contractions OK. Fragments OK when they land.
+
+### Demo script (`DEMO.md`, `DemoGuide.tsx`)
+- Title slide → grit beat → **Priya's User Story** (Priya + trap) → burning question → live product.
+- Keep the staged **"It's grit."** punchline — pause beats are intentional.
+- Presenter `do` cues: name Priya, land numbers, pause before patient-safety failure.
 
 ## Code Style
 - **Python:** Type hints, PEP 8, `pathlib`.

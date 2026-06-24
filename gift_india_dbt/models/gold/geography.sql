@@ -5,34 +5,53 @@
     )
 }}
 
--- Gold geography: serving dimension of places (one row per district within a
--- state), keyed by `geography_id` and carrying the centroid lat/lon plus rolled
--- up facility counts. This is the geography that gold.facilities links to.
+-- Gold geography: serving dimension keyed by canonical `geography_id`.
+-- Collapses messy Virtue spellings that resolve to the same canonical place.
 
-with geography as (
-    select * from {{ ref('silver_geography') }}
+with silver_geo as (
+    select * from {{ ref('silver_geography_resolved') }}
+),
+
+-- One row per geography_id — prefer the richest population / NFHS record.
+keyed as (
+    select
+        g.*,
+        row_number() over (
+            partition by geography_id
+            order by population desc nulls last, length(district) desc
+        ) as _rn
+    from silver_geo g
+),
+
+geography as (
+    select * from keyed where _rn = 1
+),
+
+links as (
+    select geography_id, count(*) as facility_count
+    from {{ ref('facility_geography') }}
+    group by geography_id
 ),
 
 facilities as (
-    select * from {{ ref('silver_facilities') }}
+    select * from {{ ref('silver_facilities_resolved') }}
 ),
 
-facility_rollup as (
+surgical as (
     select
-        lower(district)                                   as district_key,
-        lower(state)                                      as state_key,
-        count(*)                                          as facility_count,
-        count(*) filter (where offers_surgery)            as surgical_facility_count,
-        sum(annual_surgeries)                             as annual_surgeries_total
-    from facilities
-    group by lower(district), lower(state)
+        fg.geography_id,
+        count(*) filter (where f.offers_surgery)     as surgical_facility_count,
+        sum(f.annual_surgeries)                      as annual_surgeries_total
+    from {{ ref('facility_geography') }} fg
+    join facilities f using (facility_id)
+    group by fg.geography_id
 )
 
 select
-    cast({{ geography_id('g.state_code', 'g.district') }} as text)  as geography_id,
+    cast(g.geography_id as text)                                    as geography_id,
     cast(g.district as text)                                        as district,
-    cast(g.state as text)                                           as state,
-    cast(g.state_code as text)                                      as state_code,
+    cast(g.canonical_state as text)                                 as state,
+    cast(g.canonical_state_code as text)                            as state_code,
     cast(g.lat as double precision)                                 as lat,
     cast(g.lon as double precision)                                 as lon,
     cast(g.population as integer)                                   as population,
@@ -41,10 +60,9 @@ select
     cast(g.institutional_birth_pct as double precision)            as institutional_birth_pct,
     cast(g.csection_pct as double precision)                       as csection_pct,
     cast(g.anaemia_pct as double precision)                        as anaemia_pct,
-    cast(coalesce(fr.facility_count, 0) as integer)                as facility_count,
-    cast(coalesce(fr.surgical_facility_count, 0) as integer)       as surgical_facility_count,
-    cast(coalesce(fr.annual_surgeries_total, 0) as integer)        as annual_surgeries_total
+    cast(coalesce(l.facility_count, 0) as integer)                 as facility_count,
+    cast(coalesce(s.surgical_facility_count, 0) as integer)       as surgical_facility_count,
+    cast(coalesce(s.annual_surgeries_total, 0) as integer)        as annual_surgeries_total
 from geography g
-left join facility_rollup fr
-    on lower(g.district) = fr.district_key
-   and lower(g.state) = fr.state_key
+left join links l using (geography_id)
+left join surgical s using (geography_id)

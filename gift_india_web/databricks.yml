@@ -13,7 +13,7 @@ resources:
   apps:
     app:
       name: "gift-india-web"
-      description: "Governance, Integrity, & Facility Trust Desk — evidence-backed facility capability trust signals on Lakebase"
+      description: "Governance, Integrity, & Facility Trust (GIFT) Gauge — evidence-backed facility capability trust signals on Lakebase"
       source_code_path: ./
       # Uncomment to enable on behalf of user API scopes. Available scopes: sql, dashboards.genie, files.files, serving.serving-endpoints
       # user_api_scopes:
@@ -26,6 +26,10 @@ resources:
             branch: ${var.postgres_branch}
             database: ${var.postgres_database}
             permission: CAN_CONNECT_AND_CREATE
+        - name: genie-space
+          genie_space:
+            space_id: "01f169cdad431edda9398a861bdba2d1"
+            permission: CAN_RUN
 
 targets:
   default:

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import {
   Card,
@@ -28,16 +28,26 @@ import {
   ChevronRight,
   Layers,
   SignalHigh,
+  UserCheck,
 } from 'lucide-react';
 import {
   api,
   SIGNAL_META,
+  effectiveTrustScore,
+  humanReviewStatusForCapability,
   type FacilityDetail,
   type FacilitySearchResult,
   type CapabilityDetail,
   type TrustSignal,
 } from '../lib/api';
-import { SignalBadge, EvidenceTally, TrustScoreDial } from '../components/trust';
+import {
+  SignalBadge,
+  TrustScoreDial,
+  HumanReviewBadge,
+  HumanReviewCallout,
+  CapabilityEvidence,
+} from '../components/trust';
+import { AskGenieScorecard } from '../components/AskGenieScorecard';
 import { SIGNAL_ORDER, letterFromScore, capabilityGrade, GRADE_TONE } from '../lib/scorecard';
 
 type GroupBy = 'capability' | 'signal';
@@ -45,6 +55,10 @@ type GroupBy = 'capability' | 'signal';
 /** Override-aware signal actually shown on the scorecard. */
 function effSignal(c: CapabilityDetail): TrustSignal {
   return c.overrideSignal ?? c.trustSignal;
+}
+
+function effScore(c: CapabilityDetail): number {
+  return effectiveTrustScore(c);
 }
 
 function GradeBadge({ grade, className = '' }: { grade: string; className?: string }) {
@@ -75,18 +89,65 @@ function SignalMixBar({ counts }: { counts: Record<TrustSignal, number> }) {
   );
 }
 
-function CapabilityRow({ cap }: { cap: CapabilityDetail }) {
+function FacilityReviewBanner({ count }: { count: number }) {
+  if (count <= 0) return null;
+  const noun = count === 1 ? 'capability needs' : 'capabilities need';
+  return (
+    <div
+      className="rounded-lg border border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 px-3.5 py-3 text-sm text-amber-950 shadow-sm"
+      role="status"
+      data-demo="human-review-flag"
+    >
+      <div className="flex flex-wrap items-start gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+          <UserCheck className="h-4 w-4" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1 space-y-1">
+          <p className="font-semibold leading-snug">Manual human review recommended</p>
+          <p className="text-amber-900/90 leading-relaxed">
+            {count} {noun} manual human review before relying on this facility score — expand flagged rows
+            below or start a review to confirm with local ground truth.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CapabilityRow({
+  cap,
+  facilityId,
+  facilityName,
+  onSaved,
+}: {
+  cap: CapabilityDetail;
+  facilityId: string;
+  facilityName: string;
+  onSaved: () => void;
+}) {
   const [open, setOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
   const sig = effSignal(cap);
-  const score = Math.round(cap.trustScore * 100);
-  const grade = capabilityGrade(sig, cap.trustScore);
+  const scoreVal = effScore(cap);
+  const score = Math.round(scoreVal * 100);
+  const grade = capabilityGrade(sig, scoreVal);
   const claimed = sig !== 'no_claim';
+  const humanReview = humanReviewStatusForCapability(cap);
+  const flagged = humanReview.recommended;
+
+  const startReview = () => {
+    setOpen(true);
+    setReviewOpen(true);
+  };
+
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger asChild>
         <button
           type="button"
-          className="flex w-full items-center gap-3 border-b px-4 py-3 text-left transition-colors last:border-0 hover:bg-muted/40"
+          className={`flex w-full items-center gap-3 border-b px-4 py-3 text-left transition-colors last:border-0 hover:bg-muted/40 ${
+            flagged ? 'border-l-4 border-l-amber-400 bg-amber-50/25' : ''
+          }`}
         >
           {open ? (
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -94,7 +155,10 @@ function CapabilityRow({ cap }: { cap: CapabilityDetail }) {
             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
           )}
           <span className="min-w-0 flex-1">
-            <span className="block font-medium text-foreground">{cap.label}</span>
+            <span className="flex flex-wrap items-center gap-2">
+              <span className="font-medium text-foreground">{cap.label}</span>
+              {flagged ? <HumanReviewBadge compact /> : null}
+            </span>
             <span className="block truncate text-xs text-muted-foreground">{cap.summary}</span>
           </span>
           <span className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex">
@@ -109,68 +173,82 @@ function CapabilityRow({ cap }: { cap: CapabilityDetail }) {
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="space-y-3 border-b bg-muted/20 px-4 py-3 last:border-0">
-          <EvidenceTally supporting={cap.supportingCount} contradicting={cap.contradictingCount} />
-          {cap.bestSource && (
-            <p className="text-xs text-muted-foreground">
-              Best source: <span className="text-foreground">{cap.bestSource}</span>
-            </p>
-          )}
-          {cap.evidence.length > 0 ? (
-            <ul className="space-y-1.5">
-              {cap.evidence.slice(0, 4).map((e) => (
-                <li key={e.evidenceId} className="text-xs">
-                  <span
-                    className={`mr-1.5 font-semibold ${e.stance === 'supports' ? 'text-emerald-700' : 'text-red-700'}`}
-                  >
-                    {e.stance === 'supports' ? '✓' : '✗'}
-                  </span>
-                  <span className="text-foreground/80">{e.snippet}</span>{' '}
-                  {e.sourceUrl ? (
-                    <a href={e.sourceUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">
-                      {e.sourceLabel || 'source'}
-                    </a>
-                  ) : (
-                    <span className="text-muted-foreground">{e.sourceLabel}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-xs text-muted-foreground">No citations recorded for this capability.</p>
-          )}
+          {flagged ? (
+            <HumanReviewCallout status={humanReview} onReview={startReview} />
+          ) : null}
+          <CapabilityEvidence
+            cap={cap}
+            facilityId={facilityId}
+            facilityName={facilityName}
+            reviewOpen={reviewOpen}
+            onReviewOpenChange={setReviewOpen}
+            onSaved={() => onSaved()}
+          />
         </div>
       </CollapsibleContent>
     </Collapsible>
   );
 }
 
-function SignalGroup({ signal, caps }: { signal: TrustSignal; caps: CapabilityDetail[] }) {
+function SignalGroup({
+  signal,
+  caps,
+}: {
+  signal: TrustSignal;
+  caps: CapabilityDetail[];
+}) {
   const meta = SIGNAL_META[signal];
   const claimed = signal !== 'no_claim';
-  const avg = claimed && caps.length ? caps.reduce((a, c) => a + c.trustScore, 0) / caps.length : null;
+  const sorted = useMemo(() => {
+    return [...caps].sort((a, b) => {
+      const ar = humanReviewStatusForCapability(a).recommended ? 0 : 1;
+      const br = humanReviewStatusForCapability(b).recommended ? 0 : 1;
+      return ar - br;
+    });
+  }, [caps]);
+  const flaggedCount = caps.filter((c) => humanReviewStatusForCapability(c).recommended).length;
+  const avg = claimed && caps.length ? caps.reduce((a, c) => a + effScore(c), 0) / caps.length : null;
+
   return (
-    <Card>
+    <Card className={`gift-lift ${flaggedCount > 0 ? 'border-amber-300/70 ring-1 ring-amber-200/50' : ''}`}>
       <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-3">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className={`h-2.5 w-2.5 rounded-full ${meta.dot}`} />
           <h3 className="text-base font-semibold text-foreground">{meta.label}</h3>
-          <Badge variant="outline" className="text-[10px]">{caps.length}</Badge>
+          <Badge variant="outline" className="text-[10px]">
+            {caps.length}
+          </Badge>
+          {flaggedCount > 0 ? (
+            <Badge className="border-amber-400/80 bg-amber-50 text-[10px] font-semibold text-amber-950 hover:bg-amber-50">
+              {flaggedCount} need review
+            </Badge>
+          ) : null}
         </div>
         {avg !== null && <GradeBadge grade={letterFromScore(avg * 100)} />}
       </CardHeader>
       <CardContent className="p-0">
-        {caps.map((c) => (
-          <div
-            key={c.key}
-            className="flex items-center gap-3 border-b px-4 py-2.5 text-sm last:border-0"
-          >
-            <span className="min-w-0 flex-1 font-medium text-foreground">{c.label}</span>
-            <span className="w-10 text-right text-sm font-bold tabular-nums text-foreground">
-              {claimed ? Math.round(c.trustScore * 100) : '—'}
-            </span>
-            <GradeBadge grade={capabilityGrade(effSignal(c), c.trustScore)} />
-          </div>
-        ))}
+        {sorted.map((c) => {
+          const flagged = humanReviewStatusForCapability(c).recommended;
+          return (
+            <div
+              key={c.key}
+              className={`flex items-center gap-3 border-b px-4 py-2.5 text-sm last:border-0 ${
+                flagged ? 'border-l-4 border-l-amber-400 bg-amber-50/25' : ''
+              }`}
+            >
+              <span className="min-w-0 flex-1">
+                <span className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium text-foreground">{c.label}</span>
+                  {flagged ? <HumanReviewBadge compact /> : null}
+                </span>
+              </span>
+              <span className="w-10 text-right text-sm font-bold tabular-nums text-foreground">
+                {claimed ? Math.round(effScore(c) * 100) : '—'}
+              </span>
+              <GradeBadge grade={capabilityGrade(effSignal(c), effScore(c))} />
+            </div>
+          );
+        })}
       </CardContent>
     </Card>
   );
@@ -187,7 +265,6 @@ export function ScorecardPage() {
   const [error, setError] = useState<string | null>(null);
   const [groupBy, setGroupBy] = useState<GroupBy>('capability');
 
-  // Debounced facility search (empty query returns an initial list).
   const runSearch = useMemo(
     () => async (q: string) => {
       try {
@@ -205,28 +282,24 @@ export function ScorecardPage() {
   useEffect(() => {
     const t = setTimeout(() => {
       void runSearch(query).then((res) => {
-        // Auto-select the first facility the very first time, if none is chosen.
         setSelectedId((cur) => cur ?? res[0]?.facilityId ?? null);
       });
     }, query ? 300 : 0);
     return () => clearTimeout(t);
   }, [query, runSearch]);
 
-  const loadDetail = useMemo(
-    () => async (id: string) => {
-      setLoading(true);
-      setError(null);
-      try {
-        setDetail(await api.facility(id));
-      } catch {
-        setError('Could not load this facility.');
-        setDetail(null);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const loadDetail = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      setDetail(await api.facility(id));
+    } catch {
+      setError('Could not load this facility.');
+      setDetail(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!selectedId) return;
@@ -248,19 +321,22 @@ export function ScorecardPage() {
     const counts = { strong: 0, partial: 0, weak_suspicious: 0, no_claim: 0 } as Record<TrustSignal, number>;
     let scoreSum = 0;
     let claimed = 0;
+    let needsReview = 0;
     for (const c of caps) {
       const s = effSignal(c);
       counts[s] += 1;
       if (s !== 'no_claim') {
-        scoreSum += c.trustScore;
+        scoreSum += effScore(c);
         claimed += 1;
       }
+      if (humanReviewStatusForCapability(c).recommended) needsReview += 1;
     }
     const avg = claimed ? scoreSum / claimed : null;
     return {
       counts,
       claimed,
       strong: counts.strong,
+      needsReview,
       avg,
       grade: avg === null ? '—' : letterFromScore(avg * 100),
       score: avg === null ? null : Math.round(avg * 100),
@@ -268,20 +344,37 @@ export function ScorecardPage() {
   }, [caps]);
 
   const signalGroups = useMemo(
-    () => SIGNAL_ORDER.map((s) => ({ signal: s, caps: caps.filter((c) => effSignal(c) === s) })).filter((g) => g.caps.length > 0),
+    () =>
+      SIGNAL_ORDER.map((s) => ({ signal: s, caps: caps.filter((c) => effSignal(c) === s) })).filter(
+        (g) => g.caps.length > 0,
+      ),
     [caps],
   );
 
+  const genieFacility = f
+    ? {
+        facilityId: f.facilityId,
+        name: f.name,
+        district: f.district,
+        state: f.state,
+        stateCode: f.stateCode ?? null,
+        type: f.type ?? null,
+        beds: f.beds,
+        meanTrustScore: summary.avg,
+        flaggedCapabilityCount: summary.needsReview,
+      }
+    : null;
+
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
-      {/* picker */}
+    <div className="mx-auto max-w-3xl space-y-4" data-demo="scorecard">
       <Card>
         <CardContent className="space-y-3 p-4">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <h2 className="text-xl font-bold leading-tight text-foreground">Facility scorecard</h2>
               <p className="text-sm text-muted-foreground">
-                Evidence-backed capability grades for one facility, grouped by capability or by trust signal.
+                Evidence-backed capability grades with human-review flags when automated evidence is thin or
+                contradictory.
               </p>
             </div>
             <Button asChild variant="outline" size="sm" className="gap-1.5">
@@ -343,15 +436,21 @@ export function ScorecardPage() {
         </div>
       ) : f && detail ? (
         <>
-          {/* facility header + overall grade */}
-          <Card>
+          <Card
+            className={`gift-elevate gift-fade-in ${
+              summary.needsReview > 0 ? 'border-amber-300/80 ring-1 ring-amber-200/60' : ''
+            }`}
+          >
             <CardContent className="space-y-3 p-4 md:p-5">
               <div className="flex items-start gap-4">
                 <TrustScoreDial score={summary.avg ?? 0} signal={summary.strong > 0 ? 'strong' : 'partial'} />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <h3 className="text-lg font-bold text-foreground">{f.name}</h3>
-                    <GradeBadge grade={summary.grade} className="h-10 w-10 text-xl" />
+                    <div className="flex items-center gap-2">
+                      {summary.needsReview > 0 ? <HumanReviewBadge /> : null}
+                      <GradeBadge grade={summary.grade} className="h-10 w-10 text-xl" />
+                    </div>
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
@@ -362,7 +461,12 @@ export function ScorecardPage() {
                     </span>
                     {f.beds !== null && <span>{f.beds} beds</span>}
                     {f.websiteUrl && (
-                      <a href={f.websiteUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
+                      <a
+                        href={f.websiteUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-primary hover:underline"
+                      >
                         <Globe className="h-3.5 w-3.5" /> website
                       </a>
                     )}
@@ -372,6 +476,9 @@ export function ScorecardPage() {
                       <>
                         {summary.strong} of {summary.claimed} claimed capabilities backed by strong evidence
                         {summary.score !== null && <> · mean trust {summary.score}/100</>}
+                        {summary.needsReview > 0 && (
+                          <> · {summary.needsReview} flagged for human review</>
+                        )}
                       </>
                     ) : (
                       'No capabilities are claimed for this facility.'
@@ -379,6 +486,7 @@ export function ScorecardPage() {
                   </p>
                 </div>
               </div>
+              <FacilityReviewBanner count={summary.needsReview} />
               <SignalMixBar counts={summary.counts} />
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
                 {SIGNAL_ORDER.map((s) =>
@@ -399,10 +507,17 @@ export function ScorecardPage() {
             </CardContent>
           </Card>
 
-          {/* group-by toggle */}
+          <AskGenieScorecard facility={genieFacility} />
+
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Group by</span>
-            <ToggleGroup type="single" value={groupBy} onValueChange={(v) => v && setGroupBy(v as GroupBy)} variant="outline" size="sm">
+            <ToggleGroup
+              type="single"
+              value={groupBy}
+              onValueChange={(v) => v && setGroupBy(v as GroupBy)}
+              variant="outline"
+              size="sm"
+            >
               <ToggleGroupItem value="capability" className="gap-1 text-xs">
                 <Layers className="h-3.5 w-3.5" /> Capability
               </ToggleGroupItem>
@@ -412,17 +527,35 @@ export function ScorecardPage() {
             </ToggleGroup>
           </div>
 
-          {/* grouped scorecard */}
           {groupBy === 'capability' ? (
-            <Card>
+            <Card className={summary.needsReview > 0 ? 'border-amber-200/80' : ''}>
               <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-2">
-                <h3 className="text-base font-semibold text-foreground">Capabilities</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-semibold text-foreground">Capabilities</h3>
+                  {summary.needsReview > 0 ? (
+                    <Badge className="border-amber-400/80 bg-amber-50 text-[10px] font-semibold text-amber-950 hover:bg-amber-50">
+                      {summary.needsReview} need review
+                    </Badge>
+                  ) : null}
+                </div>
                 <span className="text-xs text-muted-foreground">score / 100 · grade</span>
               </CardHeader>
               <CardContent className="p-0">
-                {caps.map((c) => (
-                  <CapabilityRow key={c.key} cap={c} />
-                ))}
+                {[...caps]
+                  .sort((a, b) => {
+                    const ar = humanReviewStatusForCapability(a).recommended ? 0 : 1;
+                    const br = humanReviewStatusForCapability(b).recommended ? 0 : 1;
+                    return ar - br;
+                  })
+                  .map((c) => (
+                    <CapabilityRow
+                      key={c.key}
+                      cap={c}
+                      facilityId={f.facilityId}
+                      facilityName={f.name}
+                      onSaved={() => void loadDetail(f.facilityId)}
+                    />
+                  ))}
               </CardContent>
             </Card>
           ) : (
@@ -435,12 +568,18 @@ export function ScorecardPage() {
 
           <Separator />
           <p className="px-1 text-xs text-muted-foreground">
-            Grades come from the evidence-backed trust score (A ≥ 75, B ≥ 60, C ≥ 45, D ≥ 25, else F). Capabilities with
-            no claim are shown but ungraded. Signal-group grades average the trust scores in that bucket.
+            Grades come from the evidence-backed trust score (A ≥ 75, B ≥ 60, C ≥ 45, D ≥ 25, else F). Amber flags
+            mean a planner should confirm with local ground truth before relying on the score — use Start human review
+            to log an override. GIFT Genie queries governed Virtue Foundation data; it does not change Lakebase scores or flags.
           </p>
         </>
       ) : (
-        !loading && !error && <p className="px-1 text-sm text-muted-foreground">Search for a facility to see its scorecard.</p>
+        !loading && !error && (
+          <>
+            <AskGenieScorecard facility={null} />
+            <p className="px-1 text-sm text-muted-foreground">Search for a facility to see its scorecard.</p>
+          </>
+        )
       )}
     </div>
   );

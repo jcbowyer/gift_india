@@ -3,17 +3,16 @@ version: 2
 seeds:
   - name: state_codes
     description: >-
-      Lookup of Indian state / union-territory full name to its 2-letter code
-      (`state_code`). Used by the silver layer to attach `state_code` alongside
-      the full `state` name, per the platform naming rule.
+      Lookup of Indian state / union-territory full name to its 2-letter code.
+      Used by the silver layer to attach state_code. Reference for Genie state filters.
     columns:
       - name: state
-        description: Full state / UT name (matches the source `state` text).
+        description: Full state / UT name (matches source state text).
         tests:
           - not_null
           - unique
       - name: state_code
-        description: 2-letter state / UT code.
+        description: Two-letter state / UT code (e.g. MH, DL).
         tests:
           - not_null
           - unique
@@ -22,14 +21,33 @@ seeds:
     description: >-
       Track 1 capability catalog (ICU, maternity, emergency, oncology, trauma,
       NICU). Cross-joined with gold.facilities to build trust assessments.
+      Reference dimension for Genie capability questions.
     columns:
       - name: capability
+        description: "Short capability code: icu | maternity | emergency | trauma | oncology | nicu."
         tests:
           - not_null
           - unique
       - name: label
+        description: Human-readable capability name shown in the app.
         tests:
           - not_null
       - name: description
+        description: Clinical definition of the capability used in trust assessments.
+        tests:
+          - not_null
+
+  - name: state_aliases
+    description: >-
+      Normalised spellings and city labels in Virtue data mapped to canonical
+      Survey-of-India state names. Join on geo_norm(raw_label) = raw_norm.
+    columns:
+      - name: raw_norm
+        description: Normalised misspelling or city label used as lookup key.
+        tests:
+          - not_null
+          - unique
+      - name: state
+        description: Canonical state / UT name (matches state_codes.state).
         tests:
           - not_null

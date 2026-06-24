@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider, NavLink, Outlet } from 'react-router';
+import { createBrowserRouter, RouterProvider, NavLink, Link, Outlet } from 'react-router';
 import { useState, useEffect } from 'react';
 import {
   Button,
@@ -7,14 +7,23 @@ import {
   SheetHeader,
   SheetTitle,
   Badge,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
   useIsMobile,
 } from '@databricks/appkit-ui/react';
-import { Menu, ShieldCheck } from 'lucide-react';
-import { TrustDeskPage } from './pages/TrustDeskPage';
+import { Menu, ChevronDown } from 'lucide-react';
+import { GiftSeal } from './components/GiftSeal';
+import { DemoGuide, DemoLaunchButton } from './components/DemoGuide';
+import { TrustGaugePage } from './pages/TrustGaugePage';
 import { MapPage } from './pages/MapPage';
 import { ScorecardPage } from './pages/ScorecardPage';
 import { FacilityPage } from './pages/FacilityPage';
 import { ReviewsPage } from './pages/ReviewsPage';
+import { DataQualityPage } from './pages/DataQualityPage';
 import { api } from './lib/api';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -33,11 +42,21 @@ const mobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
 
 type NavLinkClassFn = (props: { isActive: boolean }) => string;
 
-function NavLinks({ className, linkClass, onClick }: { className?: string; linkClass: NavLinkClassFn; onClick?: () => void }) {
+function NavLinks({
+  className,
+  linkClass,
+  onClick,
+  showDataQuality = true,
+}: {
+  className?: string;
+  linkClass: NavLinkClassFn;
+  onClick?: () => void;
+  showDataQuality?: boolean;
+}) {
   return (
     <nav className={className}>
       <NavLink to="/" end className={linkClass} onClick={onClick}>
-        Trust Desk
+        Trust Gauge
       </NavLink>
       <NavLink to="/navigator" className={linkClass} onClick={onClick}>
         Navigator
@@ -45,6 +64,11 @@ function NavLinks({ className, linkClass, onClick }: { className?: string; linkC
       <NavLink to="/scorecard" className={linkClass} onClick={onClick}>
         Scorecard
       </NavLink>
+      {showDataQuality && (
+        <NavLink to="/data-quality" className={linkClass} onClick={onClick}>
+          Data Quality
+        </NavLink>
+      )}
       <NavLink to="/reviews" className={linkClass} onClick={onClick}>
         My Reviews
       </NavLink>
@@ -63,20 +87,39 @@ function Layout() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b px-4 md:px-6 py-3 flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <ShieldCheck className="h-5 w-5" />
-          </span>
+      <header className="sticky top-0 z-30 border-b bg-background/80 px-4 md:px-6 py-3 flex items-center gap-4 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+        <Link to="/" className="flex items-center gap-2.5 rounded-md hover:opacity-80 transition-opacity">
+          <GiftSeal size={36} showText={false} className="gift-seal-glow shrink-0" />
           <div className="leading-tight max-w-[11rem] sm:max-w-none">
+            <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700">GIFT Gauge ✨</span>
             <span className="block text-xs sm:text-sm font-semibold text-foreground leading-snug">
-              Governance, Integrity, & Facility Trust Desk
+              Great care, brought to light
             </span>
           </div>
-        </div>
-        <NavLinks className="hidden md:flex gap-1 ml-4" linkClass={navLinkClass} />
+        </Link>
+        <NavLinks className="hidden md:flex gap-1 ml-4" linkClass={navLinkClass} showDataQuality={false} />
         <div className="ml-auto flex items-center gap-3">
-          {email && <Badge variant="outline" className="hidden sm:inline-flex">{email}</Badge>}
+          <DemoLaunchButton />
+          {email && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className="hidden sm:inline-flex items-center gap-1 cursor-pointer hover:bg-muted"
+                >
+                  {email}
+                  <ChevronDown className="h-3 w-3" />
+                </Badge>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>{email}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <NavLink to="/data-quality">Data Quality</NavLink>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <div className="md:hidden">
             <Sheet open={mobileNavOpen && isMobile} onOpenChange={setMobileNavOpen}>
               <Button variant="ghost" size="icon" onClick={() => setMobileNavOpen(true)}>
@@ -85,7 +128,7 @@ function Layout() {
               </Button>
               <SheetContent side="left">
                 <SheetHeader>
-                  <SheetTitle>Governance, Integrity, & Facility Trust Desk</SheetTitle>
+                  <SheetTitle>GIFT Gauge ✨ — Great care, brought to light</SheetTitle>
                 </SheetHeader>
                 <NavLinks className="flex flex-col gap-1 mt-4" linkClass={mobileNavLinkClass} onClick={() => setMobileNavOpen(false)} />
               </SheetContent>
@@ -99,8 +142,10 @@ function Layout() {
       </main>
 
       <footer className="border-t px-4 md:px-6 py-3 text-xs text-muted-foreground">
-        Trust signals computed in gold.* from facility records in Lakebase Postgres · Virtue Foundation hackathon demo
+        Trust signals computed in gold.* from facility records in Lakebase Postgres · Databricks for Good hackathon demo
       </footer>
+
+      <DemoGuide />
     </div>
   );
 }
@@ -109,11 +154,12 @@ const router = createBrowserRouter([
   {
     element: <Layout />,
     children: [
-      { path: '/', element: <TrustDeskPage /> },
+      { path: '/', element: <TrustGaugePage /> },
       { path: '/navigator', element: <MapPage /> },
       { path: '/scorecard', element: <ScorecardPage /> },
       { path: '/facility/:id', element: <FacilityPage /> },
       { path: '/reviews', element: <ReviewsPage /> },
+      { path: '/data-quality', element: <DataQualityPage /> },
     ],
   },
 ]);

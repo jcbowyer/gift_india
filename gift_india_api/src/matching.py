@@ -1,4 +1,4 @@
-"""Recommendation engine for Governance, Integrity, & Facility Trust Desk.
+"""Recommendation engine for Governance, Integrity, & Facility Trust (GIFT) Gauge.
 
 Given a surgical-team request (specialty, capacity, willingness to travel rural),
 rank Indian districts by how much a deployment there would help — combining

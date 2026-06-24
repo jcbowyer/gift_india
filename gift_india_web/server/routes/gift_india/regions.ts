@@ -5,10 +5,23 @@
 
 export type Region = 'North' | 'Central' | 'East' | 'West' | 'South' | 'North-East';
 
+export const REGION_VALUES: Region[] = ['North', 'Central', 'East', 'West', 'South', 'North-East'];
+
 const STATE_TO_REGION: Record<string, Region> = {};
+const REGION_TO_STATES: Record<Region, string[]> = {
+  North: [],
+  Central: [],
+  East: [],
+  West: [],
+  South: [],
+  'North-East': [],
+};
 
 function assign(region: Region, states: string[]) {
-  for (const s of states) STATE_TO_REGION[normState(s)] = region;
+  for (const s of states) {
+    STATE_TO_REGION[normState(s)] = region;
+    REGION_TO_STATES[region].push(s);
+  }
 }
 
 /** Normalise a state name for region lookup ("&"→"and", strip non-alphanumerics). */
@@ -38,4 +51,9 @@ assign('North-East', [
 /** Region for a state name, or null if unmapped. */
 export function regionOf(state: string): Region | null {
   return STATE_TO_REGION[normState(state)] ?? null;
+}
+
+/** Canonical state names that belong to a region (for SQL filters). */
+export function statesInRegion(region: Region): string[] {
+  return REGION_TO_STATES[region] ?? [];
 }

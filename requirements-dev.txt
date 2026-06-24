@@ -1,0 +1,6 @@
+# Dev/test-only Python deps for gift_india_api (the runtime deps are in
+# requirements.txt). Install both into your venv:
+#   pip install -r requirements.txt -r requirements-dev.txt
+# Then run the unit tests:
+#   make test            # or: cd gift_india_api && python -m pytest
+pytest>=8.0

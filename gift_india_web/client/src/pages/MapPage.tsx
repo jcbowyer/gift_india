@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import type { Topology } from 'topojson-specification';
 import {
-  Card,
-  CardContent,
   Badge,
   Button,
   Skeleton,
@@ -25,17 +23,8 @@ import {
   Separator,
 } from '@databricks/appkit-ui/react';
 import {
-  ChevronRight,
-  ChevronDown,
   SlidersHorizontal,
-  ArrowLeft,
   MapPin,
-  Building2,
-  ExternalLink,
-  X,
-  Circle,
-  Hexagon,
-  BarChart3,
 } from 'lucide-react';
 import {
   api,
@@ -50,10 +39,26 @@ import {
   type CatalogMetric,
   type MetricValues,
   formatNumber,
+  effectiveTrustScore,
+  effectiveTrustSignal,
 } from '../lib/api';
 import { DrilldownMap, type HoverInfo, type MapDisplay } from '../components/DrilldownMap';
-import { SIGNAL_COLORS, rampFor, builtinValue, normName, placeMatch, type BuiltinMetric } from '../lib/mapPalette';
-import { SignalBadge, TrustScoreDial, EvidenceTally } from '../components/trust';
+import { MapToolRail, type MapFlyoutId } from '../components/MapToolRail';
+import { MapLegend } from '../components/MapLegend';
+import { MapGeoBreadcrumb } from '../components/MapGeoBreadcrumb';
+import { MapFacilitySearch } from '../components/MapFacilitySearch';
+import { GeoFilterList } from '../components/GeoFilterList';
+import { SIGNAL_COLORS, rampFor, builtinValue, normName, placeMatch, metricExtent, type BuiltinMetric } from '../lib/mapPalette';
+import { rollupStateRatings } from '../lib/stateCanonical';
+import {
+  baseTopoUrl,
+  districtTopologySource,
+  stateDistrictTopoUrl,
+  topologyHasStates,
+  zoneTopoHasDistricts,
+} from '../lib/mapTopo';
+import { useMapViewportInset } from '../lib/useMapViewportInset';
+import { MapDrilldownPanel } from '../components/MapDrilldownPanel';
 
 const SIGNAL_FILTERS: { value: TrustSignal | 'all'; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -70,11 +75,29 @@ const DEFAULT_METRIC: CatalogMetric = {
   source: 'builtin',
 };
 
-function regionSignal(score: number | null): TrustSignal {
-  if (score === null) return 'no_claim';
-  if (score >= 0.7) return 'strong';
-  if (score >= 0.45) return 'partial';
-  return 'weak_suspicious';
+const REGION_FILTERS = ['North', 'Central', 'East', 'West', 'South', 'North-East'] as const;
+
+type ReadoutGeoLevel = 'nation' | 'state' | 'district' | 'facility';
+
+const GEO_LEVEL_META: Record<
+  ReadoutGeoLevel,
+  { step: number; label: string; badgeClass: string }
+> = {
+  nation: { step: 1, label: 'National', badgeClass: 'bg-slate-100 text-slate-700 ring-slate-200' },
+  state: { step: 2, label: 'State', badgeClass: 'bg-sky-50 text-sky-800 ring-sky-200' },
+  district: { step: 3, label: 'District', badgeClass: 'bg-violet-50 text-violet-800 ring-violet-200' },
+  facility: { step: 4, label: 'Facility', badgeClass: 'bg-primary/10 text-primary ring-primary/25' },
+};
+
+function GeoLevelBadge({ level }: { level: ReadoutGeoLevel }) {
+  const m = GEO_LEVEL_META[level];
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset ${m.badgeClass}`}
+    >
+      Level {m.step} · {m.label}
+    </span>
+  );
 }
 
 /** Format a metric value by its unit for the readout. */
@@ -96,128 +119,46 @@ function formatMetric(v: number | null, unit: string): string {
   }
 }
 
-function BreakdownBar({ r }: { r: RegionRating }) {
-  const total = Math.max(1, r.strong + r.partial + r.weak);
-  const seg = (n: number, color: string, label: string) =>
-    n > 0 ? <div style={{ width: `${(n / total) * 100}%`, background: color }} title={`${label}: ${n}`} /> : null;
-  return (
-    <div className="space-y-1">
-      <div className="flex h-2 overflow-hidden rounded-full bg-muted">
-        {seg(r.strong, SIGNAL_COLORS.strong, 'Strong')}
-        {seg(r.partial, SIGNAL_COLORS.partial, 'Partial')}
-        {seg(r.weak, SIGNAL_COLORS.weak_suspicious, 'Suspicious')}
-      </div>
-      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground">
-        <span><span className="font-semibold text-foreground">{r.strong}</span> strong</span>
-        <span><span className="font-semibold text-foreground">{r.partial}</span> partial</span>
-        <span><span className="font-semibold text-foreground">{r.weak}</span> suspicious</span>
-      </div>
-    </div>
-  );
+function capabilityPillCount(c: Capability): string {
+  return c.claiming.toLocaleString();
 }
 
 /** Big metric readout (right column header) — value + peer rank, Open Navigator style. */
 function MetricReadout({
+  geoLevel,
   regionName,
   scope,
   metric,
   value,
-  rank,
-  total,
 }: {
+  geoLevel: ReadoutGeoLevel;
   regionName: string;
   scope: string;
   metric: CatalogMetric;
   value: number | null;
-  rank: number | null;
-  total: number;
 }) {
+  const metricLabel = geoLevel === 'facility' ? 'Facility trust rating' : metric.label;
   return (
-    <div className="rounded-xl border bg-card p-4">
+    <div className="gift-elevate rounded-xl border bg-card p-4">
       <div className="flex items-start justify-between gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{regionName}</span>
-        {rank !== null && total > 1 && (
-          <Badge variant="outline" className="shrink-0 text-[10px]">#{rank} of {total}</Badge>
-        )}
+        <GeoLevelBadge level={geoLevel} />
       </div>
+      <div className="mt-2 text-base font-semibold uppercase tracking-wide text-foreground">{regionName}</div>
       <div className="mt-1 flex items-baseline gap-1">
         <span className="text-4xl font-bold tabular-nums text-foreground">{formatMetric(value, metric.unit)}</span>
         {metric.unit === 'score' && <span className="text-lg text-muted-foreground">/100</span>}
       </div>
-      <div className="text-sm font-medium uppercase tracking-tight text-foreground/80">{metric.label}</div>
+      <div className="text-sm font-medium uppercase tracking-tight text-foreground/80">{metricLabel}</div>
       <div className="mt-0.5 text-xs text-muted-foreground">{scope}</div>
     </div>
   );
 }
 
-function RegionCard({ title, sub, rating }: { title: string; sub: string; rating: RegionRating }) {
-  const sig = regionSignal(rating.avgScore);
-  return (
-    <Card>
-      <CardContent className="space-y-3 p-4">
-        <div className="flex items-start gap-3">
-          <TrustScoreDial score={rating.avgScore ?? 0} signal={sig} />
-          <div className="min-w-0">
-            <h3 className="truncate font-semibold text-foreground">{title}</h3>
-            <p className="text-xs text-muted-foreground">{sub}</p>
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              {rating.avgScore === null ? 'No claims assessed' : `Region trust ${(rating.avgScore * 100).toFixed(0)} / 100`}
-            </p>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-2 text-center">
-          <div className="rounded-lg border bg-card px-2 py-1.5">
-            <div className="text-base font-bold tabular-nums">{formatNumber(rating.facilities)}</div>
-            <div className="text-[10px] text-muted-foreground">facilities</div>
-          </div>
-          <div className="rounded-lg border bg-card px-2 py-1.5">
-            <div className="text-base font-bold tabular-nums">{formatNumber(rating.claiming)}</div>
-            <div className="text-[10px] text-muted-foreground">claim capability</div>
-          </div>
-        </div>
-        <BreakdownBar r={rating} />
-      </CardContent>
-    </Card>
-  );
-}
-
-function FacilityCard({ f, onClose }: { f: FacilityRanking; onClose: () => void }) {
-  const sig = f.overrideSignal ?? f.trustSignal;
-  return (
-    <Card className="border-primary/40">
-      <CardContent className="space-y-3 p-4">
-        <div className="flex items-start gap-3">
-          <TrustScoreDial score={f.trustScore} signal={sig} />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="truncate font-semibold text-foreground">{f.name}</h3>
-              <button onClick={onClose} className="ml-auto text-muted-foreground hover:text-foreground">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="mt-1 flex items-center gap-2">
-              <SignalBadge signal={sig} />
-              <span className="text-[11px] text-muted-foreground">rank #{f.rank}</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {f.district}, {f.state}</span>
-          <span className="inline-flex items-center gap-1"><Building2 className="h-3.5 w-3.5" /> {f.type}</span>
-          {f.beds !== null && <span>{f.beds} beds</span>}
-        </div>
-        <p className="text-sm text-foreground/80">{f.summary}</p>
-        <EvidenceTally supporting={f.supportingCount} contradicting={f.contradictingCount} />
-        <Link to={`/facility/${encodeURIComponent(f.facilityId)}`} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
-          Full facility record <ExternalLink className="h-3 w-3" />
-        </Link>
-      </CardContent>
-    </Card>
-  );
-}
-
 export function MapPage() {
-  const [topology, setTopology] = useState<Topology | null>(null);
+  const [baseTopology, setBaseTopology] = useState<Topology | null>(null);
+  const [districtTopo, setDistrictTopo] = useState<Topology | null>(null);
+  const [districtTopoFailed, setDistrictTopoFailed] = useState(false);
+  const [worldTopology, setWorldTopology] = useState<Topology | null>(null);
   const [topoError, setTopoError] = useState<string | null>(null);
   const [capabilities, setCapabilities] = useState<Capability[]>([]);
   const [geo, setGeo] = useState<MapGeography | null>(null);
@@ -227,17 +168,20 @@ export function MapPage() {
   const [groups, setGroups] = useState<CatalogGroup[]>([]);
   const [activeMetric, setActiveMetric] = useState<CatalogMetric>(DEFAULT_METRIC);
   const [metricValues, setMetricValues] = useState<MetricValues | null>(null);
-  const [openCats, setOpenCats] = useState<Set<string>>(new Set(['Trust & Capacity']));
 
   // filters
+  const [regionFilter, setRegionFilter] = useState<string>('all');
   const [capability, setCapability] = useState('icu');
   const [signal, setSignal] = useState<TrustSignal | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [minBeds, setMinBeds] = useState(0);
+  const [minTrustScore, setMinTrustScore] = useState(0);
 
   // map display controls
   const [display, setDisplay] = useState<MapDisplay>('shade');
   const [logScale, setLogScale] = useState(false);
+  const [mapFlyout, setMapFlyout] = useState<MapFlyoutId | null>(null);
+  const [showPins, setShowPins] = useState(true);
 
   // drilldown selection
   const [selectedState, setSelectedState] = useState<string | null>(null);
@@ -245,18 +189,161 @@ export function MapPage() {
   const [selectedFacility, setSelectedFacility] = useState<FacilityRanking | null>(null);
   const [hover, setHover] = useState<HoverInfo | null>(null);
   const [hoveredFacilityId, setHoveredFacilityId] = useState<string | null>(null);
+  const hoverTimer = useRef<number | null>(null);
+  const geoCache = useRef(new Map<string, MapGeography>());
+  const facilitiesCache = useRef(new Map<string, FacilityRanking[]>());
+  const mapAreaRef = useRef<HTMLDivElement | null>(null);
+  const mapRailRef = useRef<HTMLDivElement | null>(null);
+  const mapLegendRef = useRef<HTMLDivElement | null>(null);
+
+  const topology = baseTopology;
+
+  const districtTopology = useMemo(
+    () => (topology ? districtTopologySource(topology, districtTopo, regionFilter) : null),
+    [topology, districtTopo, regionFilter],
+  );
+
+  const needsDistrictTopo = Boolean(selectedState && !zoneTopoHasDistricts(regionFilter));
+  const districtLayersReady = !needsDistrictTopo || districtTopo !== null || districtTopoFailed;
+
+  // Deep-link drilldown: /navigator?state=…&district=… (e.g. from the landing
+  // page's "analysed in depth" list). Captured once at mount — the query carries
+  // descriptive labels ("Delhi NCT", "Mumbai City / Suburban") that get resolved
+  // to the data's canonical names when geo loads (see the geo effect below).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [deepLink] = useState(() => {
+    const state = searchParams.get('state');
+    const district = searchParams.get('district');
+    return state || district ? { state, district } : null;
+  });
+  const deepLinkApplied = useRef(false);
 
   useEffect(() => {
-    fetch('/india-topo.json')
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
-      .then((t: Topology) => setTopology(t))
-      .catch(() => setTopoError('Could not load the India map topology.'));
     api.capabilities().then(setCapabilities).catch(() => undefined);
     api.metricCatalog().then((c) => setGroups(c.groups)).catch(() => setGroups([]));
   }, []);
 
+  // Base map: lightweight nation+states, or zone-scoped states+districts.
   useEffect(() => {
-    api.mapGeography(capability).then(setGeo).catch(() => setGeo(null));
+    setTopoError(null);
+    setBaseTopology(null);
+    setDistrictTopo(null);
+    let cancelled = false;
+    fetch(baseTopoUrl(regionFilter))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
+      .then((t: Topology) => {
+        if (cancelled) return;
+        if (!topologyHasStates(t)) {
+          setTopoError('Map boundaries are incomplete. Run `npm run build:topo` in gift_india_web.');
+          return;
+        }
+        setBaseTopology(t);
+      })
+      .catch(() => {
+        if (!cancelled) setTopoError('Could not load the India map topology.');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [regionFilter]);
+
+  // All-India view: lazy-load one state's district polygons on drill-down.
+  useEffect(() => {
+    if (!selectedState || zoneTopoHasDistricts(regionFilter)) {
+      setDistrictTopo(null);
+      setDistrictTopoFailed(false);
+      return;
+    }
+    let cancelled = false;
+    setDistrictTopo(null);
+    setDistrictTopoFailed(false);
+    fetch(stateDistrictTopoUrl(selectedState))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
+      .then((t: Topology) => {
+        if (!cancelled) setDistrictTopo(t);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setDistrictTopo(null);
+          setDistrictTopoFailed(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedState, regionFilter]);
+
+  // World backdrop deferred heavily — optional eye-candy, not worth blocking India map.
+  useEffect(() => {
+    if (!topology || selectedState) return;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      fetch('/world-context-topo.json')
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
+        .then((t: Topology) => !cancelled && setWorldTopology(t))
+        .catch(() => undefined);
+    }, 1200);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [topology, selectedState]);
+
+  useEffect(() => {
+    const region = regionFilter !== 'all' ? regionFilter : undefined;
+    const nationOnly = !selectedState;
+    const cacheKey = `${capability}|${regionFilter}|${selectedState ?? ''}|${nationOnly ? 'nation' : 'state'}`;
+    const cached = geoCache.current.get(cacheKey);
+    if (cached) {
+      setGeo(nationOnly ? { ...cached, districts: [] } : cached);
+    } else {
+      setGeo(null);
+    }
+
+    let cancelled = false;
+    api
+      .mapGeography(capability, {
+        region,
+        state: selectedState ?? undefined,
+        includeDistricts: !nationOnly,
+      })
+      .then((g) => {
+        if (cancelled) return;
+        geoCache.current.set(cacheKey, g);
+        setGeo((prev) =>
+          nationOnly
+            ? { ...g, districts: [] }
+            : prev
+              ? { ...prev, districts: g.districts }
+              : g,
+        );
+        if (!deepLink || deepLinkApplied.current) return;
+        deepLinkApplied.current = true;
+        const matchedState = deepLink.state
+          ? g.states.find((s) => placeMatch(s.state, deepLink.state!))?.state ?? null
+          : null;
+        if (matchedState) {
+          setSelectedState(matchedState);
+          setSelectedFacility(null);
+          setSelectedDistrict(
+            deepLink.district
+              ? g.districts.find((d) => d.state === matchedState && placeMatch(d.district, deepLink.district!))?.district ?? null
+              : null,
+          );
+        }
+        setSearchParams({}, { replace: true });
+      })
+      .catch(() => {
+        if (!cancelled && !cached) setGeo(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [capability, regionFilter, selectedState, deepLink, setSearchParams]);
+
+  // Switching capability invalidates facility-level selection and rankings scope.
+  useEffect(() => {
+    setSelectedFacility(null);
   }, [capability]);
 
   // store-metric district values (built-in metrics need no fetch; stale values
@@ -271,29 +358,133 @@ export function MapPage() {
   }, [activeMetric]);
 
   useEffect(() => {
+    if (!geo) return;
+    if (selectedState && !geo.states.some((s) => placeMatch(s.state, selectedState))) {
+      setSelectedState(null);
+      setSelectedDistrict(null);
+      setSelectedFacility(null);
+    }
+  }, [geo, selectedState]);
+
+  // Align search-picked district names with canonical geography once districts load.
+  useEffect(() => {
+    if (!geo?.districts.length || !selectedState || !selectedDistrict) return;
+    const hit = geo.districts.find(
+      (d) => placeMatch(d.state, selectedState) && placeMatch(d.district, selectedDistrict),
+    );
+    if (!hit) return;
+    if (!placeMatch(hit.state, selectedState)) setSelectedState(hit.state);
+    if (!placeMatch(hit.district, selectedDistrict)) setSelectedDistrict(hit.district);
+  }, [geo, selectedState, selectedDistrict]);
+
+  const selectFacility = useCallback((f: FacilityRanking | null) => {
+    if (!f) {
+      setSelectedFacility(null);
+      return;
+    }
+    const matchedState = geo?.states.find((s) => placeMatch(s.state, f.state))?.state ?? f.state;
+    setSelectedState(matchedState);
+    setSelectedDistrict(f.district);
+    setSelectedFacility({ ...f, state: matchedState });
+    setHoveredFacilityId(f.facilityId);
+    setHover({ kind: 'facility', name: f.name, sub: `${f.district}, ${matchedState}`, facility: { ...f, state: matchedState } });
+  }, [geo]);
+
+  const handleFacilityUpdated = useCallback((updated: FacilityRanking) => {
+    setSelectedFacility((cur) => (cur?.facilityId === updated.facilityId ? updated : cur));
+    setFacilities((prev) => prev.map((f) => (f.facilityId === updated.facilityId ? { ...f, ...updated } : f)));
+    setHover((h) =>
+      h?.kind === 'facility' && h.facility?.facilityId === updated.facilityId
+        ? { ...h, facility: { ...h.facility, ...updated } }
+        : h,
+    );
+    const cacheKey = `${capability}|${regionFilter}|${selectedState ?? ''}|${selectedDistrict ?? ''}|${signal}`;
+    const cached = facilitiesCache.current.get(cacheKey);
+    if (cached) {
+      facilitiesCache.current.set(
+        cacheKey,
+        cached.map((f) => (f.facilityId === updated.facilityId ? { ...f, ...updated } : f)),
+      );
+    }
+  }, [capability, regionFilter, selectedState, selectedDistrict, signal]);
+
+  useEffect(() => {
+    const cacheKey = `${capability}|${regionFilter}|${selectedState ?? ''}|${selectedDistrict ?? ''}|${signal}`;
+    const cached = facilitiesCache.current.get(cacheKey);
+    if (cached) setFacilities(cached);
+    else setFacilities([]);
+
+    let cancelled = false;
     api
       .facilities({
         capability,
+        region: regionFilter !== 'all' ? regionFilter : undefined,
         state: selectedState ?? undefined,
         district: selectedDistrict ?? undefined,
         signal: signal === 'all' ? undefined : signal,
         limit: 120,
       })
-      .then((res) => setFacilities(res.results))
-      .catch(() => setFacilities([]));
-  }, [capability, selectedState, selectedDistrict, signal]);
+      .then((res) => {
+        if (cancelled) return;
+        facilitiesCache.current.set(cacheKey, res.results);
+        setFacilities(res.results);
+      })
+      .catch(() => {
+        if (!cancelled && !cached) setFacilities([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [capability, regionFilter, selectedState, selectedDistrict, signal]);
 
-  const stateRatings: StateRating[] = useMemo(() => geo?.states ?? [], [geo]);
+  const handleMapHover = useCallback((h: HoverInfo | null) => {
+    if (hoverTimer.current != null) window.clearTimeout(hoverTimer.current);
+    hoverTimer.current = window.setTimeout(() => {
+      setHover(h);
+      setHoveredFacilityId(h?.kind === 'facility' ? h.facility?.facilityId ?? null : null);
+    }, h ? 60 : 120);
+  }, []);
+
+  useEffect(() => () => { if (hoverTimer.current != null) window.clearTimeout(hoverTimer.current); }, []);
+
+  const stateRatings: StateRating[] = useMemo(
+    () => rollupStateRatings(geo?.states ?? []),
+    [geo],
+  );
   const districtRatings: DistrictRating[] = useMemo(() => geo?.districts ?? [], [geo]);
+  const mapDistrictRatings = useMemo(
+    () => (selectedState ? districtRatings.filter((d) => d.state === selectedState) : []),
+    [districtRatings, selectedState],
+  );
 
   const facilityTypes = useMemo(() => Array.from(new Set(facilities.map((f) => f.type))).sort(), [facilities]);
   const filteredFacilities = useMemo(
-    () => facilities.filter((f) => (typeFilter === 'all' || f.type === typeFilter) && (f.beds ?? 0) >= minBeds),
-    [facilities, typeFilter, minBeds],
+    () =>
+      facilities.filter(
+        (f) =>
+          (typeFilter === 'all' || f.type === typeFilter) &&
+          (f.beds ?? 0) >= minBeds &&
+          Math.round(effectiveTrustScore(f) * 100) >= minTrustScore,
+      ),
+    [facilities, typeFilter, minBeds, minTrustScore],
   );
 
+  /** Keep the search-selected facility visible on the map even if outside the top-N list. */
+  const mapFacilities = useMemo(() => {
+    if (!selectedFacility) return filteredFacilities;
+    if (filteredFacilities.some((f) => f.facilityId === selectedFacility.facilityId)) return filteredFacilities;
+    return [selectedFacility, ...filteredFacilities];
+  }, [filteredFacilities, selectedFacility]);
+
   const level = selectedDistrict ? 'district' : selectedState ? 'state' : 'nation';
-  const activeFilters = (signal !== 'all' ? 1 : 0) + (typeFilter !== 'all' ? 1 : 0) + (minBeds > 0 ? 1 : 0);
+  const viewportRevision = `${level}|${capability}|${display}|${activeMetric.key}`;
+  const viewportInset = useMapViewportInset(mapAreaRef, mapRailRef, mapLegendRef, viewportRevision);
+  const activeFilters =
+    (regionFilter !== 'all' ? 1 : 0) +
+    (signal !== 'all' ? 1 : 0) +
+    (typeFilter !== 'all' ? 1 : 0) +
+    (minBeds > 0 ? 1 : 0) +
+    (minTrustScore > 0 ? 1 : 0);
   const { ramp, isRate } = rampFor(activeMetric.source, activeMetric.key);
   const logDisabled = isRate;
   const effectiveLog = logScale && !logDisabled;
@@ -331,13 +522,14 @@ export function MapPage() {
   );
 
   const national: RegionRating = useMemo(() => {
-    const acc = { facilities: 0, claiming: 0, strong: 0, partial: 0, weak: 0, scoreSum: 0 };
+    const acc = { facilities: 0, claiming: 0, strong: 0, partial: 0, weak: 0, noClaim: 0, scoreSum: 0 };
     for (const s of stateRatings) {
       acc.facilities += s.facilities;
       acc.claiming += s.claiming;
       acc.strong += s.strong;
       acc.partial += s.partial;
       acc.weak += s.weak;
+      acc.noClaim += s.noClaim ?? 0;
       if (s.avgScore !== null) acc.scoreSum += s.avgScore * s.claiming;
     }
     return {
@@ -346,6 +538,7 @@ export function MapPage() {
       strong: acc.strong,
       partial: acc.partial,
       weak: acc.weak,
+      noClaim: acc.noClaim,
       avgScore: acc.claiming > 0 ? acc.scoreSum / acc.claiming : null,
     };
   }, [stateRatings]);
@@ -356,102 +549,156 @@ export function MapPage() {
     [districtRatings, selectedState, selectedDistrict],
   );
 
-  // colour-gradient domain for the legend — the actual min/max the map shades
-  // across (states at nation level, the focused state's districts at state level).
-  // Rate metrics use a fixed 0–1 domain; everything else uses the data extent.
+  // Colour-gradient domain for the legend and map shading — min/max within the
+  // current geography scope (nation states, state districts, or district facilities).
   const legendDomain = useMemo<[number, number] | null>(() => {
-    if (isRate) return [0, 1];
     const vals =
-      level === 'state'
-        ? districtRatings.filter((d) => d.state === selectedState).map(valueOfDistrict)
-        : stateRatings.map(valueOfState);
-    const nums = vals.filter((v): v is number => v !== null && Number.isFinite(v));
-    if (!nums.length) return null;
-    return [Math.min(...nums), Math.max(...nums)];
-  }, [isRate, level, selectedState, stateRatings, districtRatings, valueOfState, valueOfDistrict]);
+      level === 'nation'
+        ? stateRatings.map(valueOfState)
+        : districtRatings
+            .filter((d) => d.state === selectedState)
+            .map(valueOfDistrict);
+    return metricExtent(vals);
+  }, [level, selectedState, stateRatings, districtRatings, valueOfState, valueOfDistrict]);
+
+  const colorDomain = legendDomain ?? (isRate ? [0, 1] : [0, 1]);
+
+  const legendFacilityCounts = useMemo(() => {
+    if (level === 'nation') return stateRatings.map((s) => s.facilities);
+    if (level === 'state') return districtRatings.filter((d) => d.state === selectedState).map((d) => d.facilities);
+    return filteredFacilities.length ? [filteredFacilities.length] : [];
+  }, [level, stateRatings, districtRatings, selectedState, filteredFacilities.length]);
 
   // active-metric value + peer rank for the focused (or hovered) region
-  const readout = useMemo(() => {
+  const readout = useMemo((): {
+    geoLevel: ReadoutGeoLevel;
+    name: string;
+    scope: string;
+    value: number | null;
+  } => {
+    if (selectedFacility) {
+      return {
+        geoLevel: 'facility',
+        name: selectedFacility.name,
+        scope: `${selectedFacility.district}, ${selectedFacility.state}`,
+        value: effectiveTrustScore(selectedFacility),
+      };
+    }
+
     const hoverRating = hover && (hover.kind === 'state' || hover.kind === 'district') ? hover.rating ?? null : null;
 
-    if ((hover?.kind === 'district' && hoverRating) || level === 'district') {
-      const dr = (hoverRating as DistrictRating) ?? selDistrictRating;
-      if (dr) {
-        const peers = districtRatings.filter((d) => d.state === dr.state).map(valueOfDistrict).filter((v): v is number => v !== null);
-        const v = valueOfDistrict(dr);
-        const rank = v === null ? null : peers.filter((p) => p > v).length + 1;
-        return { name: dr.district, scope: `District · ${dr.state}`, value: v, rank, total: peers.length };
+    if (hover?.kind === 'facility' && hover.facility) {
+      return {
+        geoLevel: 'facility',
+        name: hover.facility.name,
+        scope: `${hover.facility.district}, ${hover.facility.state}`,
+        value: effectiveTrustScore(hover.facility),
+      };
+    }
+
+    if (hover?.kind === 'district' || level === 'district') {
+      const dr = (hoverRating as DistrictRating) ?? (hover?.kind === 'district' ? null : selDistrictRating);
+      if (dr) return { geoLevel: 'district', name: dr.district, scope: `${dr.state}`, value: valueOfDistrict(dr) };
+      const name = hover?.kind === 'district' ? hover.name : selectedDistrict;
+      if (name) {
+        return {
+          geoLevel: 'district',
+          name,
+          scope: selectedState ?? 'District',
+          value: null,
+        };
       }
     }
-    if ((hover?.kind === 'state' && hoverRating) || level === 'state') {
-      const sr = (hoverRating as StateRating) ?? selStateRating;
-      if (sr) {
-        const peers = stateRatings.map(valueOfState).filter((v): v is number => v !== null);
-        const v = valueOfState(sr);
-        const rank = v === null ? null : peers.filter((p) => p > v).length + 1;
-        return { name: sr.state, scope: 'State', value: v, rank, total: peers.length };
-      }
+    if (hover?.kind === 'state' || level === 'state') {
+      const sr = (hoverRating as StateRating) ?? (hover?.kind === 'state' ? null : selStateRating);
+      if (sr) return { geoLevel: 'state', name: sr.state, scope: 'India', value: valueOfState(sr) };
+      const name = hover?.kind === 'state' ? hover.name : selectedState;
+      if (name) return { geoLevel: 'state', name, scope: 'India', value: null };
     }
-    // nation
     const v = activeMetric.source === 'builtin' ? builtinValue(national, activeMetric.key as BuiltinMetric) : store?.national ?? null;
-    return { name: 'India', scope: 'All states', value: v, rank: null, total: 0 };
-  }, [hover, level, selDistrictRating, selStateRating, districtRatings, stateRatings, valueOfState, valueOfDistrict, activeMetric, national, store]);
+    return {
+      geoLevel: 'nation',
+      name: 'India',
+      scope: regionFilter === 'all' ? 'All states' : `${regionFilter} region`,
+      value: v,
+    };
+  }, [hover, level, selectedState, selectedDistrict, selectedFacility, selDistrictRating, selStateRating, valueOfState, valueOfDistrict, activeMetric, national, store, regionFilter]);
 
-  const drillTo = {
-    state: (s: string | null) => { setSelectedState(s); setSelectedDistrict(null); setSelectedFacility(null); },
-    district: (d: string | null) => { setSelectedDistrict(d); setSelectedFacility(null); },
-    nation: () => { setSelectedState(null); setSelectedDistrict(null); setSelectedFacility(null); },
-  };
-  const toggleCat = (c: string) =>
-    setOpenCats((prev) => {
-      const next = new Set(prev);
-      if (next.has(c)) next.delete(c);
-      else next.add(c);
-      return next;
-    });
+  const drillToNation = useCallback(() => {
+    setSelectedState(null);
+    setSelectedDistrict(null);
+    setSelectedFacility(null);
+  }, []);
 
+  const drillToState = useCallback((s: string | null) => {
+    if (!s) {
+      setSelectedState(null);
+      setSelectedDistrict(null);
+      setSelectedFacility(null);
+      return;
+    }
+    const matchedState = geo?.states.find((st) => placeMatch(st.state, s))?.state ?? s;
+    setSelectedState(matchedState);
+    setSelectedDistrict(null);
+    setSelectedFacility(null);
+  }, [geo]);
+
+  const drillToDistrict = useCallback((d: string | null) => {
+    setSelectedDistrict(d);
+    setSelectedFacility(null);
+  }, []);
+
+  const drillToLocation = useCallback((state: string, district?: string | null) => {
+    setSelectedFacility(null);
+    const matchedState = geo?.states.find((s) => placeMatch(s.state, state))?.state ?? state;
+    setSelectedState(matchedState);
+    if (!district) {
+      setSelectedDistrict(null);
+      return;
+    }
+    const matchedDistrict =
+      geo?.districts.find((d) => placeMatch(d.state, matchedState) && placeMatch(d.district, district))
+        ?.district ?? district;
+    setSelectedDistrict(matchedDistrict);
+  }, [geo]);
+
+  const goBack = useCallback(() => {
+    if (selectedFacility) setSelectedFacility(null);
+    else if (selectedDistrict) drillToState(selectedState);
+    else drillToNation();
+  }, [selectedFacility, selectedDistrict, selectedState, drillToState, drillToNation]);
   const activeCap = capabilities.find((c) => c.key === capability);
 
   return (
     <div className="mx-auto flex h-[calc(100vh-9.5rem)] max-w-[1500px] flex-col gap-3">
-      {/* breadcrumb + title + capability pills */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-1.5 text-sm">
-          {level !== 'nation' && (
-            <Button variant="ghost" size="sm" className="h-7 gap-1 px-2" onClick={() => (selectedDistrict ? drillTo.state(selectedState) : drillTo.nation())}>
-              <ArrowLeft className="h-3.5 w-3.5" /> Back
-            </Button>
-          )}
-          <button className="font-medium text-muted-foreground hover:text-foreground" onClick={drillTo.nation}>India</button>
-          {selectedState && (
-            <>
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-              <button className="font-medium text-muted-foreground hover:text-foreground" onClick={() => drillTo.state(selectedState)}>{selectedState}</button>
-            </>
-          )}
-          {selectedDistrict && (
-            <>
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="font-semibold text-foreground">{selectedDistrict}</span>
-            </>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          {capabilities.map((c) => (
-            <button
-              key={c.key}
-              type="button"
-              onClick={() => setCapability(c.key)}
-              className={`rounded-full border px-3 py-1 text-sm font-medium transition-colors ${
-                capability === c.key
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-card text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-              }`}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
+      {/* capability pills */}
+      <div className="flex flex-wrap items-center gap-1.5">
+          {capabilities.map((c) => {
+            const active = capability === c.key;
+            return (
+              <button
+                key={c.key}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setCapability(c.key)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-all ${
+                  active
+                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                    : 'border-border bg-card text-muted-foreground hover:-translate-y-px hover:border-primary/40 hover:text-foreground'
+                }`}
+              >
+                {c.label}
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-1.5 text-xs font-bold tabular-nums ${
+                    active ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-emerald-100 text-emerald-800'
+                  }`}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${active ? 'bg-primary-foreground' : 'bg-emerald-500'}`} />
+                  {capabilityPillCount(c)}
+                </span>
+              </button>
+            );
+          })}
       </div>
 
       {topoError && (
@@ -461,90 +708,109 @@ export function MapPage() {
         </Alert>
       )}
 
-      {/* LEFT metrics catalog · CENTER map · RIGHT readout */}
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[250px_1fr_330px]">
-        {/* metrics catalog */}
-        <aside className="flex min-h-0 flex-col rounded-xl border bg-card">
-          <div className="flex items-center gap-2 border-b px-3 py-2.5">
-            <BarChart3 className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">Metrics</span>
-          </div>
-          <ScrollArea className="min-h-0 flex-1">
-            <div className="p-2">
-              {groups.length === 0 ? (
-                <div className="space-y-1 p-1">
-                  {Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className="h-7 w-full rounded" />)}
-                </div>
-              ) : (
-                groups.map((g) => {
-                  const open = openCats.has(g.category);
-                  return (
-                    <div key={g.category} className="mb-1">
-                      <button
-                        type="button"
-                        onClick={() => toggleCat(g.category)}
-                        className="flex w-full items-center gap-1 rounded-md px-2 py-1.5 text-left text-[11px] font-semibold uppercase tracking-wide text-muted-foreground hover:bg-muted/50"
-                      >
-                        {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                        <span className="flex-1">{g.category}</span>
-                        <span className="text-[10px] font-normal text-muted-foreground/70">{g.metrics.length}</span>
-                      </button>
-                      {open && (
-                        <div className="mt-0.5 space-y-0.5">
-                          {g.metrics.map((m) => {
-                            const isActive = activeMetric.source === m.source && activeMetric.key === m.key;
-                            return (
-                              <button
-                                key={`${m.source}-${m.key}`}
-                                type="button"
-                                onClick={() => setActiveMetric(m)}
-                                className={`block w-full rounded-md px-2 py-1.5 pl-7 text-left text-[13px] transition-colors ${
-                                  isActive ? 'bg-primary/10 font-medium text-foreground' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                                }`}
-                              >
-                                {m.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </ScrollArea>
-        </aside>
-
+      {/* map · right readout */}
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1fr_300px]">
         {/* map + controls */}
         <div className="flex min-h-0 flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border bg-card px-3 py-2">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Display</span>
-              <ToggleGroup type="single" value={display} onValueChange={(v) => v && setDisplay(v as MapDisplay)} variant="outline" size="sm">
-                <ToggleGroupItem value="shade" className="gap-1 text-xs"><Hexagon className="h-3.5 w-3.5" /> Shade</ToggleGroupItem>
-                <ToggleGroupItem value="bubble" className="gap-1 text-xs"><Circle className="h-3.5 w-3.5" /> Bubble</ToggleGroupItem>
-              </ToggleGroup>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Scale</span>
-              <ToggleGroup
-                type="single"
-                value={effectiveLog ? 'log' : 'linear'}
-                onValueChange={(v) => v && setLogScale(v === 'log')}
-                variant="outline"
-                size="sm"
-                disabled={logDisabled}
-              >
-                <ToggleGroupItem value="linear" className="text-xs">Linear</ToggleGroupItem>
-                <ToggleGroupItem value="log" className="text-xs">Log</ToggleGroupItem>
-              </ToggleGroup>
-            </div>
+          <MapGeoBreadcrumb
+            selectedState={selectedState}
+            selectedDistrict={selectedDistrict}
+            selectedFacility={selectedFacility}
+            districtsLoading={selectedState !== null && needsDistrictTopo && !districtTopo && !districtTopoFailed}
+            districtsLoadFailed={districtTopoFailed}
+            onNation={drillToNation}
+            onState={drillToState}
+            onDistrict={drillToDistrict}
+            onBack={goBack}
+            search={
+              <MapFacilitySearch
+                capability={capability}
+                onSelect={selectFacility}
+                onSelectState={drillToState}
+                onSelectDistrict={drillToLocation}
+              />
+            }
+            actions={
+              <>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="ml-auto gap-1.5">
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <MapPin className="h-4 w-4" />
+                  Geography
+                  {(regionFilter !== 'all' || selectedState || selectedDistrict) && (
+                    <Badge className="ml-1 h-5 min-w-5 justify-center px-1 text-[10px]">
+                      {(regionFilter !== 'all' ? 1 : 0) + (selectedState ? 1 : 0) + (selectedDistrict ? 1 : 0)}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80 space-y-4">
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Region</span>
+                  <Select value={regionFilter} onValueChange={setRegionFilter}>
+                    <SelectTrigger><SelectValue placeholder="All regions" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All regions</SelectItem>
+                      {REGION_FILTERS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">State</span>
+                  <GeoFilterList
+                    value={selectedState}
+                    onChange={(v) => {
+                      if (!v) drillToNation();
+                      else drillToState(v);
+                    }}
+                    options={stateRatings.map((s) => ({
+                      value: s.state,
+                      label: s.state,
+                      hint: `${s.facilities.toLocaleString()} facilities`,
+                    }))}
+                    allLabel="All states"
+                    searchPlaceholder="Search states…"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">District</span>
+                  <GeoFilterList
+                    value={selectedDistrict}
+                    onChange={(v) => {
+                      if (!v) setSelectedDistrict(null);
+                      else if (selectedState) drillToLocation(selectedState, v);
+                    }}
+                    options={districtRatings
+                      .filter((d) => d.state === selectedState)
+                      .map((d) => ({
+                        value: d.district,
+                        label: d.district,
+                        hint: `${d.facilities.toLocaleString()} facilities`,
+                      }))}
+                    allLabel="All districts"
+                    searchPlaceholder="Search districts…"
+                    disabled={!selectedState}
+                  />
+                </div>
+                <Separator />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => {
+                    setRegionFilter('all');
+                    drillToNation();
+                  }}
+                >
+                  Clear geography
+                </Button>
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
                   <SlidersHorizontal className="h-4 w-4" />
-                  Filters
+                  Facility ratings
                   {activeFilters > 0 && <Badge className="ml-1 h-5 min-w-5 justify-center px-1 text-[10px]">{activeFilters}</Badge>}
                 </Button>
               </PopoverTrigger>
@@ -572,68 +838,98 @@ export function MapPage() {
                   </div>
                   <Slider value={[minBeds]} onValueChange={(v) => setMinBeds(v[0])} min={0} max={1000} step={20} />
                 </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Min trust score</span>
+                    <span className="text-xs font-medium tabular-nums text-foreground">{minTrustScore}</span>
+                  </div>
+                  <Slider value={[minTrustScore]} onValueChange={(v) => setMinTrustScore(v[0])} min={0} max={100} step={5} />
+                </div>
                 <Separator />
-                <Button variant="ghost" size="sm" className="w-full" onClick={() => { setSignal('all'); setTypeFilter('all'); setMinBeds(0); }}>Reset filters</Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => {
+                    setRegionFilter('all');
+                    setSignal('all');
+                    setTypeFilter('all');
+                    setMinBeds(0);
+                    setMinTrustScore(0);
+                  }}
+                >
+                  Reset filters
+                </Button>
               </PopoverContent>
             </Popover>
-          </div>
+              </>
+            }
+          />
 
-          <div className="relative min-h-[340px] flex-1">
-            {topology ? (
+          <div ref={mapAreaRef} className="relative min-h-[360px] flex-1" data-demo="navigator-map">
+            {topology && topologyHasStates(topology) ? (
               <DrilldownMap
                 topology={topology}
+                districtTopology={districtTopology}
+                worldTopology={worldTopology}
                 stateRatings={stateRatings}
-                districtRatings={districtRatings}
-                facilities={filteredFacilities}
+                districtRatings={mapDistrictRatings}
+                facilities={mapFacilities}
                 selectedState={selectedState}
                 selectedDistrict={selectedDistrict}
                 hoveredFacilityId={hoveredFacilityId}
                 selectedFacilityId={selectedFacility?.facilityId ?? null}
+                selectedFacility={selectedFacility}
                 display={display}
+                showPins={showPins}
                 logScale={effectiveLog}
                 ramp={ramp}
-                isRate={isRate}
+                colorDomain={colorDomain}
                 valueOfState={valueOfState}
                 valueOfDistrict={valueOfDistrict}
-                onSelectState={drillTo.state}
-                onSelectDistrict={drillTo.district}
-                onSelectFacility={setSelectedFacility}
-                onHover={setHover}
+                onSelectState={drillToState}
+                onSelectDistrict={drillToDistrict}
+                onSelectFacility={selectFacility}
+                onHover={handleMapHover}
+                districtLayersReady={districtLayersReady}
+                viewportInset={viewportInset}
               />
             ) : (
               !topoError && <Skeleton className="h-full w-full rounded-xl" />
             )}
-            {/* legend */}
-            <div className="pointer-events-none absolute left-2 top-2 space-y-1 rounded-lg bg-white/85 px-2.5 py-2 text-[10px] shadow-sm">
-              <div className="font-semibold text-slate-600">
-                {level === 'district' ? 'Facility trust' : `${activeMetric.label}${effectiveLog ? ' · log' : ''}`}
+
+            {/* left overlay: tool rail (top-left) + legend (bottom-left, may be wider than rail) */}
+            <div className="pointer-events-none absolute inset-2 z-10">
+              <div ref={mapRailRef} className="pointer-events-auto absolute left-0 top-0 w-9">
+                <MapToolRail
+                  flyout={mapFlyout}
+                  onFlyoutChange={setMapFlyout}
+                  showPins={showPins}
+                  onShowPinsChange={setShowPins}
+                  canHome={!!(selectedState || selectedDistrict)}
+                  onHome={drillToNation}
+                  display={display}
+                  onDisplayChange={setDisplay}
+                  logScale={effectiveLog}
+                  logDisabled={logDisabled}
+                  onLogScaleChange={setLogScale}
+                  groups={groups}
+                  activeMetric={activeMetric}
+                  onMetricChange={setActiveMetric}
+                />
               </div>
-              {level === 'district' ? (
-                <div className="flex flex-col gap-0.5">
-                  {(['strong', 'partial', 'weak_suspicious'] as TrustSignal[]).map((s) => (
-                    <span key={s} className="flex items-center gap-1.5 text-slate-600">
-                      <span className="inline-block h-2 w-2 rounded-full" style={{ background: SIGNAL_COLORS[s] }} />
-                      {s === 'weak_suspicious' ? 'suspicious' : s}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  <span className="min-w-[1.5rem] text-right tabular-nums font-medium text-slate-600">
-                    {legendDomain ? formatMetric(legendDomain[0], activeMetric.unit) : 'low'}
-                  </span>
-                  <span className="h-2 w-20 rounded-full" style={{ background: `linear-gradient(to right, ${ramp.join(', ')})` }} />
-                  <span className="min-w-[1.5rem] tabular-nums font-medium text-slate-600">
-                    {legendDomain ? formatMetric(legendDomain[1], activeMetric.unit) : 'high'}
-                  </span>
-                </div>
-              )}
-              {level !== 'district' && (
-                <div className="text-slate-400">
-                  {display === 'bubble' ? 'size = facility count' : 'colour by region'}
-                  {activeMetric.unit !== 'score' && activeMetric.unit !== 'count' && ` · ${activeMetric.unit}`}
-                </div>
-              )}
+              <div ref={mapLegendRef} className="pointer-events-auto absolute bottom-0 left-0">
+                <MapLegend
+                  level={level}
+                  activeMetric={activeMetric}
+                  effectiveLog={effectiveLog}
+                  display={display}
+                  ramp={ramp}
+                  domain={legendDomain}
+                  capabilityLabel={activeCap?.label}
+                  facilityCounts={legendFacilityCounts}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -642,33 +938,48 @@ export function MapPage() {
         <aside className="flex min-h-0 flex-col">
           <ScrollArea className="min-h-0 flex-1 pr-2">
             <div className="space-y-3">
-              <MetricReadout regionName={readout.name} scope={readout.scope} metric={activeMetric} value={readout.value} rank={readout.rank} total={readout.total} />
+              <MetricReadout
+                geoLevel={readout.geoLevel}
+                regionName={readout.name}
+                scope={readout.scope}
+                metric={activeMetric}
+                value={readout.value}
+              />
 
-              {selectedFacility ? (
-                <FacilityCard f={selectedFacility} onClose={() => setSelectedFacility(null)} />
-              ) : hover?.kind === 'facility' && hover.facility ? (
-                <FacilityCard f={hover.facility} onClose={() => setHover(null)} />
-              ) : level === 'district' && selDistrictRating ? (
-                <RegionCard title={selectedDistrict!} sub={`District · ${selectedState}`} rating={selDistrictRating} />
-              ) : level === 'state' && selStateRating ? (
-                <RegionCard title={selectedState!} sub="State" rating={selStateRating} />
-              ) : (
-                <RegionCard title="India" sub={`All states · ${activeCap?.label ?? capability}`} rating={national} />
-              )}
+              <MapDrilldownPanel
+                level={level}
+                hover={hover}
+                selectedState={selectedState}
+                selectedDistrict={selectedDistrict}
+                selectedFacility={selectedFacility}
+                selStateRating={selStateRating}
+                selDistrictRating={selDistrictRating}
+                national={national}
+                capability={capability}
+                capabilityLabel={activeCap?.label}
+                onCloseFacility={() => setSelectedFacility(null)}
+                onClearHover={() => setHover(null)}
+                onFacilityUpdated={handleFacilityUpdated}
+              />
 
               <div className="flex items-center justify-between px-0.5">
                 <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Top facilities {level !== 'nation' && `· ${selectedDistrict ?? selectedState}`}
+                  Facility rankings {level !== 'nation' && `· ${selectedDistrict ?? selectedState}`}
                 </span>
                 <Badge variant="outline" className="text-[10px]">{filteredFacilities.length}</Badge>
               </div>
 
               {filteredFacilities.length === 0 ? (
-                <p className="px-0.5 text-xs text-muted-foreground">No facilities claim {activeCap?.label ?? 'this capability'} for the current scope and filters.</p>
+                <p className="px-0.5 text-xs text-muted-foreground">
+                  {level === 'district' && (selDistrictRating?.facilities ?? 0) > 0
+                    ? `Facilities in this district are listed when you drill down; none match the current trust or type filters for ${activeCap?.label ?? 'this capability'}.`
+                    : `No facilities claim ${activeCap?.label ?? 'this capability'} for the current scope and filters.`}
+                </p>
               ) : (
                 <div className="space-y-1.5">
                   {filteredFacilities.slice(0, 60).map((f) => {
-                    const sig = f.overrideSignal ?? f.trustSignal;
+                    const sig = effectiveTrustSignal(f);
+                    const score = effectiveTrustScore(f);
                     const isSel = selectedFacility?.facilityId === f.facilityId;
                     return (
                       <button
@@ -676,18 +987,18 @@ export function MapPage() {
                         type="button"
                         onMouseEnter={() => setHoveredFacilityId(f.facilityId)}
                         onMouseLeave={() => setHoveredFacilityId(null)}
-                        onClick={() => setSelectedFacility(f)}
+                        onClick={() => selectFacility(f)}
                         className={`flex w-full items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition-colors ${
                           isSel ? 'border-primary bg-primary/5' : 'border-border bg-card hover:bg-muted/50'
                         }`}
                       >
-                        <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">#{f.rank}</span>
+                        <span className="text-xs font-semibold tabular-nums text-muted-foreground">#{f.rank}</span>
                         <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: SIGNAL_COLORS[sig] }} />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium text-foreground">{f.name}</span>
-                          <span className="block truncate text-[11px] text-muted-foreground">{f.district} · {f.type}</span>
+                          <span className="block truncate text-xs text-muted-foreground">{f.district} · {f.type}</span>
                         </span>
-                        <span className="text-xs font-bold tabular-nums text-foreground">{Math.round(f.trustScore * 100)}</span>
+                        <span className="min-w-[2rem] text-right text-sm font-bold tabular-nums text-foreground">{Math.round(score * 100)}</span>
                       </button>
                     );
                   })}

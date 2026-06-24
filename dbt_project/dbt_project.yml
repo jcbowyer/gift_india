@@ -1,12 +1,15 @@
-name: gift_india
+# Databricks (upstream) medallion. Distinct from the Postgres serving project
+# in ../gift_india_dbt (adapter: postgres) — these are two separate dbt projects
+# in the pipeline, not duplicates. See ../README.md for the architecture.
+name: gift_india_databricks
 version: "1.0.0"
 config-version: 2
 
 # Connection profile. Locally this resolves from profiles.yml in this directory
 # (Databricks unified auth via the `gift-india` CLI profile). When run as a
-# Databricks Jobs dbt task, the platform generates a matching `gift_india`
+# Databricks Jobs dbt task, the platform generates a matching `gift_india_databricks`
 # profile from the task's warehouse_id / catalog / schema.
-profile: gift_india
+profile: gift_india_databricks
 
 model-paths: ["models"]
 macro-paths: ["macros"]
@@ -24,7 +27,7 @@ clean-targets:
 # Only the gold layer is synced out to Lakebase (Delta is the source of truth);
 # bronze and silver live in the lakehouse only.
 models:
-  gift_india:
+  gift_india_databricks:
     +persist_docs:
       relation: true
       columns: true
@@ -40,7 +43,7 @@ models:
 
 # Reference data (friendly metric labels + categories) lands alongside silver.
 seeds:
-  gift_india:
+  gift_india_databricks:
     +schema: silver_gift_india
     metric_definitions:
       +column_types:

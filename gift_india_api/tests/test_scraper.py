@@ -1,0 +1,476 @@
+"""Unit tests for the facility website scraper (``src.scraper``).
+
+Covers the pure logic that's easy to get subtly wrong — URL normalisation, the
+email/phone extraction, slugging, snapshot paths, and input parsing — plus the
+fetch retry loop and ``scrape_one``'s ok / http_error / fetch_error / cached
+branches, all with fakes (no real network).
+"""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+import requests
+
+from src import scraper
+
+
+# --------------------------------------------------------------- URL parsing
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("example.com", "https://example.com"),
+        ("http://example.com/path", "http://example.com/path"),
+        ("  https://Example.com ", "https://Example.com"),
+    ],
+)
+def test_normalise_url_adds_scheme_and_trims(raw, expected):
+    assert scraper._normalise_url(raw) == expected
+
+
+@pytest.mark.parametrize("raw", [None, "", "   ", "nan", "None", "NULL", "https://"])
+def test_normalise_url_rejects_empty_and_schemeless(raw):
+    assert scraper._normalise_url(raw) is None
+
+
+def test_normalise_url_strips_stray_quotes():
+    # Real facility data carries values like '"esic.nic.in"' (embedded quotes).
+    assert scraper._normalise_url('"esic.nic.in"') == "https://esic.nic.in"
+    assert scraper._normalise_url("'hospital.org'") == "https://hospital.org"
+
+
+def test_normalise_url_survives_malformed_host():
+    # urlparse raises ValueError on bad IPv6 brackets — must skip, not crash.
+    assert scraper._normalise_url("http://[bad::host") is None
+
+
+# --------------------------------------------------------------- crawl scope
+@pytest.mark.parametrize(
+    "district, state",
+    [
+        ("Mumbai", "Maharashtra"),
+        ("Andheri West, Mumbai", "Maharashtra"),
+        ("Central Delhi", "Delhi"),
+        ("Delhi", "East Delhi"),            # noisy/swapped fields
+        ("Bengaluru", "Karnataka"),
+        ("Bangalore", "Karnataka"),
+        ("Lucknow", "U.p."),                # locality in district, junk in state
+        ("Jaisalmer", "Rajasthan"),
+    ],
+)
+def test_in_crawl_scope_matches_pilot_districts(district, state):
+    assert scraper._in_crawl_scope(district, state) is True
+
+
+@pytest.mark.parametrize(
+    "district, state",
+    [
+        ("Pune", "Maharashtra"),
+        ("Chennai", "Tamil Nadu"),
+        ("Bangarapet", "Karnataka"),        # 'bangar' must NOT match 'bangalore'
+        ("Jaipur", "Rajasthan"),
+        ("", ""),
+        (None, None),
+    ],
+)
+def test_in_crawl_scope_excludes_others(district, state):
+    assert scraper._in_crawl_scope(district, state) is False
+
+
+# ------------------------------------------------------- excluded facility types
+@pytest.mark.parametrize(
+    "ftype",
+    [
+        "Clinic / Centre",
+        "Primary Health Centre",
+        "Community Health Centre",
+        "  clinic / centre  ",   # whitespace + casing tolerated
+        "PRIMARY HEALTH CENTRE",
+    ],
+)
+def test_is_excluded_type_matches_small_primary_care(ftype):
+    assert scraper._is_excluded_type(ftype) is True
+
+
+@pytest.mark.parametrize(
+    "ftype",
+    [
+        "Private Hospital",
+        "Medical College Hospital",
+        "District Hospital",
+        "Charitable / Mission Hospital",
+        "",
+        None,
+    ],
+)
+def test_is_excluded_type_keeps_hospitals(ftype):
+    assert scraper._is_excluded_type(ftype) is False
+
+
+def test_targets_from_facilities_drops_excluded_types(monkeypatch):
+    import pandas as pd
+
+    from src import data as data_module
+
+    facilities = pd.DataFrame(
+        [
+            # In-scope hospital — kept.
+            {"facility_id": "VF-1", "name": "Mumbai Private", "type": "Private Hospital",
+             "district": "Mumbai", "state": "Maharashtra", "website_url": "hosp.example"},
+            # In-scope but an excluded clinic type — dropped.
+            {"facility_id": "VF-2", "name": "Mumbai Clinic", "type": "Clinic / Centre",
+             "district": "Mumbai", "state": "Maharashtra", "website_url": "clinic.example"},
+            # Excluded type, all-districts — still dropped regardless of scope.
+            {"facility_id": "VF-3", "name": "Pune PHC", "type": "Primary Health Centre",
+             "district": "Pune", "state": "Maharashtra", "website_url": "phc.example"},
+        ]
+    )
+    monkeypatch.setattr(
+        data_module, "load_bundle",
+        lambda: data_module.DataBundle(facilities=facilities, districts=pd.DataFrame()),
+    )
+
+    targets = scraper.targets_from_facilities(all_districts=True)
+    assert [t.facility_id for t in targets] == ["VF-1"]
+
+
+# --------------------------------------------------------------- extraction
+def test_extract_pulls_structured_fields():
+    html = """
+    <html><head>
+      <title>  Aravind   Eye  Hospital </title>
+      <meta name="description" content="Eye care in Madurai">
+    </head><body>
+      <h1>Welcome</h1>
+      <script>var email='hidden@evil.com';</script>
+      <style>.x{color:red}</style>
+      <p>Contact: Info@Aravind.org or care@aravind.org</p>
+      <p>Phone: +91 452 4356 100</p>
+      <address>1 Anna Nagar, Madurai</address>
+    </body></html>
+    """
+    data = scraper.extract(html, "https://aravind.org")
+
+    assert data["title"] == "Aravind Eye Hospital"  # whitespace collapsed
+    assert data["heading"] == "Welcome"
+    assert data["description"] == "Eye care in Madurai"
+    # emails are lower-cased, de-duped and sorted; script content is stripped.
+    assert data["emails"] == ["care@aravind.org", "info@aravind.org"]
+    assert "hidden@evil.com" not in data["emails"]
+    assert data["phones"]  # the +91 number was captured
+    assert "1 Anna Nagar, Madurai" in data["addresses"]
+    assert data["source_url"] == "https://aravind.org"
+
+
+def test_extract_falls_back_to_og_title():
+    html = '<html><head><meta property="og:title" content="OG Name"></head><body></body></html>'
+    assert scraper.extract(html, "https://x.test")["title"] == "OG Name"
+
+
+def test_extract_truncates_long_text():
+    body = "word " * (scraper.MAX_TEXT_CHARS)  # well over the cap
+    data = scraper.extract(f"<html><body>{body}</body></html>", "https://x.test")
+    assert len(data["text"]) <= scraper.MAX_TEXT_CHARS
+    assert data["text_truncated"] is True
+
+
+def test_extract_captures_specialties_and_treatments():
+    html = """
+    <html><head><title>Sunrise Heart & Cancer Hospital</title>
+      <meta name="description" content="Leading cardiology and oncology care.">
+    </head><body>
+      <h1>Centres of Excellence</h1>
+      <ul>
+        <li>Department of Cardiac Sciences — Angioplasty &amp; Bypass Surgery</li>
+        <li>Nephrology &amp; Dialysis</li>
+        <li>Neonatology (NICU)</li>
+        <li>IVF &amp; Fertility</li>
+      </ul>
+    </body></html>
+    """
+    specialties = scraper.extract(html, "https://x.test")["specialties"]
+    # Canonical labels, de-duped and sorted; covers specialities + treatments,
+    # including ones named only in the <title>/meta (Oncology) and acronyms (NICU).
+    for expected in (
+        "Cardiology", "Angioplasty", "Bypass Surgery", "Oncology",
+        "Nephrology", "Dialysis", "Neonatology", "Fertility / IVF",
+    ):
+        assert expected in specialties, f"missing {expected!r} in {specialties}"
+    assert specialties == sorted(specialties)
+
+
+def test_extract_saves_detailed_capability_claims():
+    html = """
+    <html><head><title>City Care Hospital</title></head><body>
+      <p>Our 18-bed ICU offers 24x7 intensivist-led critical care with ventilator support.</p>
+      <p>The maternity unit has a dedicated labour ward and emergency C-section capability.</p>
+      <p>A Level-III NICU cares for premature newborns around the clock.</p>
+      <p>The 24x7 emergency department provides resuscitation and trauma surgery.</p>
+      <p>We are a friendly neighbourhood pharmacy.</p>
+    </body></html>
+    """
+    claims = scraper.extract(html, "https://x.test")["capability_claims"]
+    by_cap = {}
+    for c in claims:
+        by_cap.setdefault(c["capability"], []).append(c)
+
+    # Each tracked capability mentioned on the page yields a verbatim-sentence claim.
+    for cap in ("icu", "maternity", "nicu", "emergency", "trauma"):
+        assert cap in by_cap, f"no claim mined for {cap}: {claims}"
+    # The claim quotes the page sentence (evidence, not paraphrase) and records the
+    # matched term.
+    icu = by_cap["icu"][0]
+    assert "intensivist-led critical care" in icu["snippet"]
+    assert icu["term"] in {"icu", "intensive care", "critical care", "intensivist", "ventilator"}
+    # The pharmacy line mentions no capability, so no claim is fabricated for it.
+    assert not any("pharmacy" in c["snippet"].lower() for c in claims)
+
+
+def test_capability_claims_window_long_runs_and_cap_count():
+    # A menu dump (one long run, no periods) mentioning ICU many times is windowed
+    # to a bounded snippet and capped per capability.
+    blob = ("home about contact " * 30) + "our intensive care unit is excellent " + ("services " * 30)
+    claims = scraper._capability_claims(blob)
+    icu = [c for c in claims if c["capability"] == "icu"]
+    assert len(icu) <= scraper.MAX_CLAIMS_PER_CAPABILITY
+    assert icu and len(icu[0]["snippet"]) <= scraper.CLAIM_MAX_CHARS + 2  # +ellipses
+    assert "intensive care" in icu[0]["snippet"].lower()
+
+
+def test_specialties_is_whole_word_and_high_precision():
+    # Substrings of vocabulary words must not produce false hits (e.g. "parent"
+    # and "consistent" contain "ent"; nothing here is a whole-word speciality).
+    assert scraper._specialties("a parent stood by a consistent different patient") == []
+    # but a genuine whole-word ENT / stent mention is caught.
+    assert "ENT" in scraper._specialties("Our ENT department")
+    assert "Angioplasty" in scraper._specialties("Coronary stent placement")
+
+
+@pytest.mark.parametrize(
+    "text, expect_match",
+    [
+        ("Call +91 452 4356 100 now", True),       # 12 digits
+        ("Reception: 044-2356-1234", True),         # 10 digits, hyphens
+        ("Ref code 12345", False),                  # only 5 digits
+        ("Year 2024 was great", False),             # 4 digits
+    ],
+)
+def test_valid_phones(text, expect_match):
+    assert bool(scraper._valid_phones(text)) is expect_match
+
+
+# --------------------------------------------------------------- slugs / paths
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("Tamil Nadu", "tamil-nadu"),
+        ("  Madurai  ", "madurai"),
+        ("Dr. A.B.'s Clinic!!", "dr-a-b-s-clinic"),
+        ("", ""),
+    ],
+)
+def test_human_slug(raw, expected):
+    assert scraper._human_slug(raw) == expected
+
+
+def test_human_slug_truncates():
+    assert len(scraper._human_slug("a " * 100, max_len=20)) <= 20
+
+
+def test_facility_subdir_is_hierarchical_and_unique():
+    out = Path("/tmp/scraped")
+    a = scraper.facility_subdir(out, facility_id="VF-1", name="Aravind", state="Tamil Nadu", district="Madurai")
+    b = scraper.facility_subdir(out, facility_id="VF-2", name="Aravind", state="Tamil Nadu", district="Madurai")
+    assert a == out / "tamil-nadu" / "madurai" / "aravind-VF-1"
+    assert a != b  # same name, different id -> distinct leaf
+
+
+def test_facility_subdir_unknown_geography_fallbacks():
+    sub = scraper.facility_subdir(Path("/tmp/s"), facility_id="X", name="")
+    assert sub == Path("/tmp/s") / "unknown-state" / "unknown-district" / "X"
+
+
+# --------------------------------------------------------------- input files
+def test_targets_from_input_csv(tmp_path):
+    csv_path = tmp_path / "urls.csv"
+    csv_path.write_text(
+        "facility_id,name,website_url,state,district\n"
+        "VF-1,Aravind,aravind.org,Tamil Nadu,Madurai\n"
+        "VF-2,Empty,,Kerala,Kochi\n",  # blank url -> skipped
+        encoding="utf-8",
+    )
+    targets = scraper.targets_from_input(csv_path)
+    assert len(targets) == 1
+    t = targets[0]
+    assert t.facility_id == "VF-1"
+    assert t.url == "https://aravind.org"
+    assert t.state == "Tamil Nadu"
+
+
+def test_targets_from_input_csv_missing_url_column(tmp_path):
+    csv_path = tmp_path / "bad.csv"
+    csv_path.write_text("facility_id,name\nVF-1,Aravind\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="website_url"):
+        scraper.targets_from_input(csv_path)
+
+
+def test_targets_from_input_txt(tmp_path):
+    txt = tmp_path / "urls.txt"
+    txt.write_text("example.com\n\nhttps://test.org\n", encoding="utf-8")
+    targets = scraper.targets_from_input(txt)
+    assert [t.url for t in targets] == ["https://example.com", "https://test.org"]
+
+
+# --------------------------------------------------------------- fetch retries
+class _FlakySession:
+    """Raises a connection error a fixed number of times, then returns a value."""
+
+    def __init__(self, fail_times: int, response="OK"):
+        self.fail_times = fail_times
+        self.response = response
+        self.calls = 0
+
+    def get(self, url, **kwargs):
+        self.calls += 1
+        if self.calls <= self.fail_times:
+            raise requests.ConnectionError("boom")
+        return self.response
+
+
+def test_fetch_retries_then_succeeds(monkeypatch):
+    monkeypatch.setattr(scraper.time, "sleep", lambda *_: None)  # no real waiting
+    session = _FlakySession(fail_times=2)
+    assert scraper.fetch(session, "https://x.test", retries=2) == "OK"
+    assert session.calls == 3  # 2 failures + 1 success
+
+
+def test_fetch_raises_after_exhausting_retries(monkeypatch):
+    monkeypatch.setattr(scraper.time, "sleep", lambda *_: None)
+    session = _FlakySession(fail_times=5)
+    with pytest.raises(requests.ConnectionError):
+        scraper.fetch(session, "https://x.test", retries=2)
+    assert session.calls == 3  # initial try + 2 retries
+
+
+# --------------------------------------------------------------- scrape_one
+class _FakeResponse:
+    def __init__(self, *, status=200, text="<html></html>", url="https://x.test", content_type="text/html"):
+        self.status_code = status
+        self.text = text
+        self.url = url
+        self.headers = {"Content-Type": content_type}
+        self.apparent_encoding = "utf-8"
+        self.encoding = "utf-8"
+
+
+def _target():
+    return scraper.ScrapeTarget(
+        facility_id="VF-1", name="Aravind", url="https://aravind.org",
+        state="Tamil Nadu", district="Madurai",
+    )
+
+
+def test_scrape_one_ok_writes_snapshot_and_extraction(tmp_path, monkeypatch):
+    html = '<html><head><title>Aravind</title></head><body><p>care@aravind.org</p></body></html>'
+    monkeypatch.setattr(scraper, "fetch", lambda *a, **k: _FakeResponse(text=html))
+    monkeypatch.setattr(
+        scraper,
+        "_capture_thumbnails",
+        lambda record, **kwargs: (
+            setattr(record, "png_path", str(kwargs["facility_dir"] / "homepage.png"))
+            or setattr(record, "pdf_path", str(kwargs["facility_dir"] / "homepage.pdf"))
+        ),
+    )
+
+    rec = scraper.scrape_one(
+        session=None, target=_target(), out_dir=tmp_path,
+        timeout=1, retries=0, force=False, thumbnails=True,
+    )
+
+    assert rec.status == "ok"
+    assert rec.http_status == 200
+    assert rec.title == "Aravind"
+    assert rec.n_emails == 1
+    assert rec.png_path.endswith("homepage.png")
+    assert rec.pdf_path.endswith("homepage.pdf")
+    assert Path(rec.html_path).read_text(encoding="utf-8") == html
+    extracted = json.loads(Path(rec.extracted_path).read_text(encoding="utf-8"))
+    assert extracted["emails"] == ["care@aravind.org"]
+    assert extracted["facility_id"] == "VF-1"
+
+
+def test_scrape_one_http_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(scraper, "fetch", lambda *a, **k: _FakeResponse(status=404))
+    rec = scraper.scrape_one(
+        session=None, target=_target(), out_dir=tmp_path, timeout=1, retries=0, force=False,
+    )
+    assert rec.status == "http_error"
+    assert rec.http_status == 404
+    assert rec.error == "HTTP 404"
+    assert rec.html_path is None  # nothing written on error
+
+
+def test_scrape_one_fetch_error(tmp_path, monkeypatch):
+    def _boom(*a, **k):
+        raise requests.ConnectionError("dns fail")
+
+    monkeypatch.setattr(scraper, "fetch", _boom)
+    rec = scraper.scrape_one(
+        session=None, target=_target(), out_dir=tmp_path, timeout=1, retries=0, force=False,
+    )
+    assert rec.status == "fetch_error"
+    assert "dns fail" in rec.error
+
+
+def test_scrape_one_uses_cache_without_fetching(tmp_path, monkeypatch):
+    # First scrape populates the cache.
+    html = '<html><head><title>Cached</title></head><body><p>a@b.org x@y.org</p></body></html>'
+    monkeypatch.setattr(scraper, "fetch", lambda *a, **k: _FakeResponse(text=html))
+    monkeypatch.setattr(scraper, "_capture_thumbnails", lambda *a, **k: None)
+    scraper.scrape_one(None, _target(), tmp_path, timeout=1, retries=0, force=False, thumbnails=False)
+
+    # Second scrape must NOT fetch again (force=False, extraction exists).
+    def _explode(*a, **k):
+        raise AssertionError("fetch should not be called when cache is warm")
+
+    monkeypatch.setattr(scraper, "fetch", _explode)
+    rec = scraper.scrape_one(None, _target(), tmp_path, timeout=1, retries=0, force=False, thumbnails=False)
+    assert rec.status == "ok"
+    assert rec.title == "Cached"
+    assert rec.n_emails == 2  # read back from the cached extraction
+
+
+def test_scrape_one_backfills_missing_thumbnails_from_cache(tmp_path, monkeypatch):
+    html = '<html><head><title>Cached</title></head><body><p>a@b.org</p></body></html>'
+    leaf = scraper.facility_subdir(
+        tmp_path, facility_id="VF-1", name="Aravind", state="Tamil Nadu", district="Madurai",
+    )
+    leaf.mkdir(parents=True)
+    (leaf / "page.html").write_text(html, encoding="utf-8")
+    (leaf / "extracted.json").write_text(
+        json.dumps({"title": "Cached", "emails": ["a@b.org"], "source_url": "https://aravind.org"}),
+        encoding="utf-8",
+    )
+
+    captured: dict = {}
+
+    def _capture(record, **kwargs):
+        captured["url"] = kwargs["url"]
+        (kwargs["facility_dir"] / "homepage.png").write_bytes(b"png")
+        (kwargs["facility_dir"] / "homepage.pdf").write_bytes(b"pdf")
+        record.png_path = str(kwargs["facility_dir"] / "homepage.png")
+        record.pdf_path = str(kwargs["facility_dir"] / "homepage.pdf")
+
+    monkeypatch.setattr(scraper, "_capture_thumbnails", _capture)
+    monkeypatch.setattr(
+        scraper, "fetch",
+        lambda *a, **k: (_ for _ in ()).throw(AssertionError("fetch should not run")),
+    )
+
+    rec = scraper.scrape_one(None, _target(), tmp_path, timeout=1, retries=0, force=False, thumbnails=True)
+    assert rec.status == "ok"
+    assert rec.title == "Cached"
+    assert captured["url"] == "https://aravind.org"
+    assert (leaf / "homepage.png").exists()
+    assert (leaf / "homepage.pdf").exists()

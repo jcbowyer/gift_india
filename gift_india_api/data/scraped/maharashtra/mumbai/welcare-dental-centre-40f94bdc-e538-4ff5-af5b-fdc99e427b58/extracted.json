@@ -1,0 +1,15 @@
+{
+  "source_url": "https://welcare.co/",
+  "title": null,
+  "heading": null,
+  "description": null,
+  "emails": [],
+  "phones": [],
+  "addresses": [],
+  "text": "",
+  "text_truncated": false,
+  "extracted_at": "2026-06-16T03:01:54+00:00",
+  "facility_id": "40f94bdc-e538-4ff5-af5b-fdc99e427b58",
+  "facility_name": "Welcare Dental Centre",
+  "http_status": 200
+}

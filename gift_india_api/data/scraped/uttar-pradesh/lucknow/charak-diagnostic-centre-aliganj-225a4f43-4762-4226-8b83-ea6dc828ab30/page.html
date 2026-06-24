@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content="">
+<title>Welcome to Charak Diagnostics Centre</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
+<link href="css/owl.carousel.min.css" rel="stylesheet">
+<link href="css/owl.theme.default.css" rel="stylesheet">
+<link href="css/font-awesome.min.css" rel="stylesheet">
+<link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<link href="icofont/css/icofont.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="roboto.css" type="text/css" />
+<script type="text/javascript" src="js1/jquery-1.11.2.min.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="p:domain_verify" content="3d71206df5f97fc48412b444259a15a0"/>
+
+<link rel="stylesheet" type="text/css" href="home/fonts.css">
+<link rel="stylesheet" type="text/css" href="home/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="home/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="home/style.min.css">
+<link rel="stylesheet" type="text/css" href="home/jquery.fancybox.css">
+
+</head>
+
+<body>
+<script type="text/javascript" src="js1/jquery-1.11.2.min.js"></script>
+<script>
+$(document).ready(function(){
+		$(".form-item").submit(function(e){
+			var form_data = $(this).serialize();
+			//alert(form_data);
+			var button_content = $(this).find('button[type=submit]');
+			button_content.html('Adding...'); //Loading button text 
+
+			$.ajax({ //make ajax request to cart_process.php
+				url: "cart_process.php",
+				type: "POST",
+				dataType:"json", //expect json value from server
+				data: form_data
+			}).done(function(data){ //on Ajax success
+				$("#cart-info").html(data.items); //total items in cart-info element
+				button_content.html('Add to Cart'); //reset button text to original text
+				alert("Item added to Cart!"); //alert user
+				if($(".shopping-cart-box").css("display") == "block"){ //if cart box is still visible
+					$(".cart-box").trigger( "click" ); //trigger click to update the cart box.
+				}
+			})
+			e.preventDefault();
+		});
+
+	//Show Items in Cart
+	$( ".cart-box").click(function(e) { //when user clicks on cart box
+		e.preventDefault(); 
+		$(".shopping-cart-box").fadeIn(); //display cart box
+		$("#shopping-cart-results").html('<img src="images/ajax-loader.gif">'); //show loading image
+		$("#shopping-cart-results" ).load( "cart_process.php", {"load_cart":"1"}); //Make ajax request using jQuery Load() & update results
+	});
+	
+	//Close Cart
+	$( ".close-shopping-cart-box").click(function(e){ //user click on cart box close link
+		e.preventDefault(); 
+		$(".shopping-cart-box").fadeOut(); //close cart-box
+	});
+	
+	//Remove items from cart
+	$("#shopping-cart-results").on('click', 'a.remove-item', function(e) {
+		e.preventDefault(); 
+		var pcode = $(this).attr("data-code"); //get product code
+		$(this).parent().fadeOut(); //remove item element from box
+		$.getJSON( "cart_process.php", {"remove_code":pcode} , function(data){ //get Item count from Server
+			$("#cart-info").html(data.items); //update Item count in cart-info
+			$(".cart-box").trigger( "click" ); //trigger click on cart-box to update the items list
+		});
+	});
+
+});
+</script>
+
+<div class="header-wrapper">
+  <div class="header"><!-- header start -->
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-9"> <a href="index.php"><img src="images/logo.png" class="img-responsive"></a> </div>
+        <div class="col-lg-8 col-md-8 col-sm-8 hidden-xs">
+          <ul class="ds-btn">
+            <li> <span>Enquiry Us<br>
+              <small><a href="#">charak1984@gmail.com</a></small></span> </li>
+            <li> <span>Emergency<br>
+              <small>9305-5482-77</small></span> </li>
+            <li> <span>Tollfree No.<br>
+              <small>8688-360-360</small></span> </li>
+            <li> <span>Appointments<br>
+              <small>8400-8888-44 </small></span> </li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-3"> <a href="#" class="cart-box" id="cart-info" title="View Cart"><i class="fa fa-shopping-cart"></i>
+          0          </a>
+          <div class="shopping-cart-box"> <a href="#" class="close-shopping-cart-box" >Close</a>
+            <h3>Health Packages</h3>
+            <div id="shopping-cart-results"> </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /.header start -->
+  <div class="navigation-wrapper">
+    <div class="container-fluid">
+      <div id="navigation">
+        <ul>
+          <li><a href="index.php" title="Home">Home</a></li>
+          <li><a href="#" title="About Us">About us</a>
+            <ul>
+              <li><a href="about.php">About us</a></li>
+              <li><a href="vision-mission.php">Vision & Mission</a></li>
+               <li><a href="team.php">Our Team</a> </li>
+            </ul>
+          </li>
+          
+          <li><a href="#">Pathology</a>
+            <ul>
+                
+                <li><a href="haematology.php">Haematology</a> </li>
+                <li><a href="biochemistry.php">Biochemistry</a> </li>
+                <li><a href="immunology.php">Immunology</a> </li>
+                <li><a href="histopathology.php">Histopathology</a> </li>
+                <li><a href="cytology.php">Cytology</a> </li>
+                <li><a href="bone-marrow.php">Bone Marrow</a> </li>
+                <li><a href="microbiology.php">Microbiology</a> </li>
+                <li><a href="molecular-lab.php">Molecular Lab</a> </li>
+             </ul>
+          </li>
+          
+          
+           <li><a href="#">Radiology</a>
+            <ul>
+                <li><a href="ct-scan.php">CT-Scan</a> </li>
+                <li><a href="ct-angiography.php">CT-Angiography</a> </li>
+                <li><a href="digital-x-ray.php">Digital X-Ray</a> </li>
+                <li><a href="ultrasound.php">Ultrasound</a> </li>
+                <li><a href="mammography.php">Mammography</a> </li>
+                <li><a href="fibro-scan.php">Fibro Scan</a> </li>
+                <li><a href="iop-dental.php">PG/IOP Dental</a> </li>
+                <li><a href="ivp.php">IVP</a> </li>
+                <li><a href="hsg.php">HSG</a> </li>
+                <li><a href="bmd.php">BMD</a> </li>
+                
+
+             </ul>
+          </li>
+          
+          
+           <li><a href="#">Nuclear Medicine</a>
+            <ul>
+                <li><a href="pet-scan.php">Pet CT </a> </li>
+                 <li><a href="gamma-camera.php">Gamma Camera </a> </li>
+               
+            </ul>
+          </li>
+          
+          <li><a href="#">Other Facilities</a>
+            <ul>
+                <li><a href="pft.php">PFT</a> </li>
+                 <li><a href="eeg.php">EEG </a> </li>
+                  <li><a href="endoscopy.php">Endoscopy</a> </li>
+                 <li><a href="colonoscopy.php">Colonoscopy </a> </li>
+               
+            </ul>
+          </li>
+          
+          
+          <li><a href="#">Cardiac</a>
+            <ul>
+                <li><a href="twod-echo.php">2D Echo</a> </li>
+                     <li><a href="tmt.php">TMT</a> </li>
+                     <li><a href="ecg.php">ECG</a> </li>
+                     <li><a href="holter-monitoring.php">Holter Monitoring</a> </li>
+
+            </ul>
+          </li>
+          
+         
+          
+          <!--<li><a href="team.php">Our Team</a> </li>
+          <li><a href="career.php">Career</a> </li>
+          <li><a href="vacancy.php">Vacancy</a> </li>-->
+          
+          <!--<li><a href="packages.php">Health Packages</a> </li>-->
+          <li><a href="testpackages.php" title="Health Packages">Health Packages</a>
+            <ul>
+                            <li><a href="testpackages.php?ct=1">Cardiac Tests</a></li>
+                            <li><a href="testpackages.php?ct=2">CT Scan H</a></li>
+                            <li><a href="testpackages.php?ct=3">Doppler</a></li>
+                            <li><a href="testpackages.php?ct=4">Health check-up</a></li>
+                            <li><a href="testpackages.php?ct=5">MRI</a></li>
+                            <li><a href="testpackages.php?ct=6">Pathology</a></li>
+                            <li><a href="testpackages.php?ct=7">Registration</a></li>
+                            <li><a href="testpackages.php?ct=8">Sonography</a></li>
+                            <li><a href="testpackages.php?ct=9">Sonography H</a></li>
+                            <li><a href="testpackages.php?ct=10">X-Ray</a></li>
+                          </ul>
+          </li>
+         
+          <li><a href="gallery.php">Gallery</a> </li>
+          <li><a href="contact.php">Contact us</a> </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="slider">
+  <div class="owl-carousel owl-theme">
+    <div class="item"><img src="images/Cardiac-CT-320.jpg"> </div>
+    <div class="item"><img src="images/PET-CT.jpg"> </div>
+    <div class="item"><img src="images/slider-2.jpg"> </div>
+    <div class="item"><img src="images/slider-1.jpg"> </div>
+    <div class="item"><img src="images/slider-3.jpg"> </div>
+  </div>
+</div>
+<div class="cta-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <marquee behavior="alternate" scrollamount="7" onmouseover="this.stop()" onmouseout="this.start()">
+        <a class="btn btn-warning btn-lg" href="https://charakpath.com:8080/charak_live/Design/onlinelab" target="_blank">Book for Sample Collection at HOME</a> <a class="btn btn-danger btn-lg" href="https://charakpath.com/charak_live/design/onlinelab/" target="_blank">Check Patient Reports</a> <a class="btn btn-warning btn-lg" href="pet-ct-gamma.php">PET-CT &amp; GAMMA CAMERA SCAN</a>
+        </marquee>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="space-medium bg-default" style="background-image: url(images/about-2-title-bg.jpg) ;background-size: cover ;background-position: center; padding: 45px 15px 30px 15px">
+  <div class="container">
+    <div class="row">
+      <div class="section-title text-center"> 
+        <!-- section title start-->
+        
+        <h1 class="welcome" style="color: #ffde2f;">Welcome</h1>
+        <h2 class="text-default">to Charak Diagnostic Center, Chowk</h2>
+        <p class="lead">A vision to strengthen healthcare in the communities we serve and empower patients to make informed choices, was at the genesis of Charak Diagnostic & Medical Research Institute.</p>
+        <p class="lead">Inaugurated in January 2000, the Center is a significant social initiative from Charak Group. It is designed to raise India's global standing as a healthcare destination, with emphasis on excellence in clinical services, diagnostic facilities and research activities.</p>
+        <p class="lead">We are the only Diagnostic center in Lucknow to function with a FULL TIME SPECIALIST SYSTEM, that ensures the availability and access to the best medical talent around-the-clock.</p>
+        <!-- <p><a href="about.php" class="btn btn-default ">Read More</a></p>--> 
+      </div>
+      <!--<div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+        <div class="feature feature-block feature-bg">
+          <div class="feature-title">
+            <h2>NEWS UPDATE FROM CHARAK</h2>
+          </div>
+          <div class="feature-content">
+            <marquee behavior="scroll" height="250" direction="up" onmouseout="this.setAttribute('scrollamount', 4, 0);this.start();" onmouseover="this.setAttribute('scrollamount', 0, 0);this.stop();" scrollamount="4">
+            <p class="line">Charak Diagnostic Center, Chowk
+              Lucknow.</p>
+            <p class="line">For Detail Contact: 0522-2254255, 2255386, 8400888844, 9415577933, 9336154100.</p>
+            <p class="line">HOME SAMPLE COLLECTION facility available at your door step</p>
+            <p class="line">Other Branch at
+              Shubham Complex Near S.G.P.G.I. 
+              Main Gate Raibareilly Road, Lucknow.<br>
+              Ph.: 9389232048</p>
+            </marquee>
+          </div>
+        </div>
+      </div>--> 
+    </div>
+  </div>
+</div>
+
+
+
+
+<div class="space-medium" style="background: #f1faff;">
+  <div class="container">
+   
+    <div class="row">
+    
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+        <div class="treatment-block1"> 
+          <!-- treatment block --> 
+         <div class="treatment-icon mb20"><img src="images/vision.png"></div>
+          <!-- treatment img -->
+          <div class="treatment-content1"> 
+            <!-- treatment content -->
+            <h2><a href="#" class="title">Our Vision</a></h2>
+            <p>To be nationally respected for excellence in patient care and most trusted for personalized coordinated care of the patients. </p>
+          </div>
+          <!-- treatment content --> 
+        </div>
+        <!-- /.treatment block --> 
+      </div>
+      
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+        <div class="treatment-block1"> 
+          <!-- treatment block --> 
+         <div class="treatment-icon mb20"><img src="images/mission.png"></div>
+          <!-- treatment img -->
+          <div class="treatment-content1"> 
+            <!-- treatment content -->
+            <h2><a href="#" class="title">Our Mission</a></h2>
+            <p>To improve the health and healing of the people and communities we serve at affordable price.</p>
+          </div>
+          <!-- treatment content --> 
+        </div>
+        <!-- /.treatment block --> 
+      </div>
+      
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+<!-- Our Services desktop -->
+<section class="sec_services">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <h2 class="head_title">our services</h2>
+        <div class="about_star">
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <section class="services_list hidden-xs hidden-sm">
+    <div class="container-fluid no_padding">
+      <div class="row no_margin">
+        <div class="row_height">
+          <div class="col-md-4 col-sm-4 col-xs-4 col_height no_padding">
+            <div class="ser_img ser_img_1 d_block"></div>
+            <div class="ser_img ser_img_2"></div>
+            <div class="ser_img ser_img_3"></div>
+            <div class="ser_img ser_img_4"></div>
+            <div class="ser_img ser_img_5"></div>
+            <div class="ser_img ser_img_6"></div>
+            <div class="ser_img ser_img_7"></div>
+          </div>
+          <div class="col-md-4 col-sm-6 col-xs-4 col_height servicedata_wrp no_padding">
+            <section>
+              <div class="servicedata mri_data d_block">
+                <h3 class="ser_headtitle">Cardiac CT 320-Slice CT uCT 780</h3>
+                <p class="tabtext"> High Quality and Low Dose Images<br>
+Maximize Patient Throughput</p>
+              </div>
+              <div class="servicedata ctscan_data">
+                <h3 class="ser_headtitle"> PET-CT & GAMMA CAMERA SCAN</h3>
+                <p class="tabtext"> </p>
+              </div>
+              <div class="servicedata mammography_data">
+                <h3 class="ser_headtitle"> MRI Scanner</h3>
+                <p class="tabtext"> The Most Comfortable Ultra Short <br>Supercon  MRI Scanner in the World</p>
+                
+                  <p class="tabtext">No Claustrophobia<br>
+              seamless whole cns & whole abdomen imaging<br>
+              head to toe applications </p>
+                
+              </div>
+              <div class="servicedata sonography_data">
+                <h3 class="ser_headtitle">Optima 660</h3>
+                <p class="tabtext"> 128 slices ultra-low<br>
+                dose ct scanner </p> 
+              </div>
+              <div class="servicedata xray_data ">
+                <h3 class="ser_headtitle">MRI Machine</h3>
+                <p class="tabtext">  </p>
+              </div>
+              
+              
+              <button data-toggle="modal" data-target="#callus" class="m_btn btn_3 servicebook_btn">CALL US NOW</button>
+            </section>
+          </div>
+          <div class="col-md-4 col-sm-6 col-xs-6 col_height services_wrp no_padding" >
+            <ul class="service_list">
+              <li id="mri" class="active">
+                <h3>Cardiac CT 320-Slice CT uCT 780</h3>
+              </li>
+              <li id="ctscan">
+                <h3>PET-CT & GAMMA CAMERA SCAN</h3>
+              </li>
+              <li id="mammography">
+                <h3>MRI Scanner</h3>
+              </li>
+              
+              <li id="sonography">
+                <h3>Optima 660</h3>
+              </li>
+              <li id="xray" >
+                <h3>MRI Machine</h3>
+              </li>
+              <li> <a href="#" class="more ">View other Services</a> </li>
+             <!-- <li id="bone">
+                <h3>Bone Densitometry</h3>
+              </li>
+              <li id="biopsy" >
+                <h3>BIOPSY PROCEDURES</h3>
+              </li>
+              <li> <a href="#" class="more ">View other Services</a> </li>-->
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- Our Services mobile-->
+<section class="m_servicewrp hidden-md hidden-lg">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="panel-group" id="accordion">
+          <div class="panel panel-default"> <a data-toggle="collapse" data-parent="#accordion" href="#m_mri" class="service_head service_1">
+            <h3>Cardiac CT 320-Slice CT uCT 780</h3>
+            </a>
+            <div id="m_mri" class="panel-collapse collapse in">
+              <div class="panal_data">
+            <p>High Quality and Low Dose Images<br>
+Maximize Patient Throughput</p>
+                <button data-toggle="modal" data-target="#callus" class="m_btn btn_3 servicebook_btn">CALL US NOW</button>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default"> <a data-toggle="collapse" data-parent="#accordion" href="#m_ctscan" class="service_head service_2">
+            <h3>PET-CT & GAMMA CAMERA SCAN</h3>
+            </a>
+            <div id="m_ctscan" class="panel-collapse collapse">
+              <div class="panal_data">
+               
+                <button data-toggle="modal" data-target="#callus" class="m_btn btn_3 servicebook_btn">CALL US NOW</button>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default"> <a data-toggle="collapse" data-parent="#accordion" href="#m_mammography" class="service_head service_3">
+            <h3>MRI Scanner</h3>
+            </a>
+            <div id="m_mammography" class="panel-collapse collapse">
+              <div class="panal_data">
+                <p> The Most Comfortable Ultra Short<br>
+Supercon MRI Scanner in the World </p>
+
+<p>No Claustrophobia<br>
+seamless whole cns & whole abdomen imaging<br>
+head to toe applications </p>
+                <button data-toggle="modal" data-target="#callus" class="m_btn btn_3 servicebook_btn">CALL US NOW</button>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default"> <a data-toggle="collapse" data-parent="#accordion" href="#m_sonography" class="service_head service_4">
+            <h3>Optima 660</h3>
+            </a>
+            <div id="m_sonography" class="panel-collapse collapse">
+              <div class="panal_data">
+                <p> 128 slices ultra-low<br>
+dose ct scanner </p>
+                <button data-toggle="modal" data-target="#callus" class="m_btn btn_3 servicebook_btn">CALL US NOW</button>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default"> <a data-toggle="collapse" data-parent="#accordion" href="#m_xray" class="service_head service_5">
+            <h3>MRI Machine</h3>
+            </a>
+            <div id="m_xray" class="panel-collapse collapse">
+              <div class="panal_data">
+                
+                <button data-toggle="modal" data-target="#callus" class="m_btn btn_3 servicebook_btn">CALL US NOW</button>
+              </div>
+            </div>
+          </div>
+          
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Number -->
+<section class="sec_number">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <h2 class="head_title">Our Experience</h2>
+      </div>
+    </div>
+    <div class="number_silder hidden-xs">
+      <div class="row">
+        <div class="col-md-4 col-sm-4 col-xs-12 count_wrap"> <img src="home/icon_2.jpg" alt="Charak Diagnostics Centre" />
+          <div class="counter"><span class="count">45+</span></div>
+          <span class="title">Years of established <br/>
+          excellence</span> </div>
+        <!--<div class="col-md-3 col-sm-3 col-xs-12 count_wrap"> <img src="home/icon_h2.png" alt="Charak Diagnostics Centre"/>
+          <div class="counter"><span class="count">14</span></div>
+          <span class="title">Expert, organ-specific <br/>
+          radiologists</span> </div>-->
+        <div class="col-md-4 col-sm-4 col-xs-12 count_wrap"> <img src="home/icon_h3.png" alt="Charak Diagnostics Centre"/>
+          <div class="counter"><span class="count">250000</span><span>+</span></div>
+          <span class="title">Patients <br>
+          assisted</span> </div>
+        <div class="col-md-4 col-sm-4 col-xs-12 count_wrap last"> <img src="home/icon_4.jpg" alt="Charak Diagnostics Centre"/>
+          <div class="counter"><span class="count">2.5 Cr</span><span>+</span></div>
+          <span class="title">Patients  <br>
+          served &amp; satisfied</span> </div>
+      </div>
+    </div>
+    
+    <!-- Number slidermobile -->
+    <div class="number_silder hidden-sm hidden-md hidden-lg">
+      <div id="number_silder" class="carousel slide" data-ride="carousel"> 
+        <!-- Wrapper for slides -->
+        <div class="carousel-inner">
+          <div class="item active count_wrap">
+            <p class="text-center"><img src="home/icon_2.jpg" alt="Charak Diagnostics Centre"/></p>
+            <div class="counter"><span class="count">45+</span></div>
+            <span class="title">Years of established <br/>
+            excellence</span> </div>
+          
+          <div class="item count_wrap">
+            <p class="text-center"><img src="home/icon_h3.png" alt="Charak Diagnostics Centre"/></p>
+            <div class="counter"><span class="count">250000</span><span>+</span></div>
+            <span class="title">Patients <br>
+            assisted</span> </div>
+          <div class="item count_wrap">
+            <p class="text-center"><img src="home/icon_4.jpg" alt="Charak Diagnostics Centre"/></p>
+            <div class="counter"><span class="count">2.5 Cr</span><span>+</span></div>
+            <span class="title">Patients <br>
+            served &amp; satisfied</span> </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<div class="space-medium bg-default" style="background-image: url(images/about-2-title-bg.jpg) ;background-size: cover ;background-position: center; padding: 45px 15px 30px 15px">
+  <div class="container">
+    <div class="section-title mb0 text-center"> 
+      <!-- section title start-->
+      <h1 style="color: #ffde2f;">Our Team</h1>
+    </div>
+    <div class="row">
+      <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+        <div class="team-block">
+          <div class="team-img"> <a href="#"> <img src="images/team-img-1.jpg" alt="" class="img-responsive"></a> </div>
+          <div class="team-content">
+            <h3 class="team-title">Dr. Ratan Kumar Singh </h3>
+            <p>Chairman &amp; Founder</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+        <div class="team-block">
+          <div class="team-img"> <a href="#"><img src="images/team-img-1.jpg" alt="" class="img-responsive"></a> </div>
+          <div class="team-content">
+            <h3 class="team-title">Dr. Ashwani Kumar Singh</h3>
+            <p>Managing Director</p>
+          </div>
+        </div>
+      </div>
+        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+        <div class="team-block">
+          <div class="team-img"> <a href="#"> <img src="images/team-img-1.jpg" alt="" class="img-responsive"></a> </div>
+          <div class="team-content">
+            <h3 class="team-title">Dr. Rajesh Sharma</h3>
+            <p>MD- Radiologist </p>
+          </div>
+        </div>
+      </div>
+      
+      
+      <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+        <div class="team-block">
+          <div class="team-img"> <a href="#"><img src="images/team-img-1.jpg" alt="" class="img-responsive"></a> </div>
+          <div class="team-content">
+            <h3 class="team-title">Dr. Nishant Sharma</h3>
+            <p>MD- Pathology</p>
+          </div>
+        </div>
+      </div>
+      
+      
+      
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+<!-- testimonila desktop /tab -->
+<section class="sec_testimonials hidden-xs">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <h2 class="head_title">What our patients say</h2>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <section class="testi_slider">
+          <div id="testi_slider" class="carousel slide" data-ride="carousel">
+            <div class="carousel-inner">
+              <div class="item active">
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>Best Doctors best staff. I have gain best experience in charak hospital Lucknow </p>
+                    <span class="name">Rekha Saxena</span> </section>
+                </div>
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>All Staff are Good and coparative and Very Good Service</p>
+                    <span class="name">Sam Khan</span> </section>
+                </div>
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>All facileties avileble hare rest room lift
+good employe </p>
+                    <span class="name">Javed Khan</span> </section>
+                </div>
+                
+                
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>
+All type of body check up available here....
+</p>
+                    <span class="name">Vivek Vishwakarma</span> </section>
+                </div>
+                
+              </div>
+              <div class="item">
+                
+                
+                  <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>Best Doctors best staff. I have gain best experience in charak hospital Lucknow </p>
+                    <span class="name">Rekha Saxena</span> </section>
+                </div>
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>All Staff are Good and coparative and Very Good Service</p>
+                    <span class="name">Sam Khan</span> </section>
+                </div>
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>All facileties avileble hare rest room lift
+good employe </p>
+                    <span class="name">Javed Khan</span> </section>
+                </div>
+                
+                
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>
+All type of body check up available here....
+</p>
+                    <span class="name">Vivek Vishwakarma</span> </section>
+                </div>
+                
+              </div>
+              
+              
+            </div>
+            <ol class="carousel-indicators">
+              <li data-target="#testi_slider" data-slide-to="0" class="active"></li>
+              <li data-target="#testi_slider" data-slide-to="1"></li>
+              <li data-target="#testi_slider" data-slide-to="2"></li>
+              <li data-target="#testi_slider" data-slide-to="3"></li>
+            </ol>
+            
+            <!--  <ol class="carousel-indicators">
+                            <li data-target="#testi_slider" data-slide-to="0" class="active"></li>
+                            <li data-target="#testi_slider" data-slide-to="1"></li>
+                        </ol> --> 
+            
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- testimonila mobile -->
+<section class="sec_testimonials hidden-lg hidden-md hidden-sm">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <h2 class="head_title">what our patients say</h2>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <section class="testi_slider">
+          <div id="testi_slider" class="carousel slide" data-ride="carousel">
+            <div class="carousel-inner" id="pa_testimonials_mobile"> </div>
+            <div class="carousel-inner">
+         
+         
+         <div class="item active">
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>Best Doctors best staff. I have gain best experience in charak hospital Lucknow </p>
+                    <span class="name">Rekha Saxena</span> </section>
+                </div>
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>All Staff are Good and coparative and Very Good Service</p>
+                    <span class="name">Sam Khan</span> </section>
+                </div>
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>All facileties avileble hare rest room lift
+good employe </p>
+                    <span class="name">Javed Khan</span> </section>
+                </div>
+                
+                
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>
+All type of body check up available here....
+</p>
+                    <span class="name">Vivek Vishwakarma</span> </section>
+                </div>
+                
+              </div>
+              <div class="item">
+                
+                
+                  <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>Best Doctors best staff. I have gain best experience in charak hospital Lucknow </p>
+                    <span class="name">Rekha Saxena</span> </section>
+                </div>
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>All Staff are Good and coparative and Very Good Service</p>
+                    <span class="name">Sam Khan</span> </section>
+                </div>
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>All facileties avileble hare rest room lift
+good employe </p>
+                    <span class="name">Javed Khan</span> </section>
+                </div>
+                
+                
+                <div class="col-md-3 col-sm-4 col-xs-12 sec"> <img src="home/quote_icon.png" alt="Charak Diagnostics Centre"/>
+                  <section class="slide_item">
+                    <p>
+                    <p>
+All type of body check up available here....
+</p>
+                    <span class="name">Vivek Vishwakarma</span> </section>
+                </div>
+                
+              </div>
+         
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<script>
+    
+        $("#mri").click(function(){
+            $(".service_list li").removeClass("active");
+            $(this).addClass("active");
+            $(".servicedata").hide();
+            $(".mri_data").show();
+            $(".ser_img").hide();
+            $(".ser_img_1").show();
+            
+        });
+        
+        $("#ctscan").click(function(){
+            $(".service_list li").removeClass("active");
+            $(this).addClass("active");
+            $(".servicedata").hide();
+            $(".ctscan_data").show();
+            $(".ser_img").hide();
+            $(".ser_img_2").show();
+        });
+        
+        $("#sonography").click(function(){
+            $(".service_list li").removeClass("active");
+            $(this).addClass("active");
+            $(".servicedata").hide();
+            $(".sonography_data").show();
+            $(".ser_img").hide();
+            $(".ser_img_4").show();
+        });
+        $("#mammography").click(function(){
+            $(".service_list li").removeClass("active");
+            $(this).addClass("active");
+            $(".servicedata").hide();
+            $(".mammography_data").show();
+            $(".ser_img").hide();
+            $(".ser_img_3").show();
+        });
+        
+        $("#biopsy").click(function(){
+            $(".service_list li").removeClass("active");
+            $(this).addClass("active");
+            $(".servicedata").hide();
+            $(".biopsy_data").show();
+            $(".ser_img").hide();
+            $(".ser_img_6").show();
+        });
+        $("#xray").click(function(){
+            $(".service_list li").removeClass("active");
+            $(this).addClass("active");
+            $(".servicedata").hide();
+            $(".xray_data").show();
+            $(".ser_img").hide();
+            $(".ser_img_5").show();
+        });
+        
+        $("#bone").click(function(){
+            $(".service_list li").removeClass("active");
+            $(this).addClass("active");
+            $(".servicedata").hide();
+            $(".bone_data").show();
+            $(".ser_img").hide();
+            $(".ser_img_7").show();
+        });
+        
+        /* counter carousel interval*/  
+         $('#number_silder').carousel({
+            interval: 500
+        }); 
+        
+        
+        //map change
+        $("#btn_deccan").click(function(){
+            $(".map").hide();
+            $("#map_erandawane").show();
+        });
+        
+        $("#btn_bundgarden").click(function(){
+            $(".map").hide();
+            $("#map_bundgarden").show();
+        });
+        
+        $("#btn_akluj").click(function(){
+            $(".map").hide();
+            $("#map_akluj").show();
+        });
+        
+        $("#btn_wakad").click(function(){
+            $(".map").hide();
+            $("#map_wakad").show();
+        });
+
+    </script> 
+<script>
+  $(document).ready(function(){
+    $(".downarrow").hover(            
+        function() {
+            $('.dropdown-menu', this).stop(false,false).slideDown("slow");
+            $(this).toggleClass('open');        
+        },
+        function() {
+            $('.dropdown-menu', this).stop(false,false).slideUp("slow");
+            $(this).toggleClass('open');       
+        }
+    );
+});
+  </script> 
+<script>
+$("#mobile_slider").swipe({
+
+  swipe: function(event, direction, distance, duration, fingerCount, fingerData) {
+
+    if (direction == 'left') $(this).carousel('next');
+    if (direction == 'right') $(this).carousel('prev');
+
+  },
+  allowPageScroll:"vertical"
+
+});
+</script>
+
+
+<div class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+        <div class="footer-widget">
+          <h2 class="widget-title">Contact Details</h2>
+          <ul class="listnone contact">
+            <li><i class="fa fa-map-marker" style="top: 5px !important;"></i> 292/05, Tulsidas Marg, Chowk, <br>Lucknow - 226003</li>
+            <li><i class="fa fa-phone"></i> 0522-4062223</li>
+            <li><i class="fa fa-phone"></i>9305548277</li>
+            <li><i class="fa fa-mobile"></i> 8400888844, 9415577933 </li>
+            <li><i class="fa fa-envelope-o"></i> <a href="#">charak1984@gmail.com</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="footer-widget">
+          <h2 class="widget-title">Services</h2>
+          <ul class="listnone arrow">
+           <li><a href="haematology.php">Haematology</a> </li>
+                <li><a href="biochemistry.php">Biochemistry</a> </li>
+                <li><a href="pet-scan.php">Pet CT </a> </li>
+                 <li><a href="gamma-camera.php">Gamma Camera </a> </li>
+                <li><a href="ct-scan.php">CT-Scan</a> </li>
+                <li><a href="digital-x-ray.php">Digital X-Ray</a> </li>
+                <li><a href="ultrasound.php">Ultrasound</a> </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="footer-widget">
+          <h2 class="widget-title">Quick Links </h2>
+          <ul class="listnone arrow">
+            <li><a href="team.php">Our Team</a> </li>
+             <li><a href="vacancy.php">Vacancy</a> </li>
+          <li><a href="career.php">Career</a> </li>
+          <li><a href="testpackages.php">Health Packages</a> </li>
+          <li><a href="gallery.php">Photo Gallery</a> </li>
+          <li><a href="contact.php">Contact us</a> </li>
+          <li><a href="membership.php">Membership</a> </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+        <div class="footer-widget footer-social">
+          <h2 class="widget-title">Get In Touch</h2>
+          <ul class="listnone">
+            <li><a href="#" class="facebook-btn"><i class="fa fa-facebook"></i></a> </li>
+            <li><a href="#" class="twitter-btn"><i class="fa fa-twitter"></i></a></li>
+            <li><a href="#" class="youtube-btn"><i class="fa fa-youtube"></i></a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="tiny-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
+        <p style="color:#FFF">Copyright © 2019 Charak Diagnostics Centre.  All Rights Reserved.</p>
+      </div>
+      <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+        <p align="right" style="color:#FFF; text-align: right;">Design By <a style="color:#fff;" href="http://www.deepinfotech.co.in" target="_blank">Deep Infotech</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Messenger Chat plugin Code -->
+    <div id="fb-root"></div>
+
+    <!-- Your Chat plugin code -->
+    <div id="fb-customer-chat" class="fb-customerchat">
+    </div>
+
+    <script>
+      var chatbox = document.getElementById('fb-customer-chat');
+      chatbox.setAttribute("page_id", "352659512033626");
+      chatbox.setAttribute("attribution", "biz_inbox");
+
+      window.fbAsyncInit = function() {
+        FB.init({
+          xfbml            : true,
+          version          : 'v12.0'
+        });
+      };
+
+      (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = 'https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js';
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+    </script>
+
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) --> 
+<script src="js/jquery.min.js"></script> 
+<!-- Include all compiled plugins (below), or include individual files as needed --> 
+<script src="js/bootstrap.min.js"></script> 
+<!-- navigation --> 
+<script src="js/menumaker.js"></script> 
+<!-- sticky header --> 
+<script type="text/javascript" src="js/jquery.sticky.js"></script> 
+<script type="text/javascript" src="js/sticky-header.js"></script> 
+<!-- slider --> 
+<script src="js/owl.carousel.min.js"></script> 
+<script src="js/slider.js"></script> 
+<script src="js/ba-gallery.js"></script>
+</body>
+</html>

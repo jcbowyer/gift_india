@@ -1,324 +1,467 @@
-# Governance, Integrity, & Facility Trust Desk
+# Beyond the Hospital Directory
 
-> A Virtue Foundation hackathon project (**Track 1**) that
-> answers one question: **can this facility actually do what it claims?**
+**Grounding Improved Patient Care**
 
-Virtue Foundation maintains web-scraped, geotagged healthcare data describing
-*where care actually lives today*. But a facility *listing* a capability — ICU,
-maternity, emergency, oncology, trauma, NICU — is not the same as that capability
-being **real**. The hard problem: **separate trustworthy capability claims from
-unverified or contradicted ones**, with the evidence attached.
+**John Bowyer · Mason Bushyeager · Billy Houston**
 
-The Governance, Integrity, & Facility Trust Desk does exactly that. A planner picks a
-**capability** and a **region**, and sees facilities ranked by how strongly their
-claim is backed by evidence. Every facility carries a **trust signal** —
-`strong`, `partial`, `weak / suspicious`, or `no claim` — *computed from the
-citations behind it* (JCI Gold Seal accreditation, state registries, PMJAY
-empanelment, the facility's own website, directories, news, patient reports,
-inspections). The planner can expand any facility to read those citations and **override the
-assessment with a reviewer note**.
+**GIFT Gauge** — Governance, Integrity & Facility Trust  
+**Databricks for Good hackathon in support of the Virtue Foundation — Track 1**
 
-## Evidence focus — JCI as the global gold standard
+---
 
-This repo focuses on **one authoritative accreditation signal** as the backbone of
-the trust taxonomy:
+## Priya's User Story
 
-### 1. The global "Gold Standard": JCI accreditation
+We’re at the Databricks for Good hackathon in support of the Virtue Foundation — building for **Priya**, who runs allocation for a
+nonprofit health network across India. Her job is to **place patients and steer referrals**
+toward facilities that are clinically capable, cost-effective, and defensible when a district
+officer or donor asks *why*.
 
-The [Joint Commission International (JCI)](https://www.jointcommissioninternational.org/)
-provides the most widely recognized international scoring system for hospital
-capabilities.
+Every morning she faces the same trap: a spreadsheet says 847 facilities in Uttar Pradesh
+claim an **ICU**; a patient needs one tonight. Half those rows are duplicate entities, stale
+locations, or website copy nobody verified. She’s been burned by **hospital directories** — unable
+to tell if a hospital is actually equipped for the procedure or just **gaming the search
+results**. Routing wrong isn’t a data-quality bug. **It’s a patient-safety failure.**
 
-- **Taxonomy use:** A facility holding the **Gold Seal of Approval** maps directly to
-  the **`strong` evidence** signal for specific audited services — trauma, emergency
-  care, ICU, and other capabilities covered by the accreditation scope.
-- **Structure:** JCI's **8th Edition** standards are divided into five main sections,
-  including **Patient-Centered Care** and **Healthcare Organization Management** —
-  giving a structured, auditable basis for capability claims rather than self-reported
-  website copy alone.
+We’re here to answer one burning question that usually takes weeks of phone calls to resolve:
 
-Other citations (state registries, PMJAY empanelment, facility websites, directories,
-news, patient reports, inspections) still feed the trust engine; **JCI accreditation
-is the primary authoritative corroboration** we optimize the desk around.
+> **Can this hospital actually do what it claims?**
 
-## What G.I.F.T. stands for
+GIFT Gauge separates trustworthy capability claims from unverified ones — with the citations
+attached — so planners can steer patients to the **highest-quality, most cost-effective care**
+they can defend.
 
-**Governance, Integrity, & Facility Trust** — the **Desk** is the planner-facing
-surface that ranks facility capability claims by evidence.
+---
 
-**Why it works:** The name states the mission plainly and maps cleanly to the
-Virtue Foundation hackathon brief.
+## Built on Lakehouse
 
-**How to pitch it:**
+**Human-in-the-loop · why we defy the AI-default**
 
-> "NGO planners shouldn't have to fight 10,000 messy rows of web-scraped data to
-> save lives. We built the Governance, Integrity, & Facility Trust Desk — a
-> Databricks app that separates trustworthy capability claims from unverified ones,
-> with the citations attached."
+Everyone defaults to chatbots. We treat AI as an extractor, Splink before identity guesswork,
+and platform-native tooling before franken-code.
 
-## Quick start
+We’re not building on duct tape and prayers; we’re using the **Databricks Lakehouse** as our
+foundation.
+
+**MDM & Lakebase** — We treat our data like a product. By leveraging Lakebase architecture,
+we’ve deduplicated the chaos — if a hospital exists, we know exactly where it is, its
+clinical capacity, and that its accreditation is verified. Through **AgentBricks `ai_query`**,
+we surface these validated insights instantly within our data layer.
+
+**Grounded verification** — We don't take a hospital's marketing page at its word. We use
+autonomous agents to crawl live sites and cross-reference that data against CMS databases and
+national accreditation boards. We look for the **gap** between what they claim and what they
+can prove.
+
+**Databricks Apps & Genie** — We mashed up our **Genie BI API** with Databricks Apps to deploy
+a secure, ChatGPT-powered interface. It’s a clinical navigator that’s actually read the entire
+library of compliance and performance data.
+
+---
+
+## Tech stack: Decisions we made for ourselves
+
+Our human-in-the-loop stack defies the AI-default on purpose:
+
+| Decision Area | Our Human-in-the-Loop Approach | Why It Defies the AI-Default |
+|---------------|--------------------------------|------------------------------|
+| **AI_Classify vs. AI_Query** | We treat AI as an extractor (structured data), not a conversationalist. | Avoids hallucinated "answers" and conversational fluff; forces database-ready outputs. |
+| **Batching & Model Selection** | Cost-optimized routing: simple tasks to small models, complex to "heavy" models. | Prevents model bloat and stops overspending on low-complexity routine tasks. |
+| **Data Augmentation** | Splink probabilistic linkage surfaces **merge recommendations** across bronze sources — humans approve before gold. | Match scores, not LLM guesswork — duplicate pairs queue for planner review; nothing silently merges. |
+| **Native Platform Leverage** | We use Dabs, Genie, AI_Query, and Lakehouse FTS for everything possible. | We minimize "franken-coding" by relying on platform-native infrastructure rather than custom scripts. |
+
+Layer 1 trust scores are computed in **SQL** (auditable, reproducible). Layer 2 narration
+explains the frozen evidence — the LLM never recomputes the dial.
+
+---
+
+## The “30 years” problem: Call to Action
+
+There’s a massive difference between having **30 years of experience** and having **one year
+of experience repeated 30 times**. Some people just repeat their mistakes; others actually learn.
+
+Databricks isn't just about storage — it’s how we turn that learning into a natural ontology
+of decisions. We’re capturing the **why** behind the **what**, documenting which hospitals
+consistently deliver quality outcomes, and scaling that expertise. We are building an ontology
+that keeps humans in the loop, because algorithms don't have empathy — but they sure can help
+us deploy it faster.
+
+---
+
+## Closing the loop
+
+Huge thanks to **Databricks** and the **Virtue Foundation** for the platform and the partnership
+to make this real. We aren't just talking about the future of care; we are building the plumbing
+that makes it possible for planners to stop guessing and start steering.
+
+The best way to change the world isn't to look for a magic solution — **it's to try.** And we
+are trying.
+
+> *If you had to pick one piece of this — the clean Lakebase foundation or the AgentBricks
+> decision-making — where do you think your team would feel the biggest “relief” immediately?*
+
+**GIFT Gauge — Governance, Integrity & Facility Trust. We turn messy claims into trustworthy
+decisions.**
+
+---
+
+## Meet Priya — the persona behind the demo
+
+**Priya** runs allocation for a nonprofit health network across India. Her job is not
+to browse hospital websites — it is to **place patients and steer referrals** toward
+facilities that are both **clinically capable** and **cost-effective**, with an audit
+trail when a district officer or donor asks *why*.
+
+Every morning she faces the same trap:
+
+- A spreadsheet says 847 facilities in Uttar Pradesh claim an **ICU**.
+- A patient needs one tonight.
+- Half those rows are duplicate entities, stale locations, or self-reported website copy
+  nobody has verified.
+- Routing wrong is not a data-quality bug — **it is a patient-safety failure**.
+
+GIFT Gauge is the desk Priya opens instead of the spreadsheet. She picks a
+**capability** and a **region**, gets a **ranked, cited list**, drills into the
+evidence, and **overrides with ground truth** when she knows better. Trust first;
+allocation and referral follow.
+
+---
+
+## The ~5:30 demo story (presenter script)
+
+The app ships an **interactive version of this script** — click **✨ Demo** in the top
+bar (or press `g` then `d`). Full presenter notes with timings live in
+[`DEMO.md`](DEMO.md). The walkthrough opens on the title slide, then walks through the
+talk track and live product beats.
+
+| When | Beat | What Priya does | What she says |
+|------|------|-----------------|---------------|
+| **0:00** | **Title** | Title slide | *"Beyond the Hospital Directory"* · *Grounding Improved Patient Care* |
+| **0:20** | **Grit** | Immersive opener | *[beat]* ***"It's grit."*** |
+| **0:45** | **Priya's User Story** | Stands on Trust Gauge landing | *"847 ICUs on a hospital directory — patient needs one tonight. Routing wrong is a **patient-safety failure**."* |
+| **1:05** | **Burning question** | Hero stats | *"Can this hospital **actually** do what it claims?"* |
+| **1:25** | **Intent** | Clicks **ICU**, picks a **state** | *"Capability + region. No SQL."* |
+| **1:45** | **Ranked trust** | Scans the list — green / amber / red dials | *"Every claim ranked by **evidence strength**, not vibes."* |
+| **2:05** | **Receipts** | Expands **strong** ICU in **Maharashtra** | *"Facility-record citations + **NABH** — real source fields, not invented."* |
+| **2:20** | **Automated flags** | Switches to **Suspicious** — Human review badge + reason | *"System surfaces conflicts — human decides."* |
+| **2:35** | **Human wins** | **Override assessment** → note → **My Reviews** | *"Flag fired automatically; my judgment is on the record."* |
+| **3:00** | **Data Quality** | **Data Quality** — missing web-address finder | *"Splink merge recommendations across bronze sources — nothing silent."* |
+| **3:20** | **Steer care** | **Navigator** → **Scorecard** (flagged capabilities) | *"SQL scores + NABH crosswalk — live today."* |
+| **3:30** | **How we score** | Immersive script | *"45% supporting ratio, 25% breadth, 30% match confidence — SQL, not vibes."* |
+| **3:50** | **Narration stub** | Immersive script | *"**35** real LLM cards; **~3,900** stubs after **429** quota — dial unchanged."* |
+| **4:05** | **Scaling next** | Immersive script | *"JCI (**11**), crawl (**34**), LLM batch — foundation done, scale in flight."* |
+| **4:20** | **Lakehouse** | Immersive tech beats | *"MDM, grounded verification, Genie — defy the AI-default."* |
+| **5:08** | **Close** | Back to Trust Gauge | *"Stop guessing. Start steering. **GIFT Gauge.**"* |
 
 ```bash
 databricks auth login --profile gift-india --host https://dbc-0951416d-6d0e.cloud.databricks.com
 ./startup.sh
+# → http://localhost:8000
 ```
 
-`startup.sh` checks Databricks auth, installs web deps on first run, and starts the
-app at http://localhost:8000 (live Lakebase data). For manual steps see
-[Quickstart](#quickstart); to deploy see [Publish to Lakebase](#publish-to-lakebase).
+---
 
-## The four hackathon tracks — we built Track 1
+## How the trust score works (before the tech stack)
 
-This repo focuses on **Track 1 — the Governance, Integrity, & Facility Trust Desk**.
+The in-app **✨ Demo** walkthrough covers this beat **before** the Lakehouse / tech slides.
+Layer 1 is SQL; Layer 2 is narration only.
 
-| Track | Question | Status here |
-|-------|----------|-------------|
-| **1 · Governance, Integrity, & Facility Trust Desk** | Can this facility actually do what it claims? | ✅ **Built (this repo)** |
-| 2 · Medical Desert Planner | Where are the highest-risk gaps in care? | — not built |
-| 3 · Referral Copilot | Where should a patient or coordinator actually go? | — not built |
-| 4 · Data Readiness Desk | What needs fixing before this dataset is trusted? | — not built |
+### Layer 1 — `evidence_strength_score` (auditable ranking)
 
-**Track 1 minimum workflow — implemented end to end:** a planner selects a
-**capability** and **region** → sees **ranked facilities** (by evidence strength)
-→ **expands a facility to inspect its citations** → **overrides the assessment
-with a note** (saved to *My Reviews*).
+Computed in `gold.capability_scored` when `claimed = true`:
+
+| Input | Weight | What it measures |
+|-------|--------|------------------|
+| Supporting ratio | **45%** | `supporting_count / (supporting + contradicting)` |
+| Evidence breadth | **25%** | `min(evidence_count, 5) / 5` independent items |
+| Facility match confidence | **30%** | Entity-resolution confidence on name / website |
+| Contradiction penalty | **×0.8 each** | Every contradicting item multiplies the total |
+
+Unclaimed capabilities score **0.0**. Tiers: **Strong** (≥0.85) · **Moderate** (0.65–0.84) ·
+**Weak** (0.45–0.64) · **Insufficient** (<0.45).
+
+### Layer 2 — narration prompt (explains, never recomputes)
+
+`narrate_evidence.py` passes a frozen `evidence_context` block plus the grading rubric in
+`evidence_prompts.py`. The agent instruction is explicit: **use the numbers exactly as
+provided**. It maps tier → planner verdict (Confirmed / Likely / Needs review / Unsupported)
+and caps at **Needs review** when `contradicting_count > 0` or `trust_signal = weak_suspicious`.
+Swap models — only the prose card changes.
+
+### Where we're improving next
+
+| Opportunity | Today | Next |
+|-------------|-------|------|
+| **JCI cross-referencing** | Tiered entity resolution (`exact_name_state` → `brand_city` → `brand_state`) with `match_confidence` on `gold.facility_jci` | Portal verification, accreditation **scope** per capability, richer *why JCI attached* citations |
+| **Anomaly detection** | Per-facility flags: specialty mismatch, low entity confidence + claimed capability, contradicting registry rows | District-level outlier scoring — facilities fine in isolation but clustering as gaming patterns |
+
+---
+
+## What makes GIFT different
+
+### 1 · Data quality & master data management
+
+Web-scraped facility data is a **duplicate-entity problem** before it is an analytics
+problem. GIFT treats MDM as first-class infrastructure:
+
+| Problem | What we built |
+|---------|---------------|
+| **Same hospital, many names** | Tiered **entity resolution** in dbt — `gold.facility_jci`, `gold.facility_nabh`, `gold.facility_geography` — exact name + state → brand + city → brand + state, each with `match_confidence` |
+| **Messy locations** | Gazetteer normalization in `silver_facilities_resolved` — canonical state codes, district slugs, spatial fallbacks when labels disagree |
+| **Duplicate websites** | Crawl idempotency on `website_url` + `crawled_at`; one replayable history in `bronze.facility_web_crawl` |
+| **Low-confidence rows** | `match_confidence < 0.70` flagged for review, not silently dropped from `gold.facilities` |
+
+> *"Apollo Hospital, Chennai"* and *"Apollo Hospitals Enterprise Limited"* resolve to
+> one `facility_id` — with the match method and confidence visible to the planner.
+
+### 2 · Third-source integration & accreditation validation
+
+Virtue Foundation listings are the spine. GIFT **augments** them with independent
+reference sources — each landed in bronze, entity-resolved in gold, never merged
+without provenance:
+
+| Source | Role | Loader |
+|--------|------|--------|
+| **JCI** (Gold Seal) | International accreditation backbone → **strong** evidence | `make jci` |
+| **NABH** | National accreditation / empanelment (~19k orgs) | `make nabh` |
+| **PMJAY** | Public insurance empanelment signal | `make pmjay` |
+| **NHPR** | National Health Provider Registry cross-check | `make nhpr` |
+| **Facility websites** | First-party capability claims + verbatim evidence spans | `make crawl` |
+
+Accreditation is not a boolean sticker — it is a **resolved crosswalk** with
+`match_method`, `match_confidence`, and `source_url` so Priya can see *why* JCI or
+NABH attached to this row.
+
+### 3 · Genie BI API — ask the governed data in plain language
+
+The Databricks AppKit stack includes the **Genie plugin** (`gift_india_web/appkit.plugins.json`)
+for natural-language queries against the governed `gold.*` tables. Priya's colleagues
+who live in SQL notebooks can ask *"which districts have strong ICU evidence but no
+JCI-accredited hospital within 50 km?"* without writing the join themselves.
+
+Configure via `DATABRICKS_GENIE_SPACE_ID` on the deployed app bundle.
+
+### 4 · Search over **downloaded** evidence — not live hallucination
+
+We **download** facility websites into a human-readable tree under `data/scraped/`
+(HTML + `extracted.json` + thumbnails), land them in `bronze.facility_web_crawl`, and
+only then reason over them:
+
+- **Rule-based extraction** pulls `capability_claims` — verbatim sentences asserting ICU,
+  maternity, trauma, etc. — from curated medical vocabularies on the **saved** page text.
+- **Layer 2 narration** (`make narrate-pilot`) calls the model against a frozen
+  `evidence_context` block built in SQL — the LLM explains what was already downloaded
+  and scored; it does not invent sources.
+
+> The planner searches **what we actually fetched**, not what a model guesses a hospital
+> might have said.
+
+---
+
+## Better quality — decisions we made on purpose
+
+These are the architectural bets that keep GIFT **trustworthy** rather than merely clever.
+
+### `ai_classify` vs `ai_query` — classify in SQL, narrate with AI
+
+| | **Our choice: SQL classification (Layer 1)** | **What we did *not* do** |
+|---|-----------------------------------------------|--------------------------|
+| **Trust signal** | `gold.facility_capability_assessments` + `gold.capability_scored` — deterministic rules on specialties, beds, accreditation flags, `match_confidence`, supporting/contradicting counts | Let `ai_classify` or an LLM label a facility "strong" / "weak" |
+| **Ranking** | `evidence_strength_score` and `evidence_tier` computed entirely in dbt SQL | Probabilistic model scores that change run-to-run |
+| **Narration** | `ai_query` / serving endpoint **only** in Layer 2 — turns the pre-built `evidence_context` into JSON + Markdown cards | End-to-end LLM pipeline where the model both decides *and* explains |
+
+**Why:** Priya needs a score she can **reproduce in a hearing**. SQL classification is
+auditable; `ai_query` is for readability. The LLM never recomputes the number in the dial.
+
+### Batching, modes, and model cost
+
+Running ~3,300 pilot-district narrations taught us to separate **cost** from **quality**:
+
+| Mode | When | Trade-off |
+|------|------|-----------|
+| **`MODE=serving`** (default) | Hackathon / pilot / no warehouse | REST per row via `databricks-gpt-oss-20b` — no SQL warehouse burn |
+| **`MODE=ai_query`** | Warehouse already running | Batch `ai_query` over staged rows — faster at scale |
+| **`MODE=stub`** | Quota limits / offline dev | Template cards, zero model spend |
+
+**Default model:** `databricks-gpt-oss-20b` — affordable on the `gift-india-mb` workspace.
+Override with `AGENT=databricks-meta-llama-3-1-8b-instruct` for cheaper smoke runs.
+**Layer 1 scores never change** when you swap models — only the prose card does.
+
+```bash
+make dbt                                    # Layer 1 — required first
+make narrate-pilot PROFILE=gift-india-mb    # Layer 2 — pilot districts
+make narrate-pilot PROFILE=gift-india-mb LIMIT=50   # cheap test slice
+```
+
+### Supervisor agent — SQL supervises the LLM; humans supervise both
+
+Three layers of supervision, each with a clear veto:
+
+```mermaid
+flowchart TD
+  L1["Layer 1 · SQL supervisor<br/>evidence_strength_score + tier"]
+  L2["Layer 2 · Narration agent<br/>ai_query / serving — explains only"]
+  L3["Layer 3 · Planner override<br/>app.capability_overrides"]
+
+  L1 -->|"frozen evidence_context"| L2
+  L2 -->|"readable card"| UI["Trust Gauge UI"]
+  L1 --> UI
+  L3 -->|"wins on conflict"| UI
+```
+
+- **SQL supervisor:** prompts explicitly say *"Use the numbers EXACTLY as provided — do
+  not recompute."* Contradicting evidence caps the verdict at *Needs review*.
+- **Extraction agent** (silver-layer design): website parsing emits **verbatim evidence
+  spans** per field — the agent proposes; the span is the receipt.
+- **Human supervisor:** Priya's override in **My Reviews** supersedes the computed signal
+  and is stored in Lakebase for audit.
+
+### Data augmentation for data quality
+
+We do not wait for a perfect upstream feed. GIFT **augments** sparse or noisy Virtue rows:
+
+1. **Accreditation crosswalks** — JCI + NABH seeds resolve onto governed `facility_id`s.
+2. **Downloaded web evidence** — crawl snapshots enrich capability claims with first-party text.
+3. **Geography linkage** — `gold.facility_geography` ties facilities to district metrics
+   (NFHS-5, population) for Navigator and Scorecard.
+4. **Contradiction as signal** — supporting vs contradicting evidence counts feed both the
+   trust dial and a ready-made **Data Readiness** signal (Track 4).
+
+Augmentation always carries **provenance** (`data_source`, `source_url`, `crawl_id`) —
+never silent merges.
+
+---
+
+## The four hackathon tracks
+
+| Track | Question | Status |
+|-------|----------|--------|
+| **1 · GIFT Gauge** | Can this facility do what it claims? | ✅ **Built** |
+| 2 · Medical Desert Planner | Where are the highest-risk gaps? | Navigator + Scorecard (light) |
+| 3 · Referral Copilot | Where should a patient go? | Trust layer ready; routing next |
+| 4 · Data Readiness Gauge | What needs fixing in the dataset? | Contradiction + confidence flags |
+
+**Track 1 workflow — end to end:** capability + region → ranked facilities → expand
+citations → override with note → **My Reviews**.
+
+---
 
 ## Why India
 
-India was chosen deliberately: it is one of the most *challenging* countries for
-this problem — huge population, enormous regional variation, and messy,
-semi-structured source data. The underlying dataset is **web-scraped, structured
-and semi-structured, then governed**: classic information extraction turns text
-into rows and columns, attributes each row to a hospital, and resolves duplicate
-entities into a single primary key with a **confidence score** (named-entity
-resolution).
+India is deliberately hard mode: huge population, wild regional variation, messy
+semi-structured sources. If entity resolution and trust scoring work here, they work
+anywhere. The governed Virtue Foundation dataset
+(`databricks_virtue_foundation_dataset_dais_2026`) is the production source; a
+synthetic bundle in `gift_india_api/src/data.py` lets the **same engine and UI** run
+offline for demos.
 
-> For the hackathon demo the dataset is **synthetically generated** with realistic
-> Indian districts, coordinates, populations and specialties, so the app runs with
-> zero external dependencies. Swap `src/data.py` for the governed Virtue Foundation
-> dataset (see below) to go live.
+---
 
-## Databricks workspaces & data source
+## How it works (one screen)
 
-The governed Virtue Foundation data lives on Databricks. Working workspaces:
+```mermaid
+flowchart LR
+  subgraph ingest["Ingest · bronze"]
+    VF["Virtue facilities"]
+    WEB["Downloaded websites"]
+    ACC["JCI / NABH / PMJAY / NHPR"]
+  end
 
-| Workspace | Owner | Email | URL |
-|-----------|-------|-------|-----|
-| Mason Bushyeager's workspace | Mason Bushyeager| mbushyeager@carequest.org | https://dbc-0951416d-6d0e.cloud.databricks.com/explore/data/databricks_virtue_foundation_dataset_dais_2026?o=7474648526487231 |
- 
+  subgraph transform["Transform · dbt"]
+    SLV["silver — MDM + dedupe"]
+    GLD["gold — trust scores + citations"]
+  end
 
-**Additional contact:** kappasig@gmail.com
+  subgraph narrate["Narrate · Layer 2"]
+    LLM["ai_query / serving"]
+  end
 
-**Governed dataset:** `databricks_virtue_foundation_dataset_dais_2026` lives in
-**John Bowyer's workspace** (shared via Delta Sharing) —
-[open in Unity Catalog](https://dbc-0951416d-6d0e.cloud.databricks.com/explore/data/databricks_virtue_foundation_dataset_dais_2026?o=7474648526487231).
+  subgraph app["App · Lakebase"]
+    UI["Trust Gauge · Navigator · Scorecard"]
+    REV["My Reviews overrides"]
+  end
 
-Schema `virtue_foundation_dataset` contains:
+  VF --> SLV
+  WEB --> SLV
+  ACC --> SLV
+  SLV --> GLD
+  GLD --> LLM
+  GLD --> UI
+  LLM --> UI
+  REV --> UI
+```
 
-| Table | Description |
-|-------|-------------|
-| `facilities` | Geotagged healthcare facility records |
-| `india_post_pincode_directory` | India Post pincode reference directory |
-| `nfhs_5_district_health_indicators` | NFHS-5 district-level health indicators |
+1. **Ingest** — Python loaders land raw sources in `bronze` (scraping is ingest-only;
+   transformations stay in dbt).
+2. **MDM + trust (Layer 1)** — dbt builds `gold.facility_capability_assessments`,
+   `gold.capability_scored`, accreditation crosswalks. Citations quote real columns.
+3. **Narrate (Layer 2)** — `narrate_evidence.py` writes `gold.capability_evidence_json/md`.
+4. **App** — `gift_india_web` reads `gold.*` + `app.capability_overrides` from Lakebase.
 
-`src/data.py`'s `load_bundle()` reads from the best available source — Lakebase
-when deployed, a local Postgres when configured, and the synthetic dataset
-otherwise — so the engine, copilot, and UI never change.
+---
 
-## Quickstart
-
-The app is a **Databricks AppKit app**: a React client + Express server
-(`gift_india_web`) that reads live data from **Lakebase Postgres**. The Python data
-loaders/engine live in `gift_india_api`.
-
-First authenticate to the Databricks workspace, then run the dev server:
+## Quickstart (developers)
 
 ```bash
 databricks auth login --profile gift-india --host https://dbc-0951416d-6d0e.cloud.databricks.com/
 
 cd gift_india_web
 npm install
-npm run dev          # or, from the repo root: make web
+npm run dev          # or from repo root: make web
 ```
 
-`npm run dev` reads `gift_india_web/.env` (Databricks workspace + Lakebase endpoint)
-and serves the app at the URL it prints (defaults to http://localhost:8000, and
-falls back to the next free port). The Express server exposes `/api/*` routes
-(`/api/capabilities`, `/api/regions`, `/api/facilities`, `/api/facilities/:id`,
-`/api/overrides`, `/api/stats`) that read **gold serving tables only** on
-Lakebase Postgres:
+Prerequisites for live data: `make dbt` then `make narrate-pilot` for evidence cards.
 
-- `gold.facilities` / `gold.geography` — facility + district records
-- `gold.facility_capability_assessments` — per-facility trust signals (built by dbt)
-- `gold.capability_evidence` — citations quoting real facility-record fields
-
-Planner overrides are stored in `app.capability_overrides`. **Run `make dbt`**
-(after `make data` or publish) so the capability gold tables exist — the app
-does not seed or fabricate data.
-
-## Data loaders & local Postgres
-
-The dataset is generated and loaded by the Python loaders in `gift_india_api/src`.
-For a production-like data loop, run a local Postgres that **mirrors the Lakebase
-medallion**, land the raw dataset in `bronze`, build `silver` + `gold` with dbt,
-validate it, then publish to Lakebase.
+**Local Postgres loop:**
 
 ```bash
-cp .env.example .env          # sets GIFT_INDIA_DB_URL=postgresql://gift_india:gift_india@localhost:5432/gift_india
-
-make db-up                    # start Postgres 17 (docker compose); creates the bronze schema on first run
-make data                     # land raw in bronze (make load) + build silver/gold (make dbt)
+cp .env.example .env
+make db-up && make data    # bronze → silver → gold
 ```
 
-`make load` lands the raw dataset in `bronze`; `make dbt` promotes it through
-`silver` to the `gold` serving tables the app reads. `make data` runs both.
-`make db-reset` wipes and recreates the volume; `make load FORCE=1` regenerates
-the dataset before loading.
-
-> Don't have Docker? Point `GIFT_INDIA_DB_URL` at any Postgres and run
-> `cd gift_india_api && python -m src.load_db --dsn "$GIFT_INDIA_DB_URL"`, then
-> `make dbt` to build the silver/gold layers.
-
-### Crawling facility websites into bronze
-
-The governed dataset is **web-scraped**: `src/scraper.py` visits each facility's
-official `website_url` and snapshots it under `data/scraped/` in a human-readable
-hierarchy keyed by geography then facility —
-`data/scraped/<state>/<district>/<facility-name>-<facility_id>/` (raw HTML +
-extracted JSON, plus a top-level `manifest.json`). `src/load_crawl.py` then lands
-those snapshots in the raw `bronze.facility_web_crawl` table — the replayable
-input to the silver extraction step.
+**Publish to Lakebase:**
 
 ```bash
-make crawl                       # scrape every facility with a website_url + land in bronze
-make scrape LIMIT=20             # just scrape (snapshots to data/scraped/)
-make load-crawl                  # just land an existing data/scraped/ into bronze
-make scrape INPUT=data/urls.csv  # scrape an ad-hoc URL list (website_url/url column, or .txt)
+make publish ENDPOINT=projects/gift_india/branches/production/endpoints/primary PROFILE=<profile>
+make dbt    # against Lakebase credentials
 ```
 
-`load_crawl` appends idempotently — `crawl_id` is a hash of `website_url` +
-`crawled_at`, so re-loading the same manifest inserts nothing, while a fresh
-scrape appends new crawl history. It loads to Lakebase too
-(`python -m src.load_crawl --target lakebase --endpoint … --profile …`).
+**Pilot crawl districts** (website download scope): Mumbai, Delhi, Bengaluru, Lucknow,
+Jaisalmer — see `CRAWL_REGIONS` in `gift_india_api/src/scraper.py`.
 
-> The synthetic demo facilities have an empty `website_url`, so `make scrape`
-> finds nothing to fetch until you populate it from the governed Virtue
-> Foundation dataset (or pass `INPUT=`).
+---
 
-## Publish to Lakebase
+## Databricks workspace & governed data
 
-The **same loader** publishes the dataset to Databricks Lakebase, so the deployed
-app reads the data you validated locally. It resolves the endpoint host and a
-short-lived OAuth credential via the Databricks CLI.
+| Resource | Link |
+|----------|------|
+| Workspace | https://dbc-0951416d-6d0e.cloud.databricks.com |
+| Governed dataset | `databricks_virtue_foundation_dataset_dais_2026` / `virtue_foundation_dataset` |
+| Authors | John Bowyer · Mason Bushyeager · Billy Houston |
+| Contacts | mbushyeager@carequest.org · kappasig@gmail.com |
 
-All data lives in the **`gift_india` catalog** (Lakebase database), and the
-catalog, the `bronze` schema, and every table are owned by the shared **`admins`
-group role**. The loader achieves this by **logging in as the `admins` group**:
-any member of the Databricks `admins` group authenticates with the group role
-name as the username and their own OAuth token as the password, so everything it
-creates is owned by `admins` directly (see the Lakebase docs on
-[Postgres group roles](https://docs.databricks.com/aws/en/oltp/projects/postgres-roles)
-and [object ownership](https://docs.databricks.com/aws/en/oltp/projects/transfer-object-ownership)).
+Tables: `facilities`, `india_post_pincode_directory`, `nfhs_5_district_health_indicators`.
 
-```bash
-make publish \
-  ENDPOINT=projects/gift_india/branches/production/endpoints/primary \
-  PROFILE=<your-cli-profile>
-
-# equivalently (logs in as the `admins` group, loads into the gift_india catalog):
-cd gift_india_api && python -m src.load_db --target lakebase \
-  --endpoint projects/gift_india/branches/production/endpoints/primary \
-  --profile <your-cli-profile>
-```
-
-This lands the raw data in the `gift_india` catalog's `bronze` schema. Build the
-`silver`/`gold` serving tables against Lakebase afterwards by pointing the dbt
-profile at the endpoint — export `GIFT_INDIA_PGHOST` / `GIFT_INDIA_PGPASSWORD` /
-`GIFT_INDIA_PGSSLMODE=require` from the same OAuth credential, set
-`GIFT_INDIA_PGDATABASE=gift_india`, and set `GIFT_INDIA_PGUSER=admins` so the
-`silver`/`gold` schemas are also owned by `admins`, then `make dbt`. The app
-reads `gold`, so it isn't served until dbt has run.
-
-Find the endpoint path with `databricks postgres list-endpoints projects/gift_india/branches/production`.
-The bundle (`gift_india_web/databricks.yml` / `gift_india_web/app.yaml`) deploys the
-web app with a Lakebase resource pointed at the `gift_india` database; the app's
-service principal must be a member of the `admins` group to read the catalog.
-
-## How it works
-
-1. **Data** — `gift_india_api` loads facility + district records into `bronze`;
-   `gift_india_dbt` promotes them to **`gold.facilities`** / **`gold.geography`**
-   and builds Track 1 tables **`gold.facility_capability_assessments`** +
-   **`gold.capability_evidence`** from structured facility fields (specialties,
-   type, beds, `match_confidence`, `website_url`). Citations quote those columns —
-   never fabricated prose.
-2. **Trust engine** — dbt SQL derives each facility's per-capability **trust
-   signal** and score from on-record evidence; low entity-match confidence flags
-   weak/suspicious claims.
-3. **Web app** (`gift_india_web`) — reads **`gold.*` only** (plus
-   `app.capability_overrides` for human reviews). The Trust Desk ranks facilities,
-   expands to show citations, and saves planner overrides.
-
-## Two dbt projects (different warehouses, not duplicates)
-
-Transformation happens in **two distinct dbt projects that run on different
-engines** — this is intentional, not redundancy:
-
-| Project | Adapter | Runs on | Builds | Consumer |
-|---------|---------|---------|--------|----------|
-| `dbt_project/` | `databricks` | Databricks (DAB Job) | `workspace.gift_india_{bronze,silver,gold}` capability/metric marts from the governed Virtue Foundation Delta Share | Databricks analytics |
-| `gift_india_dbt/` | `postgres` | Lakebase / local Postgres | `silver` + `gold.facilities` / `gold.geography` (lat/long-linked serving tables) from the Postgres `bronze` landing | The web app + `data.py` |
-
-Because they target different warehouses (and even different schema names —
-`gift_india_silver` on Databricks vs `silver` on Postgres) they never collide.
-The **app's serving layer is `gift_india_dbt`** (`gold.facilities` /
-`gold.geography`); `dbt_project` is the upstream Databricks medallion.
-
-Build them from the repo root:
-
-```bash
-make data            # Postgres serving medallion (load bronze + build silver/gold)
-make dbt-databricks  # Databricks medallion (dbt_project/ on the SQL warehouse)
-make pipeline        # both of the above
-```
+---
 
 ## Project layout
 
 ```
 gift_india/
-├── gift_india_web/         # Databricks AppKit app (React client + Express server)
-│   ├── client/             # React frontend (Trust Desk, Facility detail, My Reviews)
-│   ├── server/
-│   │   ├── server.ts       # Express entry (AppKit + Lakebase plugins)
-│   │   └── routes/gift_india/
-│   │       ├── routes.ts       # /api/* Trust Desk routes (reads gold.* only)
-│   │       └── capabilities.ts # capability catalog constants (matches dbt seed)
-│   ├── databricks.yml      # bundle: deploys the app + Lakebase resource
-│   ├── app.yaml            # Databricks App run command (npm run start)
-│   └── package.json        # dev / build / start scripts
-├── gift_india_dbt/         # dbt (POSTGRES) serving medallion — what the app reads
-│   ├── models/silver/      # cleaned/typed facilities + geography (Lakebase bronze → silver)
-│   ├── models/gold/        # facilities, geography, facility_capability_assessments, capability_evidence
-│   ├── macros/             # haversine_km, geography_id, schema naming
-│   └── seeds/              # state_codes + capabilities catalog
-├── dbt_project/            # dbt (DATABRICKS) source medallion — DAB job on Databricks
-│   ├── databricks.yml      # Databricks Asset Bundle (scheduled dbt Job)
-│   └── models/             # VF Delta Share → bronze/silver/gold capability marts
-├── gift_india_api/
-│   └── src/
-│       ├── data.py         # dataset generation + Postgres/Lakebase loaders
-│       ├── db.py           # connectivity (local Postgres + Lakebase creds)
-│       ├── load_db.py      # CLI: create schema + load facilities/districts (local | lakebase)
-│       ├── scraper.py      # crawl facility website_url → data/scraped/ snapshots
-│       ├── load_crawl.py   # CLI: land data/scraped/ into bronze.facility_web_crawl
-│       ├── matching.py     # legacy scoring engine (now done in SQL by the web app)
-│       └── copilot.py      # natural-language request parsing
-├── requirements.txt        # Python deps for the gift_india_api loaders
-├── docker-compose.yml      # local Postgres for dev
-├── Makefile                # db-up / load / web / publish shortcuts
-├── .env.example            # GIFT_INDIA_DB_URL for local dev
-├── db/
-│   └── schema.sql          # bronze landing schema (raw tables the loader writes)
-├── docs/architecture/      # medallion + metric-store design
-└── data/                   # generated CSVs (gitignored)
+├── gift_india_web/       # AppKit app — Trust Gauge, Navigator, Scorecard, Demo guide
+├── gift_india_dbt/       # Postgres medallion (Lakebase serving — what the app reads)
+├── dbt_project/          # Databricks medallion (upstream VF Delta Share)
+├── gift_india_api/       # Loaders, scrapers, narrate_evidence.py
+├── DEMO.md               # Full ~5:30 presenter script
+├── docs/architecture/    # Medallion + metric-store design
+└── Makefile              # db-up / data / dbt / crawl / jci / narrate-pilot / web
 ```
+
+---
+
+## Evidence taxonomy — JCI as gold standard
+
+The [Joint Commission International (JCI)](https://www.jointcommissioninternational.org/)
+Gold Seal is the backbone of the **strong** evidence tier for audited capabilities
+(trauma, emergency, ICU, and services within accreditation scope). NABH, PMJAY,
+state registries, downloaded website claims, directories, and inspections fill the
+rest — always with citations, never invented prose.

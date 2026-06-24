@@ -2,3 +2,7 @@ command: ['npm', 'run', 'start']
 env:
   - name: LAKEBASE_ENDPOINT
     valueFrom: postgres
+  - name: DATABRICKS_GIFT_GENIE_SPACE_ID
+    value: '01f169cdad431edda9398a861bdba2d1'
+  - name: DATABRICKS_GENIE_SPACE_ID
+    value: '01f169cdad431edda9398a861bdba2d1'

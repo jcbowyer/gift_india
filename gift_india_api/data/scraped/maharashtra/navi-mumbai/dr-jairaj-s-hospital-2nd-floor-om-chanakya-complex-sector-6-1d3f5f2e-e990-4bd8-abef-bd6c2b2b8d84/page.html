@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Dr. Jairaj's Hospital</title>
+  <meta name="description" content="">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Favicons -->
+  <link rel="apple-touch-icon" href="images/favicon.png" sizes="180x180">
+  <link rel="icon" href="images/favicon.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="images/favicon.png" sizes="16x16" type="image/png">
+  <link rel="icon" href="favicon.ico"> 
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/bootstrap-4.3.1.css">
+  <link rel="stylesheet" href="css/owl.carousel.min.css">
+  <link rel="stylesheet" href="css/style.css?v=2">
+
+  <!-- Google Font -->
+  <link rel="stylesheet" type="text/css" href="css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+  <link rel="canonical" href="{{ url('https://drjairajshospital.com' . request()->getRequestUri()) }}">  
+
+</head>
+
+<body><div class="header">
+	<div class="container">
+		<div class="row no-gutters align-items-center">
+			<div class="col-md-2 col-12">
+				<div class="head-call">
+					<div class="call-icon d-inline-block">
+						<i class="fa-solid fa-phone"></i>
+					<p class="d-inline-block text-white"><a href="tel:+91 70450 11188" class="text-white">+91 70450 11188</a> </p>
+					</div> 
+				</div>
+			</div>
+			<div class="col-md-10 text-right d-none d-md-block">
+			    <div class="head-call">
+			    <p class="call-icon d-inline-block text-white" style="font-size:14px;line-height: 22px;">
+			        <i class="fas fa-hospital red"></i><a href="https://maps.app.goo.gl/RYBd2s9kUBdNufqV8" class="text-white">
+			              <strong>	Dr Jairajs Hospital</strong> , 2nd Floor, Om Chanakya Complex, Sector 6, CBD Belapur, Navi Mumbai, Maharashtra 400614</a>
+			      </p>
+			    </div>
+				<!--<div class="head-call social-icons">-->
+				<!--	<div class="call-icon d-inline-block">-->
+				<!--		<a href="javascript:void(0);"><i class="fa-brands fa-facebook-f"></i></a>-->
+				<!--	</div>-->
+
+				<!--	<div class="call-icon d-inline-block">-->
+				<!--		<a href="javascript:void(0);"><i class="fa-brands fa-youtube"></i></a>-->
+				<!--	</div>-->
+
+				<!--	<div class="call-icon d-inline-block">-->
+				<!--		<a href="javascript:void(0);"><i class="fa-brands fa-linkedin-in"></i></a>-->
+				<!--	</div>-->
+				<!--</div>-->
+			</div>
+		</div>
+	</div>
+</div>
+
+<nav class="navbar navbar-expand-md">
+	<div class="container">
+		<a class="navbar-brand" href="/">
+			<img src="images/dr-jairaj-hospital-logo.png" alt="Dr. Jairaj's Hospital">
+		</a>
+		
+	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+	    <span class="fas fa-bars"></span>
+	  </button>
+
+	  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+	    <ul class="navbar-nav ml-auto">
+	      <li class="nav-item active">
+	        <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
+	      </li>
+	      <li class="nav-item">
+	        <a class="nav-link" href="about.php">About Us</a>
+	      </li>
+	      <li class="nav-item dropdown">
+	        <a class="nav-link dropdown-toggle" href="javascript:void(0);" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	          Services
+	        </a>
+	        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+	            <a class="dropdown-item" href="orthopaedic.php">Orthopaedic</a>
+				<a class="dropdown-item" href="general-treatment.php">General Medicine</a>
+				<a class="dropdown-item" href="gynecology.php">Gynecology</a>
+				<a class="dropdown-item" href="laparoscopic.php">Laparoscopic</a>
+				<a class="dropdown-item" href="maternity.php">Maternity</a>
+    			<a class="dropdown-item" href="critical.php">Critical Care</a>
+	          
+	        </div>
+	      </li>
+	       <li class="nav-item">
+	        <a class="nav-link" href="javascript:void(0);">Gallery</a>
+	      </li>  
+	      <li class="nav-item">
+	        <a class="nav-link" href="contact.php">Contact Us</a>
+	      </li>
+	    </ul>
+	  </div>
+	</div>
+</nav><!--Body content -->
+  <!--Carousel Wrapper-->
+    <div id="carousel-example-1z" class="carousel slide carousel-fade" data-ride="carousel">
+      <!--Indicators-->
+      <ol class="carousel-indicators">
+        <li data-target="#carousel-example-1z" data-slide-to="0" class="active"></li>
+        <li data-target="#carousel-example-1z" data-slide-to="1"></li>
+        <li data-target="#carousel-example-1z" data-slide-to="2"></li>
+        <li data-target="#carousel-example-1z" data-slide-to="3"></li>
+      </ol>
+      <!--/.Indicators-->
+      <!--Slides-->
+      <div class="carousel-inner" role="listbox">
+        <!--First slide-->
+        <div class="carousel-item active">
+          <img src="images/banner-1.jpg" alt="First slide">
+         <!--  <div class="container banner-caption">
+            <div class="row">
+              <div class="col-lg-6 col-md-8">
+                <div class="">
+                  <h1 class="f700 text-white">Get Ride of Depression Now</h1>
+                  <p class="f18 f400 text-white pt-2">Talk | Resolve | Heal</p>
+                  <a href="contact.php" class="btn btn-orange mt-5">Contact Us</a>
+                </div>
+              </div>
+            </div>
+          </div> -->
+        </div>
+        <!--/First slide-->
+        <!--Second slide-->
+        <div class="carousel-item ">
+          <img src="images/banner-2.jpg" alt="Second slide">
+          <!-- <div class="container banner-caption">
+            <div class="row">
+              <div class="offset-lg-6 offset-md-4 col-lg-6 col-md-8">
+                 <div class="">
+                  <h1 class="f700 text-white">Get Solution for your Personal Life</h1>
+                  <p class="f18 f400 text-white pt-2">Talk | Resolve | Heal</p>
+                  <a href="contact.php" class="btn btn-orange mt-5">Contact Us</a>
+                </div>
+              </div>
+            </div>
+          </div> -->
+        </div>
+        <!--/Second slide-->
+
+        <!--Third slide-->
+        <div class="carousel-item ">
+          <img src="images/banner-4.jpg" alt="Second slide">
+          <!-- <div class="container banner-caption">
+            <div class="row">
+              <div class="offset-lg-6 offset-md-4 col-lg-6 col-md-8">
+                 <div class="">
+                  <h1 class="f700 text-white">Get Solution for your Personal Life</h1>
+                  <p class="f18 f400 text-white pt-2">Talk | Resolve | Heal</p>
+                  <a href="contact.php" class="btn btn-orange mt-5">Contact Us</a>
+                </div>
+              </div>
+            </div>
+          </div> -->
+        </div>
+        <!--/Second slide-->
+
+        <!--Fourth slide-->
+        <div class="carousel-item ">
+          <img src="images/banner-3.jpg" alt="Second slide">
+          <!-- <div class="container banner-caption">
+            <div class="row">
+              <div class="offset-lg-6 offset-md-4 col-lg-6 col-md-8">
+                 <div class="">
+                  <h1 class="f700 text-white">Get Solution for your Personal Life</h1>
+                  <p class="f18 f400 text-white pt-2">Talk | Resolve | Heal</p>
+                  <a href="contact.php" class="btn btn-orange mt-5">Contact Us</a>
+                </div>
+              </div>
+            </div>
+          </div> -->
+        </div>
+        <!--/Second slide-->
+      </div>
+      <!--/.Slides-->
+      <!--Controls-->
+      <a class="carousel-control-prev" href="#carousel-example-1z" role="button" data-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+      </a>
+      <a class="carousel-control-next" href="#carousel-example-1z" role="button" data-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+      </a>
+      <!--/.Controls-->
+    </div>
+<!--/.Carousel Wrapper--> 
+
+<section class="about-sec">
+  <div class="container">
+    <div class="abt-content">
+      <div class="row justify-content-center no-gutters">
+        <!--<div class="col-md-5">-->
+          <!--<img src="images/ortho.webp" class="img-fluid">-->
+        <!--</div>-->
+        <div class="col-xl-10 col-lg-10 col-md-10">
+          <div class="about-wrp">
+            <div class="">
+              <p class="title-alt">Healing</p>
+              <h2 class="title-head">Welcome to Dr. Jairaj's Hospital</h2>
+              <p class="pb-2">Welcome to Dr. Jairaj's Hospital, a leading multispeciality healthcare institution located in Belapur, Navi Mumbai. At our hospital, we are dedicated to providing exceptional medical care and personalized attention to our patients, ensuring their well-being and recovery.</p>
+
+              <p>With a team of highly skilled and experienced doctors, surgeons, and medical staff, we offer a comprehensive range of medical services across various specialties. Our state-of-the-art facilities, advanced diagnostic tools, and cutting-edge technologies enable us to deliver accurate diagnoses and effective treatments.</p>
+
+              <div class="wrapper">
+                <a class="button btn-dark text-white" href="about.php">Know More</a>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec-doctors">
+ <div class="container-fluid">
+
+   <div class="bg-dctrs">
+    <div class="dctr-wrp">
+    <p class="title-alt text-center">Specialists</p>
+    <h2 class="title-head text-center">Our Doctors</h2>
+     <div class="row">
+        <div class="col-md-4">
+          <div class="doctor-img">
+            <a href="#">
+            <img src="images/dr-dhruv.jpg">
+            <div class="text-center">
+              <h3 class="f600">Dr. Dhruv Patel</h3>
+              <p class="red">MBBS, D. Ortho, D.N.B (Orthopaedic Surgery),
+              M.S (Orthopaedic Surgery)</p>
+              <div class="wrapper">
+                <a class="button btn-dark text-white" href="about.php#dr-dhruv">View Profile</a>
+            </div>
+            </div>
+            </a>
+          </div>
+          
+        </div> 
+        <div class="col-md-4">
+          <div class="doctor-img">
+            <a href="#">
+            <img src="images/dr-jatin.jpg">
+            <div class="text-center">
+              <h3 class="f600">Dr. Jatin Talele</h3>
+              <p class="red">MBBS, MD (General Medicine)<br>
+              Diabetologist & General Physician</p>
+              <div class="wrapper">
+                <a class="button btn-dark text-white" href="about.php#dr-jatin">View Profile</a>
+            </div>
+            </div>
+            </a>
+          </div>
+          
+        </div>
+
+        <div class="col-md-4">
+          <div class="doctor-img">
+            <a href="#">
+            <img src="images/dr-alpana-gupta.jpg">
+            <div class="text-center">
+              <h3 class="f600">Dr. Alpana Gupta Khare</h3>
+              <p class="red">Obstetrician & Gynecologist</p>
+              <div class="wrapper">
+                <a class="button btn-dark text-white" href="javascript:void(0);">View Profile</a>
+            </div>
+            </div>
+            </a>
+          </div>
+          
+        </div>  
+
+     </div>
+     </div>
+   </div>
+ </div> 
+</section>
+
+<section class="service-sec pt-0">
+  <div class="container">
+    <p class="title-alt text-center">Treatments</p>
+    <h2 class="title-head text-center">Our Services</h2>
+    <div class="row">
+
+      <div class="col-md-4">
+        <div class="service-wrp">
+          <div class="wrp-img">
+          <img src="images/orthopaedic-treatment.jpg" >
+          </div>
+          <div class="service-cnt">
+            <h4>Orthopaedic</h4>
+            <p>Treatments</p>
+            <div class="wrapper">
+                <a class="button btn-white" href="orthopaedic.php">Know More</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="service-wrp">
+          <div class="wrp-img">
+          <img src="images/general-medicine.jpg" >
+          </div>
+          <div class="service-cnt">
+            <h4>General </h4>
+            <p>Medicine</p>
+            <div class="wrapper">
+                <a class="button btn-white" href="general-treatment.php">Know More</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="service-wrp">
+          <div class="wrp-img">
+          <img src="images/gynecologist.jpg">
+          </div>
+          <div class="service-cnt">
+            <h4>Gynecology</h4>
+            <p>Specialist</p>
+            <div class="wrapper">
+                <a class="button btn-white" href="gynecology.php">Know More</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    <div class="row">
+      
+
+      <div class="col-md-4">
+        <div class="service-wrp">
+          <div class="wrp-img">
+          <img src="images/laparoscopy.jpg">
+          </div>
+          <div class="service-cnt">
+            <h4>Laparoscopic</h4>
+            <p>Surgery</p>
+            <div class="wrapper">
+                <a class="button btn-white" href="laparoscopic.php">Know More</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="service-wrp">
+          <div class="wrp-img">
+          <img src="images/maternity.jpg">
+          </div>
+          <div class="service-cnt">
+            <h4>Maternity</h4>
+            <p>Speciality</p>
+            <div class="wrapper">
+                <a class="button btn-white" href="maternity.php">Know More</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="service-wrp">
+          <div class="wrp-img">
+          <img src="images/critical-care.jpg">
+          </div>
+          <div class="service-cnt">
+            <h4>Critical</h4>
+            <p>Care</p>
+            <div class="wrapper">
+                <a class="button btn-white" href="critical.php">Know More</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-sec">
+  <div class="container-fluid">
+    <div class="cta-wrap">
+      <div class="row">
+        <div class="col-md-5 text-center offset-md-1">
+          <p class="title-alt text-white">Join Us</p>
+          <h2 class="title-head text-white">Book A Treatment Or Walk In!</h2>
+
+          <p class="text-white">Every facet of daily life is aligned with the purpose of nurturing, health, harmony, and spiritual growth and provides a complete experiential education in holistic living.</p>
+          <div class="wrapper">
+              <a class="button btn-white" href="tel: +91 70450 11188">Call Now</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec-review">
+  <div class="container">
+    <p class="title-alt text-center">Testimonials</p>
+    <h2 class="title-head text-center">Our Patient's Says</h2>
+      <div class="row">
+        <div class="col-md-12">
+            <div id="testimonial-slider" class="owl-carousel">
+                <div class="testimonial item">
+                    
+                    <p class="description">
+                        Dr. Alpana Gupta Khare is one of the best gynaecologist’s you can find nearby. It was my first pregnancy and I had a smooth normal delivery under her guidance. She is supportive, caring as well as have a top excellency in her work.I would highly recommend her for happy and safe pregnancy..!
+                    </p>
+                    <h3 class="title">Kavita Kshirsagar</h3>
+                </div>
+
+                <div class="testimonial item">
+                    
+                    <p class="description">
+                       Dr Alpana Gupta Khare, Obstetrician & Gynaecologist is the best Gynaecologist doctor of Navi Mumbai. She is non-judgmental and treats patients with proper care. She never suggested unnecessary tests, etc. Highly recommended. 
+                    </p>
+                    <h3 class="title">Sunshine Education</h3>
+                </div>
+
+                <div class="testimonial item">
+                    
+                    <p class="description">
+                      I got treated for DVT by Dr Jatin sir , I got satisfied results. Happy with treatment.  
+                    </p>
+                    <h3 class="title">Tejveer Singh Itan</h3>
+                </div>
+
+                <div class="testimonial item">
+                    
+                    <p class="description">
+                       Dr.Alpana Gupta Khare is best obstetrician and gynecologist in CBD Belapur, Navi Mumbai.We consulted her for PCOD treatment, she explained everything about medical issues and have positive attitude towards the patient, my wife conceived immediately after one month of her treatment so we are very grateful to you Alpana madam💑🤰 … 
+                    </p>
+                    <h3 class="title">JiSan Alam</h3>
+                </div>
+
+                <div class="testimonial item">
+                    
+                    <p class="description">
+                       Staff was cooperative and concern. Always there when needed . Doctors visit was regular. Good experienced. 
+                    </p>
+                    <h3 class="title">Rakshita Shetty</h3>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+   <section class="footer">  
+    <div class="container">
+      <div class="row justify-content-center foot-links">
+        <div class="col-md-2">
+          <p class="pb-3 f20 footer-title">Quick Links</p>
+          <ul class="list-unstyled">
+            <li><a href="/">Home</a></li>
+            <li><a href="about.php">About Us</a></li>
+            <li><a href="contact.php">Contact Us</a></li>
+          </ul>
+        </div>
+        
+        <div class="col-md-4">
+          <p class="pb-3 f20 footer-title">Contact Us</p>
+          <p class="pb-2"><i class="fas fa-hospital red"></i> &nbsp;<span> <a href="https://maps.app.goo.gl/kg8RhFxQ5FWBiWrr6" style="color:#FFFFFF;"><strong>Dr Jairajs Hospital</strong>
+        2nd Floor, Om Chanakya Complex, Sector 6, CBD Belapur, Navi Mumbai, Maharashtra 400614  </a></span></p>
+          <p class="pb-2"><i class="fa-solid fa-phone "></i> &nbsp;<span> <a href="tel:+91 70450 11188" style="color:#FFFFFF;">+91 70450 11188</a></span></p>
+          <p><i class="fa-solid fa-envelope"></i> &nbsp;<span> <a href="mailto:jairajhospital@gmail.com" style="color:#FFFFFF;">jairajhospital@gmail.com</a></span></p>
+          <div class="col-md-6">
+            <div class="head-call social-icons">
+              <div class="call-icon d-inline-block">
+                <a href="javascript:void(0);"><i class="fa-brands fa-facebook-f"></i></a>
+              </div>
+
+              <div class="call-icon d-inline-block">
+                <a href="javascript:void(0);"><i class="fa-brands fa-youtube"></i></a>
+              </div>
+
+              <div class="call-icon d-inline-block">
+                <a href="javascript:void(0);"><i class="fa-brands fa-linkedin-in"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+            <p class="pb-3 f20 footer-title">Direction</p>
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.8733343256063!2d73.04196519999999!3d19.025302399999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c3ad73247343%3A0x7957b177cdfbb2a9!2sDr%20Jairajs%20Hospital!5e0!3m2!1sen!2sin!4v1686138603159!5m2!1sen!2sin" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="copyright-content">
+    <div class="container text-center">
+      <p>Copyright &copy; <script>document.write(new Date().getFullYear());</script> All Rights Reserved, <span class="d-inline-block">By Dr. Jairaj's Hospital</span></p>
+    </div>
+  </div>
+  
+  <div class="footer-stick">
+      <div class="row">
+          <div class="col-6 call-btn">
+            <a href="tel:+917045011188" class="text-white">
+                <img src="images/phone-call.png">
+            &nbsp;&nbsp;<span>Call Now</span></a>  
+          </div>
+          <div class="col-6 whats-btn">
+            <a href="whatsapp://send?text= &phone= +917045011188" class="text-white"><img src="images/whatsapp-icon.png">&nbsp;&nbsp;<span>WhatsApp</span></a>  
+          </div>
+         
+        </div>
+    </div>
+
+
+  <script src="js/jquery-3.3.1.slim.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/owl.carousel.min.js"></script>
+  <script src="js/script.js"></script>

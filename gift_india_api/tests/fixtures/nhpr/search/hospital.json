@@ -1,0 +1,36 @@
+{
+  "facilities": [
+    {
+      "facilityId": "IN0710000123",
+      "facilityName": "All India Institute of Medical Sciences",
+      "facilityStatus": "Submitted",
+      "ownership": "Government",
+      "ownershipCode": "G",
+      "systemOfMedicineCode": "M",
+      "systemOfMedicine": "Modern Medicine(Allopathy)",
+      "facilityTypeCode": "5",
+      "facilityType": "Hospital",
+      "stateName": "DELHI",
+      "stateLGDCode": "7",
+      "districtName": "New Delhi",
+      "districtLGDCode": "79",
+      "address": "Ansari Nagar",
+      "pincode": "110029",
+      "latitude": "28.5672",
+      "longitude": "77.2100"
+    },
+    {
+      "facilityId": "IN0710000999",
+      "facilityName": "City Dental Clinic",
+      "facilityStatus": "Submitted",
+      "ownershipCode": "P",
+      "facilityTypeCode": "16",
+      "facilityType": "Dental Clinic",
+      "stateLGDCode": "7",
+      "stateName": "DELHI"
+    }
+  ],
+  "message": "Request processed successfully",
+  "totalFacilities": 2,
+  "numberOfPages": 1
+}

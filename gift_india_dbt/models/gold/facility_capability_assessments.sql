@@ -5,7 +5,7 @@
     )
 }}
 
--- Gold: per-facility × capability trust assessments for Track 1 (Governance, Integrity, & Facility Trust Desk).
+-- Gold: per-facility × capability trust assessments for Track 1 (Governance, Integrity, & Facility Trust (GIFT) Gauge).
 -- Built ONLY from gold.facilities structured fields (specialties, type, beds,
 -- offers_surgery, match_confidence, website_url). No fabricated citations —
 -- evidence rows live in gold.capability_evidence.
@@ -127,43 +127,78 @@ scored as (
             else 'no_claim'
         end as trust_signal
     from claims
-)
+),
 
+heuristic as (
+    select
+        facility_id,
+        capability,
+        capability_label,
+        capability_description,
+        claimed,
+        trust_signal,
+        cast(round(trust_score::numeric, 4) as numeric) as trust_score,
+        (
+            (case when specialty_supports then 1 else 0 end)
+            + (case when claimed and type is not null then 1 else 0 end)
+            + (case when claimed and beds is not null then 1 else 0 end)
+            + (case when match_confidence is not null then 1 else 0 end)
+            + (case when website_url is not null and website_url <> '' then 1 else 0 end)
+            + (case when coalesce(match_confidence, 0) < 0.65 and claimed then 1 else 0 end)
+        )::integer as evidence_count,
+        (
+            (case when specialty_supports then 1 else 0 end)
+            + (case when claimed and type is not null then 1 else 0 end)
+            + (case when claimed and beds is not null then 1 else 0 end)
+            + (case when match_confidence is not null then 1 else 0 end)
+            + (case when website_url is not null and website_url <> '' then 1 else 0 end)
+        )::integer as supporting_count,
+        (
+            case when coalesce(match_confidence, 0) < 0.65 and claimed then 1 else 0 end
+        )::integer as contradicting_count,
+        case
+            when specialty_supports then 'Facility record — specialties'
+            when type is not null then 'Facility record — type & scale'
+            else 'Entity resolution'
+        end as best_source,
+        case trust_signal
+            when 'strong' then capability_label || ' supported by on-record specialties and entity confidence.'
+            when 'partial' then capability_label || ' inferred from facility type/scale; specialty match partial or confidence moderate.'
+            when 'weak_suspicious' then capability_label || ' claim rests on weak heuristics and/or low entity-match confidence.'
+            else 'No ' || capability_label || ' claim inferred from the facility record.'
+        end as summary
+    from scored
+),
+virtue as (
+    select
+        facility_id,
+        capability,
+        capability_label,
+        capability_description,
+        claimed,
+        trust_signal,
+        cast(round(trust_score::numeric, 4) as numeric) as trust_score,
+        evidence_count,
+        supporting_count,
+        contradicting_count,
+        best_source,
+        summary
+    from {{ source('bronze', 'facility_capability_assessments_virtue') }}
+)
 select
-    facility_id,
-    capability,
-    capability_label,
-    capability_description,
-    claimed,
-    trust_signal,
-    cast(round(trust_score::numeric, 4) as numeric) as trust_score,
-    (
-        (case when specialty_supports then 1 else 0 end)
-        + (case when claimed and type is not null then 1 else 0 end)
-        + (case when claimed and beds is not null then 1 else 0 end)
-        + (case when match_confidence is not null then 1 else 0 end)
-        + (case when website_url is not null and website_url <> '' then 1 else 0 end)
-        + (case when coalesce(match_confidence, 0) < 0.65 and claimed then 1 else 0 end)
-    )::integer as evidence_count,
-    (
-        (case when specialty_supports then 1 else 0 end)
-        + (case when claimed and type is not null then 1 else 0 end)
-        + (case when claimed and beds is not null then 1 else 0 end)
-        + (case when match_confidence is not null then 1 else 0 end)
-        + (case when website_url is not null and website_url <> '' then 1 else 0 end)
-    )::integer as supporting_count,
-    (
-        case when coalesce(match_confidence, 0) < 0.65 and claimed then 1 else 0 end
-    )::integer as contradicting_count,
-    case
-        when specialty_supports then 'Facility record — specialties'
-        when type is not null then 'Facility record — type & scale'
-        else 'Entity resolution'
-    end as best_source,
-    case trust_signal
-        when 'strong' then capability_label || ' supported by on-record specialties and entity confidence.'
-        when 'partial' then capability_label || ' inferred from facility type/scale; specialty match partial or confidence moderate.'
-        when 'weak_suspicious' then capability_label || ' claim rests on weak heuristics and/or low entity-match confidence.'
-        else 'No ' || capability_label || ' claim inferred from the facility record.'
-    end as summary
-from scored
+    h.facility_id,
+    h.capability,
+    coalesce(v.capability_label, h.capability_label) as capability_label,
+    coalesce(v.capability_description, h.capability_description) as capability_description,
+    coalesce(v.claimed, h.claimed) as claimed,
+    coalesce(v.trust_signal, h.trust_signal) as trust_signal,
+    coalesce(v.trust_score, h.trust_score) as trust_score,
+    coalesce(v.evidence_count, h.evidence_count) as evidence_count,
+    coalesce(v.supporting_count, h.supporting_count) as supporting_count,
+    coalesce(v.contradicting_count, h.contradicting_count) as contradicting_count,
+    coalesce(v.best_source, h.best_source) as best_source,
+    coalesce(v.summary, h.summary) as summary
+from heuristic h
+left join virtue v
+    on h.facility_id = v.facility_id
+   and h.capability = v.capability
