@@ -134,8 +134,7 @@ GIFT Gauge copy is **Smart Brevity** (Axios-style) mixed with **you-don't-know-J
 - Contractions OK. Fragments OK when they land.
 
 ### Demo script (`DEMO.md`, `DemoGuide.tsx`)
-- Title slide → grit beat → **Priya's User Story** (Priya + trap) → burning question → live product.
-- Keep the staged **"It's grit."** punchline — pause beats are intentional.
+- Title slide → **Priya's User Story** (Priya + trap) → burning question → live product.
 - Presenter `do` cues: name Priya, land numbers, pause before patient-safety failure.
 
 ## Code Style

@@ -179,6 +179,61 @@ surgery_evidence as (
       and offers_surgery
 ),
 
+-- NABH certificate scope corroboration (from verify_nabh_certificates.py).
+-- Strongest verification row per facility × capability wins.
+nabh_verifications as (
+    select distinct on (facility_id, capability)
+        facility_id,
+        capability,
+        reference_no,
+        certificate_supports,
+        certificate_scope_snippet,
+        verification_score,
+        verification_signal,
+        nabh_match_confidence,
+        splink_match_probability
+    from {{ source('bronze', 'nabh_capability_verifications') }}
+    order by
+        facility_id,
+        capability,
+        verification_score desc,
+        certificate_supports desc
+),
+
+nabh_certificate_evidence as (
+    select
+        v.facility_id,
+        v.capability,
+        v.facility_id || ':' || v.capability || ':nabh:' || v.reference_no as evidence_id,
+        'nabh_certificate' as source_type,
+        'NABH certificate — scope of accreditation' as source_label,
+        'https://portal.nabh.co/Documents/AccreditedList/' || v.reference_no as source_url,
+        case
+            when v.certificate_supports then 'supports'
+            when v.verification_signal = 'contradicted' then 'contradicts'
+            else 'contextual'
+        end as stance,
+        least(
+            0.65,
+            0.35
+            + coalesce(v.nabh_match_confidence, 0) * 0.20
+            + coalesce(v.splink_match_probability, 0) * 0.10
+        ) as weight,
+        case
+            when v.certificate_supports and v.certificate_scope_snippet is not null
+                then 'NABH accredited scope (' || v.reference_no || '): '
+                     || v.certificate_scope_snippet
+            when v.verification_signal = 'contradicted'
+                then 'NABH certificate (' || v.reference_no || ') does not list '
+                     || v.capability || ' in accredited scope — Virtue claim needs review.'
+            else 'NABH certificate (' || v.reference_no || ') on file; scope does not mention '
+                 || v.capability || ' (verification score '
+                 || round(v.verification_score::numeric, 2)::text || ').'
+        end as snippet
+    from nabh_verifications v
+    join base b using (facility_id, capability)
+),
+
 -- Official website page text actually mentioning the capability. One evidence
 -- row per (facility, capability): the alphabetically-first matching term wins,
 -- and the snippet quotes a real ~160-char window of the crawled text around it
@@ -222,6 +277,7 @@ unioned as (
     union all select * from website_evidence
     union all select * from website_text_evidence
     union all select * from surgery_evidence
+    union all select * from nabh_certificate_evidence
 )
 
 select

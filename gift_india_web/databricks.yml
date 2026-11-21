@@ -15,9 +15,15 @@ resources:
       name: "gift-india-web"
       description: "Governance, Integrity, & Facility Trust (GIFT) Gauge — evidence-backed facility capability trust signals on Lakebase"
       source_code_path: ./
-      # Uncomment to enable on behalf of user API scopes. Available scopes: sql, dashboards.genie, files.files, serving.serving-endpoints
-      # user_api_scopes:
-      #   - sql
+      # Genie plugin uses on-behalf-of-user (OBO) auth — requires dashboards.genie scope.
+      # Without it, Ask GIFT Genie returns: Forbidden — Invalid scope, required scopes: genie
+      user_api_scopes:
+        - dashboards.genie
+
+      # Anyone in the Databricks account can open and use the app (SSO required).
+      permissions:
+        - level: CAN_USE
+          group_name: account users
 
       # The resources which this app has access to.
       resources:

@@ -106,6 +106,8 @@ async function resolveRanking(
       overrideNote: cap?.overrideNote ?? null,
       reviewRecommended: humanReview.recommended,
       reviewReason: humanReview.reason,
+      nabh: detail.facility.nabh,
+      nabhCapability: cap?.nabh ?? null,
     };
   } catch {
     return null;

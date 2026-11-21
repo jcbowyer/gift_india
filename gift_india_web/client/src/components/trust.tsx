@@ -41,6 +41,8 @@ import {
   type CapabilityDetail,
   type EvidenceItem,
   type HumanReviewStatus,
+  type FacilityNabhAccreditation,
+  type NabhCapabilityVerification,
 } from '../lib/api';
 
 /** Per-signal lucide icon + solid colour family for the prominent trust badges. */
@@ -208,6 +210,11 @@ const SOURCE_META: Record<string, { label: string; icon: ComponentType<{ classNa
   website_crawl: { label: 'Website verified', icon: Globe, tone: 'bg-sky-50 text-sky-700 border-sky-200' },
   facility_record: { label: 'Registry record', icon: FileText, tone: 'bg-violet-50 text-violet-700 border-violet-200' },
   entity_resolution: { label: 'Entity-matched', icon: Link2, tone: 'bg-slate-50 text-slate-600 border-slate-200' },
+  nabh_certificate: {
+    label: 'NABH certificate',
+    icon: BadgeCheck,
+    tone: 'bg-teal-50 text-teal-800 border-teal-300',
+  },
 };
 
 function sourceMeta(sourceType: string) {
@@ -230,18 +237,86 @@ export function BestSourceBadge({ source, className = '' }: { source: string; cl
   );
 }
 
+/** Facility-level NABH accreditation from the official directory crosswalk. */
+export function NabhAccreditationBadge({
+  nabh,
+  className = '',
+}: {
+  nabh: FacilityNabhAccreditation;
+  className?: string;
+}) {
+  if (!nabh.accredited) return null;
+  const status = nabh.status || 'listed';
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-md border border-teal-300 bg-gradient-to-r from-teal-50 to-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-teal-900 ${className}`}
+      title={
+        nabh.organizationName
+          ? `NABH ${status} — ${nabh.organizationName}${nabh.program ? ` (${nabh.program})` : ''}`
+          : `NABH ${status}`
+      }
+      data-demo="nabh-accreditation"
+    >
+      <BadgeCheck className="h-3.5 w-3.5 text-teal-600" />
+      NABH {status}
+      {nabh.program ? <span className="font-normal text-teal-800/85">· {nabh.program}</span> : null}
+    </span>
+  );
+}
+
+/** Per-capability flag when NABH certificate scope validates the claim. */
+export function NabhValidatedBadge({
+  verification,
+  className = '',
+  compact = false,
+}: {
+  verification: NabhCapabilityVerification | null | undefined;
+  className?: string;
+  compact?: boolean;
+}) {
+  if (!verification?.verified) return null;
+  const validated = verification.validated;
+  const label = validated ? (compact ? 'NABH ✓' : 'NABH validated') : compact ? 'NABH scope' : 'NABH scope partial';
+  const tone = validated
+    ? 'border-teal-400 bg-teal-50 text-teal-950'
+    : 'border-teal-300/80 bg-teal-50/70 text-teal-900';
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold shadow-sm ${tone} ${className}`}
+      title={
+        verification.scopeSnippet
+          ? `NABH ${verification.referenceNo}: ${verification.scopeSnippet}`
+          : `NABH certificate ${verification.referenceNo}`
+      }
+      data-demo={validated ? 'nabh-validated' : 'nabh-scope-partial'}
+    >
+      <BadgeCheck className="h-3 w-3 shrink-0 text-teal-600" aria-hidden />
+      {label}
+    </span>
+  );
+}
+
 function EvidenceRow({ e }: { e: EvidenceItem }) {
   const supports = e.stance === 'supports';
+  const contextual = e.stance === 'contextual';
   const sm = sourceMeta(e.sourceType);
   const SourceIcon = sm.icon;
+  const borderTone = supports
+    ? 'border-l-4 border-l-emerald-500'
+    : contextual
+      ? 'border-l-4 border-l-teal-500'
+      : 'border-l-4 border-l-red-500';
+  const iconTone = supports ? 'text-emerald-600' : contextual ? 'text-teal-600' : 'text-red-600';
   return (
-    <li
-      className={`flex gap-3 rounded-lg border bg-card p-3 ${
-        supports ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-red-500'
-      }`}
-    >
-      <span className={`mt-0.5 ${supports ? 'text-emerald-600' : 'text-red-600'}`}>
-        {supports ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+    <li className={`flex gap-3 rounded-lg border bg-card p-3 ${borderTone}`}>
+      <span className={`mt-0.5 ${iconTone}`}>
+        {supports ? (
+          <CheckCircle2 className="h-4 w-4" />
+        ) : contextual ? (
+          <BadgeCheck className="h-4 w-4" />
+        ) : (
+          <XCircle className="h-4 w-4" />
+        )}
       </span>
       <div className="min-w-0 flex-1 space-y-2">
         <div className="flex items-start gap-2">
@@ -592,6 +667,7 @@ export function CapabilityEvidence({
 
   const support = cap.evidence.filter((e) => e.stance === 'supports');
   const contra = cap.evidence.filter((e) => e.stance === 'contradicts');
+  const contextual = cap.evidence.filter((e) => e.stance === 'contextual');
   const assessment = cap.overrideSignal ? null : cap.assessmentJson;
   const showMd = !cap.overrideSignal && cap.assessmentMd;
   const showNarration = Boolean(showMd || assessment);
@@ -605,6 +681,40 @@ export function CapabilityEvidence({
     <div className="space-y-3">
       {humanReview.recommended ? (
         <HumanReviewCallout status={humanReview} onReview={() => setDialogOpen(true)} />
+      ) : null}
+
+      {cap.nabh?.validated ? (
+        <div
+          className="rounded-lg border border-teal-300 bg-gradient-to-r from-teal-50 to-emerald-50 px-3.5 py-3 text-sm text-teal-950 shadow-sm"
+          data-demo="nabh-validation-callout"
+        >
+          <div className="flex flex-wrap items-start gap-2">
+            <NabhValidatedBadge verification={cap.nabh} />
+            <div className="min-w-0 flex-1 space-y-1">
+              <p className="font-semibold leading-snug">
+                NABH certificate scope corroborates this capability
+              </p>
+              {cap.nabh.scopeSnippet ? (
+                <p className="text-teal-900/90 leading-relaxed">{cap.nabh.scopeSnippet}</p>
+              ) : null}
+              {cap.nabh.certificateUrl ? (
+                <a
+                  href={cap.nabh.certificateUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-teal-800 hover:underline"
+                >
+                  Certificate {cap.nabh.referenceNo} <ExternalLink className="h-3 w-3" />
+                </a>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : cap.nabh?.verified && !cap.nabh.validated ? (
+        <div className="rounded-lg border border-teal-200 bg-teal-50/60 px-3 py-2 text-xs text-teal-900">
+          <NabhValidatedBadge verification={cap.nabh} /> — certificate on file; scope alignment is partial (
+          {cap.nabh.signal}).
+        </div>
       ) : null}
 
       <div
@@ -717,6 +827,18 @@ export function CapabilityEvidence({
               </div>
               <ul className="space-y-2">
                 {contra.map((e) => (
+                  <EvidenceRow key={e.evidenceId} e={e} />
+                ))}
+              </ul>
+            </div>
+          )}
+          {contextual.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+                Registry context ({contextual.length})
+              </div>
+              <ul className="space-y-2">
+                {contextual.map((e) => (
                   <EvidenceRow key={e.evidenceId} e={e} />
                 ))}
               </ul>

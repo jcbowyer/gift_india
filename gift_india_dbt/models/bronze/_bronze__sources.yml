@@ -170,6 +170,35 @@ sources:
             tests:
               - not_null
 
+      - name: nabh_certificate_extractions
+        description: >-
+          Parsed NABH certificate-and-scope PDFs from data/nabh/certificates/,
+          produced by `gift_india_api/src/verify_nabh_certificates.py` using Agent
+          Bricks Document Parsing (`ai_parse_document` + `ai_extract`) or local pypdf.
+        columns:
+          - name: extraction_id
+            tests:
+              - not_null
+              - unique
+          - name: reference_no
+            tests:
+              - not_null
+
+      - name: nabh_capability_verifications
+        description: >-
+          Cross-reference of Virtue capability claims vs NABH certificate scope,
+          scored with NABH entity-resolution confidence and Splink match probability.
+        columns:
+          - name: facility_id
+            tests:
+              - not_null
+          - name: capability
+            tests:
+              - not_null
+          - name: reference_no
+            tests:
+              - not_null
+
       - name: facilities_pmjay
         description: >-
           PMJAY (Ayushman Bharat) empanelled hospitals in India, scraped from the
@@ -200,3 +229,61 @@ sources:
             description: Provenance tag — always `pmjay`.
             tests:
               - not_null
+
+      - name: facilities_abdm
+        description: >-
+          Model ABDM (end-to-end ABDM adoption pilot) facilities scraped from
+          the ABDM Insights dashboard by `gift_india_api/src/abdm_scraper.py`
+          and landed by `src/load_abdm.py`. External REFERENCE source
+          (`data_source` = 'abdm'); entity resolution downstream on
+          `match_name` / `brand_key` and optional `hfr_id` join to NHPR.
+        columns:
+          - name: abdm_facility_id
+            tests: [not_null, unique]
+          - name: facility_name
+            tests: [not_null]
+          - name: match_name
+            tests: [not_null]
+          - name: data_source
+            tests: [not_null]
+
+      - name: merge_candidates
+        description: >-
+          Splink probabilistic duplicate-facility merge candidates for human
+          review (`make splink-duplicates`). Not auto-merged into gold.
+        columns:
+          - name: candidate_id
+            tests:
+              - not_null
+              - unique
+
+      - name: facility_clusters
+        description: >-
+          Splink MDM cluster assignments — one row per bronze source record
+          mapped to a `master_facility_id` (`make apply-merge-clusters`).
+        columns:
+          - name: source_system
+            tests:
+              - not_null
+          - name: source_id
+            tests:
+              - not_null
+          - name: master_facility_id
+            tests:
+              - not_null
+
+      - name: locations_nhpr
+        description: >-
+          NHPR / HFR registered hospitals scraped from nhpr.abdm.gov.in and
+          landed by `src/load_nhpr.py`. External REFERENCE source
+          (`data_source` = 'nhpr'); entity resolution downstream on
+          `match_name` / `brand_key`.
+        columns:
+          - name: nhpr_facility_id
+            tests: [not_null, unique]
+          - name: facility_name
+            tests: [not_null]
+          - name: match_name
+            tests: [not_null]
+          - name: website_url
+            description: Facility website URL from NHPR portal.

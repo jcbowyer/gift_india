@@ -29,7 +29,20 @@ Output (mirrors ``src.jci_scraper``)::
 
     data/nabh/
     ├── nabh_accredited.json   # one record per accredited/certified/empanelled org (+ keys)
-    └── manifest.json          # run summary: counts, pages, by-status breakdown, resume cursor
+    ├── manifest.json          # run summary: counts, pages, by-status breakdown, resume cursor
+    └── certificates/          # optional: stable portal PDFs (--download-pdfs)
+        ├── <reference_no>.pdf
+        └── manifest.json
+
+Stable certificate PDFs live on ``portal.nabh.co`` under::
+
+    https://portal.nabh.co/Documents/AccreditedList/<Program>/<ReferenceNo>[_<Edition>].pdf
+
+The directory sometimes returns expiring S3 presigned links instead; for those rows we
+**generate** the stable portal URL from the accreditation reference number and
+programme folder (e.g. ``H-2021-0846`` → ``…/Hospitals/H-2021-0846.pdf``).
+Empanelment references (``HOS/…``, ``EYE/…``) have no portal path — we download the
+presigned link when ``--download-pdfs`` is set.
 
 The crawl is **resumable**: completed pages are checkpointed to ``_partial.jsonl`` and
 the last finished page is recorded in the manifest, so ``--resume`` continues a run
@@ -45,6 +58,11 @@ Resume an interrupted run, or pull just the first few pages while testing::
 
     python -m src.nabh_scraper --resume
     python -m src.nabh_scraper --max-pages 3
+
+Download certificate PDFs after scraping (or from an existing JSON)::
+
+    python -m src.nabh_scraper --download-pdfs
+    python -m src.nabh_scraper --download-pdfs-only --pdf-limit 10
 """
 from __future__ import annotations
 
@@ -56,6 +74,7 @@ import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -78,6 +97,36 @@ STATE_SEED = (
 DATA_SOURCE = "nabh"
 ENDPOINT = "https://nabh.co/wp-admin/admin-ajax.php"
 DIRECTORY_URL = "https://nabh.co/find-a-healthcare-organisation/"
+PORTAL_BASE = "https://portal.nabh.co/Documents/AccreditedList"
+DEFAULT_CERT_DIR = DEFAULT_OUT_DIR / "certificates"
+# Reference-number prefix → portal programme folder (longest prefix wins).
+REF_PREFIX_PROGRAM: dict[str, str] = {
+    # Portal accreditation refs (longest prefix wins via startswith).
+    "PESHCO-": "Entry-Level SHCO",
+    "PEH-": "Entry-Level Hospitals",
+    "EAH-": "Entry Level Ayush Hospital",
+    "EAC-": "Entry Level Ayush Center",
+    "SHCO-": "SHCO",
+    "ECO-": "Eye Care Organisation",
+    "AH-": "AYUSH Hospitals",
+    "MIS-": "MIS",
+    "H-": "Hospitals",
+    "D-": "Dental Facilities",
+    "PC-": "Panchakarma Clinics",
+    "CD-": "Allopathic Clinics 2nd Edition",
+    "DE-": "Allopathic Clinics 2nd Edition",
+    "BB-": "Blood Bank",
+    "CH-": "Care Home",
+    "E-": "Emergency Deptt",
+    "N-": "Nursing Services",
+    "DH-": "Digital Health Standards",
+    "C-": "Allopathic Clinics",
+    # Empanelled register refs (``HOS/2025/E2674`` style).
+    "HOS/": "Hospitals",
+    "EYE/": "Eye Care Organisation",
+    "DEN/": "Dental Facilities",
+    "LAB/": "Medical Laboratory",
+}
 # admin-ajax serves automated fetches fine, but mimic the site's own XHR.
 BROWSER_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -116,7 +165,8 @@ class NabhOrg:
     accreditation_program: str | None     # e.g. "Hospitals", "SHCO", "AYUSH Hospitals"
     accreditation_status: str | None       # "Accredited" | "Empaneled" | "Certified"
     reference_no: str | None               # NABH accreditation/reference number
-    certificate_url: str | None            # stable portal cert PDF (null if expiring presigned)
+    certificate_href: str | None           # raw href from the directory card (may be S3)
+    certificate_url: str | None            # stable portal cert PDF (generated when needed)
     address: str | None
     website_url: str | None
     phone: str | None
@@ -217,6 +267,80 @@ def _program_from_cert(href: str | None) -> str | None:
     return m.group(1).strip() if m else None
 
 
+# Badge image basename (lower, no extension) → NABH programme name.
+# ``None`` = generic badge; disambiguate via certificate URL or reference prefix.
+_BADGE_IMAGE_PROGRAMS: dict[str, str | None] = {
+    "accreditation": None,
+    "certification-hospitals-shco": None,
+    "certification-img-2": None,
+    "ayush-hos": "AYUSH Hospitals",
+    "certification-nursing_services": "Nursing Services",
+    "digital-health-acc": "Digital Health Standards",
+    "certified-emergency-services": "Emergency Deptt",
+    "certifide-mlp": "MLP",
+    "carehome": "Care Home",
+    "entry-level-dental-clinics": "Entry Level Dental Clinics",
+}
+
+
+def _badge_image_basenames(col5) -> list[str]:
+    """Basenames (lower, no extension) of programme badge images in ``.hs-col-5``."""
+    if not col5:
+        return []
+    names: list[str] = []
+    for img in col5.select("img[src]"):
+        filename = urlparse(img["src"]).path.rsplit("/", 1)[-1]
+        base = filename.rsplit(".", 1)[0].strip().lower()
+        if base:
+            names.append(base)
+    return names
+
+
+def _program_from_badge_images(names: list[str]) -> str | None:
+    """Programme from NABH badge image filenames (``badges/*.webp`` etc.)."""
+    for name in names:
+        program = _BADGE_IMAGE_PROGRAMS.get(name)
+        if program:
+            return program
+    return None
+
+
+def _resolve_program(
+    cert_href: str | None,
+    badge_names: list[str],
+    reference_no: str | None,
+) -> str | None:
+    """Best programme: certificate path, then badge image, then reference prefix."""
+    return (
+        _program_from_cert(cert_href)
+        or _program_from_badge_images(badge_names)
+        or _program_from_ref(reference_no)
+    )
+
+
+def _status_from_badge(col5) -> str | None:
+    """Accreditation status from the badge icon class or badge image filename."""
+    if not col5:
+        return None
+    status_el = col5.select_one(".certification-icon")
+    if status_el:
+        status = _clean(status_el.get_text())
+        if status:
+            return status
+    for span in col5.select("[class*='badge-icon-']"):
+        for cls in span.get("class") or []:
+            if cls.startswith("badge-icon-"):
+                token = cls.removeprefix("badge-icon-").replace("-", " ")
+                return token.title()
+    for name in _badge_image_basenames(col5):
+        low = name.lower()
+        if "certification" in low or "certified" in low or low.startswith("certif"):
+            return "Certified"
+        if "accreditation" in low or low.endswith("-acc") or low.endswith("_acc"):
+            return "Accredited"
+    return None
+
+
 def _stable_cert_url(href: str | None) -> str | None:
     """Keep only stable portal cert URLs; drop expiring presigned S3 links and ``#``."""
     if not href or href.strip() in {"#", ""}:
@@ -224,6 +348,57 @@ def _stable_cert_url(href: str | None) -> str | None:
     if "X-Amz-" in href or "amazonaws.com" in href:
         return None
     return href.strip()
+
+
+def _program_from_ref(reference_no: str | None) -> str | None:
+    """Map an accreditation reference number to the portal programme folder."""
+    if not reference_no:
+        return None
+    for prefix, program in sorted(REF_PREFIX_PROGRAM.items(), key=lambda kv: -len(kv[0])):
+        if reference_no.startswith(prefix):
+            return program
+    return None
+
+
+def build_portal_certificate_url(
+    href: str | None,
+    reference_no: str | None,
+    program: str | None,
+) -> str | None:
+    """Return a stable ``portal.nabh.co`` certificate URL.
+
+    Uses the directory href when it already points at the portal (preserving edition
+    suffixes like ``_5th Edition.pdf``). Otherwise builds
+    ``{PORTAL_BASE}/{Program}/{ReferenceNo}.pdf`` from the reference number.
+    Empanelment refs (``HOS/…``, ``EYE/…``) have no portal path → ``None``.
+    """
+    stable = _stable_cert_url(href)
+    if stable:
+        return stable
+    if not reference_no or "/" in reference_no:
+        return None
+    prog = program or _program_from_ref(reference_no)
+    if not prog:
+        return None
+    return f"{PORTAL_BASE}/{prog}/{reference_no}.pdf"
+
+
+def resolve_certificate_download_url(record: dict) -> str | None:
+    """Best URL to fetch a certificate PDF for ``record``."""
+    url = record.get("certificate_url")
+    if url:
+        return url
+    href = record.get("certificate_href")
+    if href and href.strip() not in {"#", ""}:
+        return href.strip()
+    return None
+
+
+def _safe_pdf_name(reference_no: str | None, nabh_org_id: str) -> str:
+    """Filesystem-safe PDF basename (prefer reference number)."""
+    if reference_no:
+        return re.sub(r"[^\w.\-]+", "_", reference_no.strip()) + ".pdf"
+    return f"{nabh_org_id}.pdf"
 
 
 def _clean(text: str) -> str:
@@ -274,10 +449,13 @@ def parse_page(payload: dict, states_lookup: dict[str, str], *, collected_at: st
         ).replace("Acc. No.", "").strip() if card.select_one(".hs-col-4") else None
         reference_no = reference_no or None
 
-        status = _clean(card.select_one(".hs-col-5").get_text()) if card.select_one(".hs-col-5") else None
-        status = status or None
-
-        program = _program_from_cert(cert_href)
+        col5 = card.select_one(".hs-col-5")
+        status = _status_from_badge(col5)
+        program = _resolve_program(
+            cert_href,
+            _badge_image_basenames(col5),
+            reference_no,
+        )
         lat, lng = geo.get(name.strip().lower(), (None, None))
 
         orgs.append(NabhOrg(
@@ -290,7 +468,8 @@ def parse_page(payload: dict, states_lookup: dict[str, str], *, collected_at: st
             accreditation_program=program,
             accreditation_status=status,
             reference_no=reference_no,
-            certificate_url=_stable_cert_url(cert_href),
+            certificate_href=cert_href.strip() if cert_href and cert_href.strip() not in {"#", ""} else None,
+            certificate_url=build_portal_certificate_url(cert_href, reference_no, program),
             address=address,
             website_url=website,
             phone=phone,
@@ -345,6 +524,34 @@ def _load_partial(partial_path: Path) -> dict[str, dict]:
     return by_id
 
 
+def _write_checkpoint(out_dir: Path, *, last_page: int, record_count: int) -> None:
+    """Persist crawl cursor beside ``_partial.jsonl`` for safe ``--resume``."""
+    (out_dir / "_checkpoint.json").write_text(
+        json.dumps({"last_page": last_page, "record_count": record_count}),
+        encoding="utf-8",
+    )
+
+
+def _resume_start_page(out_dir: Path, by_id: dict[str, dict], start_page: int) -> int:
+    """Pick the next page to fetch when resuming an interrupted crawl."""
+    checkpoint_path = out_dir / "_checkpoint.json"
+    if checkpoint_path.exists():
+        ckpt = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+        return max(start_page, int(ckpt.get("last_page", 0)) + 1)
+
+    manifest_path = out_dir / "manifest.json"
+    if manifest_path.exists() and by_id:
+        prev = json.loads(manifest_path.read_text(encoding="utf-8"))
+        last_page = int(prev.get("last_page", 0))
+        total_pages = int(prev.get("total_pages", 0))
+        # Only trust manifest when it clearly belongs to this partial checkpoint.
+        if last_page < total_pages and abs(int(prev.get("total", 0)) - len(by_id)) <= 50:
+            return max(start_page, last_page + 1)
+
+    # Partial without a trustworthy cursor — estimate (~25 orgs per page).
+    return max(start_page, len(by_id) // 25 + 1)
+
+
 def collect(out_dir: Path = DEFAULT_OUT_DIR, *, max_pages: int | None = None,
             start_page: int = 1, delay: float = DEFAULT_DELAY,
             timeout: float = DEFAULT_TIMEOUT, retries: int = DEFAULT_RETRIES,
@@ -359,13 +566,11 @@ def collect(out_dir: Path = DEFAULT_OUT_DIR, *, max_pages: int | None = None,
     page = start_page
     if resume:
         by_id = _load_partial(partial_path)
-        manifest_path = out_dir / "manifest.json"
-        if manifest_path.exists():
-            prev = json.loads(manifest_path.read_text(encoding="utf-8"))
-            page = max(start_page, int(prev.get("last_page", 0)) + 1)
+        page = _resume_start_page(out_dir, by_id, start_page)
         logger.info("Resuming from page {} with {} record(s) already on disk", page, len(by_id))
     else:
         partial_path.unlink(missing_ok=True)
+        (out_dir / "_checkpoint.json").unlink(missing_ok=True)
 
     session = requests.Session()
     session.headers.update({"User-Agent": BROWSER_USER_AGENT, "Accept": "application/json"})
@@ -393,6 +598,7 @@ def collect(out_dir: Path = DEFAULT_OUT_DIR, *, max_pages: int | None = None,
             partial_fh.flush()
             pages_fetched += 1
             last_page = page
+            _write_checkpoint(out_dir, last_page=last_page, record_count=len(by_id))
             if page % 25 == 0 or page == last_page_target:
                 logger.info("…page {}/{} — {} unique org(s) so far", page, last_page_target, len(by_id))
             page += 1
@@ -435,10 +641,161 @@ def collect(out_dir: Path = DEFAULT_OUT_DIR, *, max_pages: int | None = None,
     # Full set written successfully; the resume checkpoint is no longer needed.
     if last_page >= total_pages:
         partial_path.unlink(missing_ok=True)
+        (out_dir / "_checkpoint.json").unlink(missing_ok=True)
     logger.success(
         "Collected {} NABH org(s) ({} geocoded) across {} page(s) → {}",
         summary.total, geocoded, pages_fetched, records_path)
     return summary
+
+
+# --------------------------------------------------------------- certificate PDFs
+@dataclass
+class CertificateDownloadSummary:
+    out_dir: str
+    collected_at: str
+    total_records: int
+    attempted: int
+    downloaded: int
+    skipped_existing: int
+    failed: int
+    no_url: int
+    records_path: str
+    manifest_path: str
+
+
+def _is_pdf_response(resp: requests.Response) -> bool:
+    ctype = (resp.headers.get("Content-Type") or "").lower()
+    if "pdf" in ctype:
+        return True
+    # Some IIS responses omit content-type; accept a PDF magic header.
+    return resp.content[:4] == b"%PDF"
+
+
+def download_certificate(
+    session: requests.Session,
+    url: str,
+    dest: Path,
+    *,
+    timeout: float = DEFAULT_TIMEOUT,
+    retries: int = DEFAULT_RETRIES,
+) -> bool:
+    """Download one certificate PDF to ``dest``."""
+    last_exc: Exception | None = None
+    for attempt in range(1, retries + 1):
+        try:
+            resp = session.get(url, timeout=timeout, stream=True)
+            resp.raise_for_status()
+            if not _is_pdf_response(resp):
+                raise ValueError(f"not a PDF ({resp.headers.get('Content-Type')})")
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            with dest.open("wb") as fh:
+                for chunk in resp.iter_content(chunk_size=65536):
+                    if chunk:
+                        fh.write(chunk)
+            return True
+        except (requests.RequestException, ValueError, OSError) as exc:  # noqa: PERF203
+            last_exc = exc
+            if dest.exists():
+                dest.unlink()
+            wait = min(2 ** attempt, 30)
+            logger.warning("Download {} attempt {}/{} failed ({}); retrying in {}s",
+                           url, attempt, retries, exc, wait)
+            time.sleep(wait)
+    logger.error("Failed to download {} after {} attempts: {}", url, retries, last_exc)
+    return False
+
+
+def download_certificates(
+    records_path: Path = DEFAULT_OUT_DIR / "nabh_accredited.json",
+    cert_dir: Path = DEFAULT_CERT_DIR,
+    *,
+    limit: int | None = None,
+    delay: float = DEFAULT_DELAY,
+    timeout: float = DEFAULT_TIMEOUT,
+    retries: int = DEFAULT_RETRIES,
+    skip_existing: bool = True,
+) -> CertificateDownloadSummary:
+    """Download NABH certificate PDFs for rows in ``nabh_accredited.json``."""
+    if not records_path.exists():
+        raise FileNotFoundError(
+            f"No NABH records at {records_path}. Run `python -m src.nabh_scraper` first."
+        )
+    collected_at = _now_iso()
+    records = json.loads(records_path.read_text(encoding="utf-8"))
+    cert_dir.mkdir(parents=True, exist_ok=True)
+
+    session = requests.Session()
+    session.headers.update({"User-Agent": BROWSER_USER_AGENT, "Accept": "application/pdf,*/*"})
+
+    attempted = downloaded = skipped_existing = failed = no_url = 0
+    failures: list[dict[str, str]] = []
+    entries: list[dict] = []
+
+    for rec in records:
+        if limit is not None and attempted >= limit:
+            break
+        url = resolve_certificate_download_url(rec)
+        if not url:
+            no_url += 1
+            continue
+        dest = cert_dir / _safe_pdf_name(rec.get("reference_no"), rec["nabh_org_id"])
+        if skip_existing and dest.exists() and dest.stat().st_size > 0:
+            skipped_existing += 1
+            entries.append({
+                "nabh_org_id": rec["nabh_org_id"],
+                "reference_no": rec.get("reference_no"),
+                "certificate_url": rec.get("certificate_url"),
+                "download_url": url,
+                "pdf_path": str(dest),
+                "status": "skipped_existing",
+            })
+            continue
+
+        attempted += 1
+        ok = download_certificate(session, url, dest, timeout=timeout, retries=retries)
+        if ok:
+            downloaded += 1
+            entries.append({
+                "nabh_org_id": rec["nabh_org_id"],
+                "reference_no": rec.get("reference_no"),
+                "certificate_url": rec.get("certificate_url"),
+                "download_url": url,
+                "pdf_path": str(dest),
+                "status": "downloaded",
+            })
+        else:
+            failed += 1
+            failures.append({
+                "nabh_org_id": rec["nabh_org_id"],
+                "reference_no": rec.get("reference_no") or "",
+                "url": url,
+            })
+        if delay > 0:
+            time.sleep(delay)
+
+    manifest = CertificateDownloadSummary(
+        out_dir=str(cert_dir),
+        collected_at=collected_at,
+        total_records=len(records),
+        attempted=attempted,
+        downloaded=downloaded,
+        skipped_existing=skipped_existing,
+        failed=failed,
+        no_url=no_url,
+        records_path=str(records_path),
+        manifest_path=str(cert_dir / "manifest.json"),
+    )
+    payload = {
+        **asdict(manifest),
+        "entries": entries,
+        "failures": failures,
+    }
+    (cert_dir / "manifest.json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    logger.success(
+        "Certificate PDFs: {} downloaded, {} skipped, {} failed, {} without URL → {}",
+        downloaded, skipped_existing, failed, no_url, cert_dir)
+    return manifest
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -457,11 +814,33 @@ def main(argv: list[str] | None = None) -> int:
                         help=f"Per-request timeout in seconds (default: {DEFAULT_TIMEOUT}).")
     parser.add_argument("--retries", type=int, default=DEFAULT_RETRIES,
                         help=f"Retries per page on failure (default: {DEFAULT_RETRIES}).")
+    parser.add_argument("--download-pdfs", action="store_true",
+                        help="After scraping, download certificate PDFs into <out>/certificates/.")
+    parser.add_argument("--download-pdfs-only", action="store_true",
+                        help="Skip scraping; download PDFs from existing nabh_accredited.json.")
+    parser.add_argument("--cert-dir", type=Path, default=DEFAULT_CERT_DIR,
+                        help=f"Certificate PDF output directory (default: {DEFAULT_CERT_DIR}).")
+    parser.add_argument("--pdf-limit", type=int,
+                        help="Only download this many certificate PDFs (for testing).")
+    parser.add_argument("--force-pdf", action="store_true",
+                        help="Re-download certificate PDFs even when the file already exists.")
     args = parser.parse_args(argv)
 
-    collect(out_dir=args.out, max_pages=args.max_pages, start_page=args.start_page,
-            delay=args.delay, timeout=args.timeout, retries=args.retries,
-            resume=args.resume)
+    records_path = args.out / "nabh_accredited.json"
+    if not args.download_pdfs_only:
+        collect(out_dir=args.out, max_pages=args.max_pages, start_page=args.start_page,
+                delay=args.delay, timeout=args.timeout, retries=args.retries,
+                resume=args.resume)
+    if args.download_pdfs or args.download_pdfs_only:
+        download_certificates(
+            records_path=records_path,
+            cert_dir=args.cert_dir if args.cert_dir != DEFAULT_CERT_DIR else args.out / "certificates",
+            limit=args.pdf_limit,
+            delay=args.delay,
+            timeout=args.timeout,
+            retries=args.retries,
+            skip_existing=not args.force_pdf,
+        )
     return 0
 
 

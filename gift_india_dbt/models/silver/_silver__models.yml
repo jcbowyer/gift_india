@@ -114,6 +114,11 @@ models:
       - name: match_confidence
         description: Named-entity-resolution confidence score (0–1).
 
+  - name: silver_facility_sources
+    description: >-
+      Union of bronze facility reference sources (virtue, jci, nabh, pmjay) in a
+      common shape for MDM survivorship. Feeds gold.facility_master.
+
   - name: silver_facilities_resolved
     description: >-
       Silver facilities with canonical state resolved via the gazetteer lookup.

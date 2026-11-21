@@ -231,7 +231,7 @@ export function ReviewsPage() {
           {loading ? (
             <Skeleton className="h-10 w-full rounded" />
           ) : urlUpdates.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No URL updates yet — use Data Quality → Web addresses.</p>
+            <p className="text-sm text-muted-foreground">No URL updates yet — use Data Quality → Website addresses.</p>
           ) : (
             <Table>
               <TableHeader>

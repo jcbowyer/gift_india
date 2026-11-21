@@ -226,6 +226,36 @@ COMMENT ON COLUMN bronze.facilities_pmjay.source_url IS 'HEM portal URL.';
 COMMENT ON COLUMN bronze.facilities_pmjay.data_source IS 'Provenance tag (always pmjay).';
 COMMENT ON COLUMN bronze.facilities_pmjay.collected_at IS 'When collected (UTC).';
 
+COMMENT ON TABLE bronze.facilities_abdm IS
+  'Bronze Model ABDM pilot facilities from ABDM Insights dashboard (data_source=abdm). Reference for entity resolution.';
+
+COMMENT ON COLUMN bronze.facilities_abdm.abdm_facility_id IS 'HFR id when published; else stable abdm-{sha256(name)[:16]}.';
+COMMENT ON COLUMN bronze.facilities_abdm.facility_name IS 'Facility name on ABDM dashboard.';
+COMMENT ON COLUMN bronze.facilities_abdm.hfr_id IS 'Health Facility Registry id (IN…); null when not published on dashboard.';
+COMMENT ON COLUMN bronze.facilities_abdm.facility_type IS 'Facility type / origin label from dashboard (e.g. District Hospital).';
+COMMENT ON COLUMN bronze.facilities_abdm.state IS 'State from HRL drill-down or NHPR enrichment.';
+COMMENT ON COLUMN bronze.facilities_abdm.district IS 'District from HRL drill-down or NHPR enrichment.';
+COMMENT ON COLUMN bronze.facilities_abdm.partner_name IS 'ABDM software partner / bridge name when published.';
+COMMENT ON COLUMN bronze.facilities_abdm.initiative_status IS 'Model ABDM initiative status (e.g. Ongoing).';
+COMMENT ON COLUMN bronze.facilities_abdm.declared_doctors IS 'Doctors declared on HPR as of dashboard snapshot.';
+COMMENT ON COLUMN bronze.facilities_abdm.declared_nurses IS 'Nurses declared on HPR as of dashboard snapshot.';
+COMMENT ON COLUMN bronze.facilities_abdm.declared_hpr_total IS 'Total HPR professionals declared.';
+COMMENT ON COLUMN bronze.facilities_abdm.verified_doctors IS 'Verified doctors on HPR.';
+COMMENT ON COLUMN bronze.facilities_abdm.verified_nurses IS 'Verified nurses on HPR.';
+COMMENT ON COLUMN bronze.facilities_abdm.verified_hpr_total IS 'Total verified health professionals on HPR.';
+COMMENT ON COLUMN bronze.facilities_abdm.hrl_linked_count IS 'Health Record Linking count from dashboard HRL summary.';
+COMMENT ON COLUMN bronze.facilities_abdm.is_model_abdm_facility IS 'True when listed in MODELABDMFACILITIES pilot roster.';
+COMMENT ON COLUMN bronze.facilities_abdm.hpr_json IS 'Raw HPR overview payload from dashboard.';
+COMMENT ON COLUMN bronze.facilities_abdm.hrl_json IS 'Raw HRL facility payload from dashboard.';
+COMMENT ON COLUMN bronze.facilities_abdm.nhpr_json IS 'Optional NHPR facilityDetail enrichment payload.';
+COMMENT ON COLUMN bronze.facilities_abdm.match_name IS 'Normalized name for entity resolution.';
+COMMENT ON COLUMN bronze.facilities_abdm.brand_key IS 'Brand key for fuzzy matching.';
+COMMENT ON COLUMN bronze.facilities_abdm.verified_on_portal IS 'True — sourced from official ABDM dashboard.';
+COMMENT ON COLUMN bronze.facilities_abdm.source IS 'Source label.';
+COMMENT ON COLUMN bronze.facilities_abdm.source_url IS 'ABDM Insights model-abdm page URL.';
+COMMENT ON COLUMN bronze.facilities_abdm.data_source IS 'Provenance tag (always abdm).';
+COMMENT ON COLUMN bronze.facilities_abdm.collected_at IS 'When collected (UTC).';
+
 COMMENT ON TABLE bronze.merge_candidates IS
   'Splink probabilistic duplicate-facility merge candidates for human review. Not auto-merged into gold.';
 
@@ -243,6 +273,16 @@ COMMENT ON COLUMN bronze.merge_candidates.district IS 'Shared district when both
 COMMENT ON COLUMN bronze.merge_candidates.recommendation IS 'Planner recommendation (default review).';
 COMMENT ON COLUMN bronze.merge_candidates.flag_reason IS 'Why this pair was flagged for review.';
 COMMENT ON COLUMN bronze.merge_candidates.computed_at IS 'When the candidate was computed (UTC).';
+
+COMMENT ON TABLE bronze.facility_clusters IS
+  'Splink MDM cluster assignments — maps each bronze source record to a master_facility_id.';
+
+COMMENT ON COLUMN bronze.facility_clusters.source_system IS 'Bronze source label (virtue, jci, nabh, pmjay).';
+COMMENT ON COLUMN bronze.facility_clusters.source_id IS 'Record id in the source system.';
+COMMENT ON COLUMN bronze.facility_clusters.master_facility_id IS 'Golden-record id for the cluster (Virtue facility_id when present).';
+COMMENT ON COLUMN bronze.facility_clusters.cluster_method IS 'singleton or splink_approved.';
+COMMENT ON COLUMN bronze.facility_clusters.member_count IS 'Records in this master cluster.';
+COMMENT ON COLUMN bronze.facility_clusters.built_at IS 'When clusters were last rebuilt (UTC).';
 
 -- ---------------------------------------------------------------------------
 -- gold — LLM narration outputs (not built by dbt)

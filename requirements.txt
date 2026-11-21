@@ -12,4 +12,4 @@ playwright>=1.57
 pyshp>=2.3
 splink>=3.9,<4
 duckdb>=1.0
-sqlglot>=24,<26
+pypdf>=5.0

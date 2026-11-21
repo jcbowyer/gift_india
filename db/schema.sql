@@ -198,18 +198,59 @@ CREATE INDEX IF NOT EXISTS facilities_nabh_match_name_idx
 CREATE INDEX IF NOT EXISTS facilities_nabh_state_idx
     ON bronze.facilities_nabh (state);
 
--- Medical Value Travel (MVT) hospital locations — India hospitals running
--- international patient programs, seeded from the public Hugging Face MVT MVP
--- dataset (Dhanush008/india-medical-value-travel-mvp), landed by
--- src/load_med_travel.py into data/medical_travel/. Like bronze.facilities_jci
--- this is an external REFERENCE source describing a hospital's medical-tourism
--- posture (program tier, accreditations, specialties, countries served), NOT a
--- governed facility record — so there is intentionally NO foreign key to
--- bronze.facilities_virtue; entity resolution to a facility_id happens downstream in
--- dbt on the normalized `match_name` / `brand_key`. List-valued source fields
--- (`specialties`, `countries_served`, `accreditation`) are stored pipe-delimited,
--- matching bronze.facilities_virtue.specialties. Loads are idempotent on `mvt_id` (the
--- source hospital id, e.g. 'H001').
+-- NABH certificate PDF extractions — parsed scope-of-accreditation from
+-- data/nabh/certificates/*.pdf via gift_india_api/src/verify_nabh_certificates.py
+-- (local pypdf stub or Agent Bricks ai_parse_document + ai_extract).
+CREATE TABLE IF NOT EXISTS bronze.nabh_certificate_extractions (
+    extraction_id           text PRIMARY KEY,
+    reference_no            text NOT NULL,
+    pdf_path                text NOT NULL,
+    nabh_org_id             text,
+    nabh_name               text,
+    accreditation_program   text,
+    valid_from              date,
+    valid_thru              date,
+    scope_items             jsonb NOT NULL DEFAULT '[]'::jsonb,
+    parsed_capabilities     jsonb NOT NULL DEFAULT '{}'::jsonb,
+    parsed_document         jsonb,
+    raw_text                text,
+    parse_method            text NOT NULL,
+    parse_confidence        numeric,
+    parsed_at               timestamptz NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS nabh_certificate_extractions_ref_idx
+    ON bronze.nabh_certificate_extractions (reference_no);
+
+-- Cross-reference of Virtue capability claims vs NABH certificate scope,
+-- scored with NABH entity-resolution confidence and Splink match probability.
+CREATE TABLE IF NOT EXISTS bronze.nabh_capability_verifications (
+    facility_id               text NOT NULL,
+    capability                text NOT NULL,
+    reference_no              text NOT NULL,
+    nabh_org_id               text,
+    virtue_claimed            boolean,
+    virtue_trust_signal       text,
+    virtue_trust_score        numeric,
+    certificate_supports      boolean NOT NULL DEFAULT false,
+    certificate_scope_snippet text,
+    nabh_match_method         text,
+    nabh_match_confidence     numeric,
+    splink_match_probability  numeric,
+    verification_score        numeric NOT NULL,
+    verification_signal       text NOT NULL,
+    verified_at               timestamptz NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (facility_id, capability, reference_no)
+);
+
+CREATE INDEX IF NOT EXISTS nabh_capability_verifications_facility_idx
+    ON bronze.nabh_capability_verifications (facility_id);
+CREATE INDEX IF NOT EXISTS nabh_capability_verifications_signal_idx
+    ON bronze.nabh_capability_verifications (verification_signal);
+
+-- Medical Value Travel (MVT) hospital locations — DEPRECATED: no longer ingested or
+-- joined by Splink/dbt. Table retained for databases that loaded rows before removal.
+-- Seeded from Hugging Face Dhanush008/india-medical-value-travel-mvp (synthetic).
 CREATE TABLE IF NOT EXISTS bronze.locations_medical_travel (
     mvt_id                         text        PRIMARY KEY,
     name                           text        NOT NULL,
@@ -349,6 +390,48 @@ CREATE INDEX IF NOT EXISTS facilities_pmjay_state_idx
 CREATE INDEX IF NOT EXISTS facilities_pmjay_district_idx
     ON bronze.facilities_pmjay (district, state);
 
+-- Model ABDM (end-to-end ABDM adoption pilot) facilities scraped from the ABDM
+-- Insights dashboard (dashboardbeta.abdm.gov.in/abdm/model-abdm) by
+-- src/abdm_scraper.py and landed by src/load_abdm.py. External REFERENCE source
+-- (`data_source` = 'abdm'); entity resolution to facility_id happens downstream
+-- in dbt on match_name / brand_key and optional hfr_id join to NHPR. Idempotent
+-- on abdm_facility_id (HFR id when published, else stable name hash).
+CREATE TABLE IF NOT EXISTS bronze.facilities_abdm (
+    abdm_facility_id        text             PRIMARY KEY,
+    facility_name           text             NOT NULL,
+    hfr_id                  text,
+    facility_type           text,
+    state                   text,
+    district                text,
+    partner_name            text,
+    initiative_status       text,
+    declared_doctors        integer,
+    declared_nurses         integer,
+    declared_hpr_total      integer,
+    verified_doctors        integer,
+    verified_nurses         integer,
+    verified_hpr_total      integer,
+    hrl_linked_count        bigint,
+    is_model_abdm_facility  boolean          NOT NULL DEFAULT true,
+    hpr_json                jsonb,
+    hrl_json                jsonb,
+    nhpr_json               jsonb,
+    match_name              text             NOT NULL,
+    brand_key               text,
+    verified_on_portal      boolean          NOT NULL DEFAULT true,
+    source                  text,
+    source_url              text,
+    data_source             text             NOT NULL DEFAULT 'abdm',
+    collected_at            timestamptz      NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS facilities_abdm_match_name_idx
+    ON bronze.facilities_abdm (match_name);
+CREATE INDEX IF NOT EXISTS facilities_abdm_hfr_id_idx
+    ON bronze.facilities_abdm (hfr_id);
+CREATE INDEX IF NOT EXISTS facilities_abdm_state_idx
+    ON bronze.facilities_abdm (state);
+
 -- Agent Bricks narration outputs (built by gift_india_api/src/narrate_evidence.py).
 -- Deterministic scores live in gold.capability_scored (dbt); these tables hold
 -- the default LLM assessment — planner overrides in app.capability_overrides win.
@@ -409,3 +492,20 @@ CREATE INDEX IF NOT EXISTS merge_candidates_left_idx
     ON bronze.merge_candidates (left_source, left_id);
 CREATE INDEX IF NOT EXISTS merge_candidates_right_idx
     ON bronze.merge_candidates (right_source, right_id);
+
+-- Splink MDM clusters — one row per bronze source record mapped to a master id.
+-- Populated by gift_india_api/src/apply_merge_reviews.py (`make apply-merge-clusters`).
+-- Starts as singletons; human-approved merge pairs in app.merge_reviews collapse
+-- connected components. dbt builds gold.facility_master from this bridge.
+CREATE TABLE IF NOT EXISTS bronze.facility_clusters (
+    source_system        text        NOT NULL,
+    source_id            text        NOT NULL,
+    master_facility_id   text        NOT NULL,
+    cluster_method       text        NOT NULL DEFAULT 'singleton',
+    member_count         integer     NOT NULL DEFAULT 1,
+    built_at             timestamptz NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (source_system, source_id)
+);
+
+CREATE INDEX IF NOT EXISTS facility_clusters_master_idx
+    ON bronze.facility_clusters (master_facility_id);

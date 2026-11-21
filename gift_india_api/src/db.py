@@ -2,7 +2,7 @@
 
 One code path serves two targets:
 
-* **Local Postgres** (system PostgreSQL on `localhost:5432`) — set ``GIFT_INDIA_DB_URL``
+* **Local Postgres** (system PostgreSQL on `localhost:5433`) — set ``GIFT_INDIA_DB_URL``
   or ``GIFT_INDIA_PG*`` in the repo ``.env``. Do **not** use Docker for local dev
   unless explicitly requested (see ``claude.md``).
 * **Databricks Lakebase** (managed serverless Postgres) — resolve the endpoint
@@ -26,7 +26,7 @@ import psycopg
 # which is left to the managed Postgres / Lakebase system objects). dbt promotes
 # bronze -> silver -> gold; serving reads gold.
 DEFAULT_SCHEMA = os.getenv("GIFT_INDIA_DB_SCHEMA", "bronze")
-LOCAL_DEFAULT_DSN = "postgresql://postgres@localhost:5432/gift_india"
+LOCAL_DEFAULT_DSN = "postgresql://postgres@localhost:5433/gift_india"
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 _REPO_ROOT = _PROJECT_ROOT.parent
@@ -39,10 +39,11 @@ def _load_dotenv() -> None:
     if _dotenv_loaded:
         return
     _dotenv_loaded = True
-    from .pg_env import load_env_files, sync_from_url
+    from .pg_env import load_env_files, local_database_url, sync_from_url, sync_to_url
 
     load_env_files()
     sync_from_url()
+    sync_to_url()
     # Legacy: gift_india_api/.env if present (lowest precedence).
     legacy = _PROJECT_ROOT / ".env"
     if legacy.exists():
@@ -57,12 +58,18 @@ def _load_dotenv() -> None:
 def database_url() -> str | None:
     """Resolve a Postgres DSN from the environment, or ``None`` if unset.
 
-    Precedence: ``GIFT_INDIA_DB_URL`` → standard ``PG*`` variables (as injected by a
-    Databricks App with a Lakebase resource) → ``None``.
+    Precedence: ``GIFT_INDIA_DB_URL`` → ``GIFT_INDIA_PG*`` (local system Postgres on
+    :5433) → standard ``PG*`` variables (as injected by a Databricks App with a Lakebase
+    resource) → ``None``.
     """
     _load_dotenv()
     if url := os.getenv("GIFT_INDIA_DB_URL"):
         return url
+
+    from .pg_env import local_database_url
+
+    if local := local_database_url():
+        return local
 
     host = os.getenv("PGHOST")
     if host:

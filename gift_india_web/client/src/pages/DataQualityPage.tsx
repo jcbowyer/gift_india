@@ -1,13 +1,16 @@
 import { useState, useEffect, useMemo, Fragment } from 'react';
+import { useSearchParams } from 'react-router';
 import { api } from '../lib/api';
 import { GeographyCoverageMap } from '../components/GeographyCoverageMap';
 import {
   AutomatedFlagsPanel,
   DataQualityFlagKpis,
+  DataQualitySummaryPanel,
   DuplicateFinderPanel,
   MissingUrlRow,
   useDataQualityFlagSummary,
 } from '../components/DataQualityTools';
+import { DataQualityPageLoading } from '../components/DataQualityLoadingState';
 import type {
   DataQualityReport,
   DataQualityMissingFacility,
@@ -15,11 +18,149 @@ import type {
   DataQualityGeographyStateRow,
 } from '../lib/api';
 
-type WorkspaceTab = 'urls' | 'duplicates' | 'flags';
+type WorkspaceTab = 'summary' | 'geography' | 'urls' | 'duplicates' | 'flags';
 type SortKey = 'state' | 'total' | 'withUrl' | 'pct' | 'missing';
 type GeoSortKey = 'state' | 'totalDistricts' | 'mappedDistricts' | 'pct' | 'facilities';
 type SortDir = 'asc' | 'desc';
-type TabId = 'state' | 'type' | 'geography';
+type TabId = 'state' | 'type';
+
+function GeographyCoverageSection({ data }: { data: DataQualityReport }) {
+  const [geoSortKey, setGeoSortKey] = useState<GeoSortKey>('pct');
+  const [geoSortDir, setGeoSortDir] = useState<SortDir>('asc');
+  const [geoDrillState, setGeoDrillState] = useState<string | null>(null);
+  const [geoDrillData, setGeoDrillData] = useState<DataQualityUnmappedDistrict[] | null>(null);
+  const [geoDrillLoading, setGeoDrillLoading] = useState(false);
+
+  const geoStateCols: [GeoSortKey, string][] = [
+    ['state', 'State'],
+    ['totalDistricts', 'Districts'],
+    ['mappedDistricts', 'Mapped'],
+    ['pct', 'Map rate'],
+    ['facilities', 'Facilities'],
+  ];
+
+  const sortedGeoStates = useMemo(() => {
+    return [...data.byGeography.byState].sort((a, b) => {
+      let diff = 0;
+      if (geoSortKey === 'state') diff = a.state.localeCompare(b.state);
+      else if (geoSortKey === 'totalDistricts') diff = a.totalDistricts - b.totalDistricts;
+      else if (geoSortKey === 'mappedDistricts') diff = a.mappedDistricts - b.mappedDistricts;
+      else if (geoSortKey === 'pct') diff = a.pct - b.pct;
+      else if (geoSortKey === 'facilities') diff = a.facilities - b.facilities;
+      return geoSortDir === 'asc' ? diff : -diff;
+    });
+  }, [data, geoSortKey, geoSortDir]);
+
+  const toggleGeoSort = (key: GeoSortKey) => {
+    if (geoSortKey === key) setGeoSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else {
+      setGeoSortKey(key);
+      setGeoSortDir(key === 'state' ? 'asc' : 'desc');
+    }
+  };
+
+  const toggleGeoDrill = (state: string, unmapped: number) => {
+    if (unmapped === 0) return;
+    if (geoDrillState === state) {
+      setGeoDrillState(null);
+      setGeoDrillData(null);
+      return;
+    }
+    setGeoDrillState(state);
+    setGeoDrillLoading(true);
+    setGeoDrillData(null);
+    api
+      .dataQualityUnmappedDistricts(state)
+      .then(setGeoDrillData)
+      .catch(() => setGeoDrillData([]))
+      .finally(() => setGeoDrillLoading(false));
+  };
+
+  return (
+    <div className="space-y-4" data-demo="geography-coverage">
+      <p className="text-sm text-muted-foreground">
+        Facilities are linked to Survey of India districts via{' '}
+        <code className="font-mono text-xs bg-muted px-1 rounded">gold.facility_geography</code> — tiered
+        entity resolution (canonical district, spatial fallback) so the Navigator map and scorecard don’t plot
+        duplicate ghosts or wrong-state pins.
+      </p>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-demo="geography-kpis">
+        <KpiCard
+          label="District map rate"
+          value={`${data.byGeography.overall.pct}%`}
+          sub={`${data.byGeography.overall.mapped.toLocaleString()} / ${data.byGeography.overall.total.toLocaleString()} districts with facilities`}
+        />
+        <KpiCard
+          label="Facilities linked"
+          value={`${data.byGeography.overall.facilityPct}%`}
+          sub={`${data.byGeography.overall.withGeography.toLocaleString()} with geography_id`}
+        />
+        {data.byGeography.levels.map((level) => (
+          <KpiCard
+            key={level.level}
+            value={`${level.pct}%`}
+            label={level.label}
+            sub={
+              level.level === 'nation'
+                ? level.mapped > 0
+                  ? 'India has facility data'
+                  : 'No facility data'
+                : `${level.mapped.toLocaleString()} / ${level.total.toLocaleString()} units mapped`
+            }
+          />
+        ))}
+      </div>
+
+      <GeographyCoverageMap byState={data.byGeography.byState} />
+
+      <div className="gift-elevate rounded-xl border bg-card overflow-hidden">
+        <div className="px-4 py-3 border-b flex items-baseline justify-between">
+          <h2 className="text-sm font-semibold text-foreground">Map rate by State</h2>
+          <span className="text-xs text-muted-foreground">
+            Facility geography linkage by state · click gaps to expand
+          </span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b bg-muted/40">
+                {geoStateCols.map(([key, label]) => (
+                  <th
+                    key={key}
+                    onClick={() => toggleGeoSort(key)}
+                    className={`px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground cursor-pointer select-none hover:text-foreground whitespace-nowrap ${
+                      key === 'state' || key === 'pct' ? 'text-left' : 'text-right'
+                    }`}
+                  >
+                    {label}
+                    <SortIcon active={geoSortKey === key} dir={geoSortDir} />
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {sortedGeoStates.map((row) => {
+                const unmapped = row.totalDistricts - row.mappedDistricts;
+                return (
+                  <GeoStateRow
+                    key={row.state}
+                    row={row}
+                    unmapped={unmapped}
+                    expanded={geoDrillState === row.state}
+                    drillLoading={geoDrillLoading}
+                    drillData={geoDrillState === row.state ? geoDrillData : null}
+                    onToggle={() => toggleGeoDrill(row.state, unmapped)}
+                  />
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function coverageBarColor(pct: number): string {
   if (pct >= 80) return 'bg-emerald-500';
@@ -67,30 +208,55 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
 }
 
 export function DataQualityPage() {
+  const [searchParams] = useSearchParams();
   const [data, setData] = useState<DataQualityReport | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>('total');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [drillState, setDrillState] = useState<string | null>(null);
   const [drillData, setDrillData] = useState<DataQualityMissingFacility[] | null>(null);
   const [drillLoading, setDrillLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('state');
-  const [geoSortKey, setGeoSortKey] = useState<GeoSortKey>('pct');
-  const [geoSortDir, setGeoSortDir] = useState<SortDir>('asc');
-  const [geoDrillState, setGeoDrillState] = useState<string | null>(null);
-  const [geoDrillData, setGeoDrillData] = useState<DataQualityUnmappedDistrict[] | null>(null);
-  const [geoDrillLoading, setGeoDrillLoading] = useState(false);
-  const [workspaceTab, setWorkspaceTab] = useState<WorkspaceTab>('urls');
-  const flagSummary = useDataQualityFlagSummary();
+  const initialTab = searchParams.get('tab');
+  const [workspaceTab, setWorkspaceTab] = useState<WorkspaceTab>(() => {
+    if (initialTab === 'geography' || initialTab === 'urls' || initialTab === 'duplicates' || initialTab === 'flags') {
+      return initialTab;
+    }
+    return 'summary';
+  });
+  const needsReport = workspaceTab === 'geography' || workspaceTab === 'urls';
+  const flagSummary = useDataQualityFlagSummary(workspaceTab !== 'summary');
 
   useEffect(() => {
+    if (!needsReport || data) return;
+    let cancelled = false;
+    setReportLoading(true);
+    setReportError(null);
     api
       .dataQuality()
-      .then(setData)
-      .catch((e: unknown) => setError(String(e)))
-      .finally(() => setLoading(false));
-  }, []);
+      .then((report) => {
+        if (!cancelled) setData(report);
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) setReportError(String(e));
+      })
+      .finally(() => {
+        if (!cancelled) setReportLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [needsReport, data]);
+
+  // Warm the heavy report in the background while the user reads Summary.
+  useEffect(() => {
+    if (workspaceTab !== 'summary' || data) return;
+    const timer = window.setTimeout(() => {
+      api.dataQuality().then(setData).catch(() => {});
+    }, 800);
+    return () => window.clearTimeout(timer);
+  }, [workspaceTab, data]);
 
   const sortedStates = useMemo(() => {
     if (!data) return [];
@@ -105,50 +271,11 @@ export function DataQualityPage() {
     });
   }, [data, sortKey, sortDir]);
 
-  const sortedGeoStates = useMemo(() => {
-    if (!data) return [];
-    return [...data.byGeography.byState].sort((a, b) => {
-      let diff = 0;
-      if (geoSortKey === 'state') diff = a.state.localeCompare(b.state);
-      else if (geoSortKey === 'totalDistricts') diff = a.totalDistricts - b.totalDistricts;
-      else if (geoSortKey === 'mappedDistricts') diff = a.mappedDistricts - b.mappedDistricts;
-      else if (geoSortKey === 'pct') diff = a.pct - b.pct;
-      else if (geoSortKey === 'facilities') diff = a.facilities - b.facilities;
-      return geoSortDir === 'asc' ? diff : -diff;
-    });
-  }, [data, geoSortKey, geoSortDir]);
-
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
     else {
       setSortKey(key);
       setSortDir('desc');
-    }
-  }
-
-  function toggleGeoSort(key: GeoSortKey) {
-    if (geoSortKey === key) setGeoSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-    else {
-      setGeoSortKey(key);
-      setGeoSortDir(key === 'state' ? 'asc' : 'desc');
-    }
-  }
-
-  async function toggleGeoDrill(state: string, unmappedCount: number) {
-    if (unmappedCount <= 0) return;
-    if (geoDrillState === state) {
-      setGeoDrillState(null);
-      setGeoDrillData(null);
-      return;
-    }
-    setGeoDrillState(state);
-    setGeoDrillData(null);
-    setGeoDrillLoading(true);
-    try {
-      const rows = await api.dataQualityUnmappedDistricts(state);
-      setGeoDrillData(rows);
-    } finally {
-      setGeoDrillLoading(false);
     }
   }
 
@@ -169,23 +296,17 @@ export function DataQualityPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
-        Loading data quality metrics…
-      </div>
-    );
+  if (needsReport && reportLoading && !data) {
+    return <DataQualityPageLoading activeTab={workspaceTab} />;
   }
 
-  if (error || !data) {
+  if (needsReport && reportError && !data) {
     return (
       <div className="flex items-center justify-center h-64 text-destructive text-sm">
-        {error ?? 'Failed to load data'}
+        {reportError}
       </div>
     );
   }
-
-  const { summary } = data;
 
   const stateCols: [SortKey, string][] = [
     ['state',   'State'],
@@ -195,18 +316,9 @@ export function DataQualityPage() {
     ['missing', 'Missing'],
   ];
 
-  const geoStateCols: [GeoSortKey, string][] = [
-    ['state',           'State'],
-    ['totalDistricts',  'Districts'],
-    ['mappedDistricts', 'Mapped'],
-    ['pct',             'Map rate'],
-    ['facilities',      'Facilities'],
-  ];
-
   const tabLabels: Record<TabId, string> = {
     state: 'By State',
     type: 'By Facility Type',
-    geography: 'Map Coverage',
   };
 
   return (
@@ -215,17 +327,19 @@ export function DataQualityPage() {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Data Quality</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Track 4 fix-list — missing web addresses, Splink duplicate-finder merge recommendations, and automated readiness
-          flags with human-in-the-loop review. Nothing silently merges into gold.
+          Track geography linkage, Splink dedupe, quality flags, and website corrections — human review before
+          anything lands in gold.
         </p>
       </div>
 
-      <DataQualityFlagKpis summary={flagSummary} />
+      {workspaceTab !== 'summary' ? <DataQualityFlagKpis summary={flagSummary} /> : null}
 
-      <div className="flex gap-2 border-b pb-0">
+      <div className="flex gap-2 border-b pb-0 flex-wrap">
         {(
           [
-            ['urls', 'Web addresses'],
+            ['summary', 'Summary'],
+            ['geography', 'Geography & map'],
+            ['urls', 'Website addresses'],
             ['duplicates', 'Duplicate finder'],
             ['flags', 'Automated flags'],
           ] as const
@@ -244,37 +358,39 @@ export function DataQualityPage() {
         ))}
       </div>
 
+      {workspaceTab === 'summary' && (
+        <DataQualitySummaryPanel onGoToTab={(tab) => setWorkspaceTab(tab)} />
+      )}
+      {workspaceTab === 'geography' && data && <GeographyCoverageSection data={data} />}
       {workspaceTab === 'duplicates' && <DuplicateFinderPanel />}
       {workspaceTab === 'flags' && <AutomatedFlagsPanel />}
 
-      {workspaceTab === 'urls' && (
+      {workspaceTab === 'urls' && data && (
         <>
-
-      {/* KPI row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" data-demo="web-address-kpis">
-        <KpiCard label="Total Facilities" value={summary.total.toLocaleString()} />
-        <KpiCard label="With URL" value={summary.withUrl.toLocaleString()} />
+        <KpiCard label="Total Facilities" value={data.summary.total.toLocaleString()} />
+        <KpiCard label="With URL" value={data.summary.withUrl.toLocaleString()} />
         <KpiCard
           label="URL Coverage"
-          value={`${summary.pctWithUrl}%`}
+          value={`${data.summary.pctWithUrl}%`}
           sub="% with website URL"
         />
-        <KpiCard label="Missing URL" value={summary.missing.toLocaleString()} />
+        <KpiCard label="Missing URL" value={data.summary.missing.toLocaleString()} />
         <KpiCard
           label="Scraped"
-          value={summary.scrapeTotal.toLocaleString()}
+          value={data.summary.scrapeTotal.toLocaleString()}
           sub="crawl attempts"
         />
         <KpiCard
           label="Scrape Success"
-          value={`${summary.scrapePct}%`}
-          sub={`${summary.scrapeOk.toLocaleString()} ok`}
+          value={`${data.summary.scrapePct}%`}
+          sub={`${data.summary.scrapeOk.toLocaleString()} ok`}
         />
       </div>
 
       {/* Tab bar */}
       <div className="flex gap-2 border-b pb-0">
-        {(['state', 'type', 'geography'] as const).map((tab) => (
+        {(['state', 'type'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -414,93 +530,6 @@ export function DataQualityPage() {
                 ))}
               </tbody>
             </table>
-          </div>
-        </div>
-      )}
-
-      {/* Geography map coverage */}
-      {activeTab === 'geography' && (
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Map rate — share of reference geography units with at least one facility in{' '}
-            <code className="font-mono text-xs bg-muted px-1 rounded">gold.facilities</code>, matched
-            against{' '}
-            <code className="font-mono text-xs bg-muted px-1 rounded">gold.geography</code> at each
-            administrative level (Survey of India Levels 1–3).
-          </p>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <KpiCard
-              label="Overall map rate"
-              value={`${data.byGeography.overall.pct}%`}
-              sub={`${data.byGeography.overall.mapped.toLocaleString()} / ${data.byGeography.overall.total.toLocaleString()} districts`}
-            />
-            <KpiCard
-              label="Facilities linked"
-              value={`${data.byGeography.overall.facilityPct}%`}
-              sub={`${data.byGeography.overall.withGeography.toLocaleString()} with geography_id`}
-            />
-            {data.byGeography.levels.map((level) => (
-              <KpiCard
-                key={level.level}
-                value={`${level.pct}%`}
-                label={level.label}
-                sub={
-                  level.level === 'nation'
-                    ? level.mapped > 0
-                      ? 'India has facility data'
-                      : 'No facility data'
-                    : `${level.mapped.toLocaleString()} / ${level.total.toLocaleString()} units mapped`
-                }
-              />
-            ))}
-          </div>
-
-          <GeographyCoverageMap byState={data.byGeography.byState} />
-
-          <div className="gift-elevate rounded-xl border bg-card overflow-hidden">
-            <div className="px-4 py-3 border-b flex items-baseline justify-between">
-              <h2 className="text-sm font-semibold text-foreground">Map rate by State</h2>
-              <span className="text-xs text-muted-foreground">
-                Facility geography linkage by state · click gaps to expand
-              </span>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/40">
-                    {geoStateCols.map(([key, label]) => (
-                      <th
-                        key={key}
-                        onClick={() => toggleGeoSort(key)}
-                        className={`px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground cursor-pointer select-none hover:text-foreground whitespace-nowrap ${
-                          key === 'state' || key === 'pct' ? 'text-left' : 'text-right'
-                        }`}
-                      >
-                        {label}
-                        <SortIcon active={geoSortKey === key} dir={geoSortDir} />
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedGeoStates.map((row) => {
-                    const unmapped = row.totalDistricts - row.mappedDistricts;
-                    return (
-                      <GeoStateRow
-                        key={row.state}
-                        row={row}
-                        unmapped={unmapped}
-                        expanded={geoDrillState === row.state}
-                        drillLoading={geoDrillLoading}
-                        drillData={geoDrillState === row.state ? geoDrillData : null}
-                        onToggle={() => toggleGeoDrill(row.state, unmapped)}
-                      />
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
           </div>
         </div>
       )}

@@ -89,11 +89,39 @@ def connection_params() -> dict[str, str]:
     sync_from_url()
     return {
         "host": os.environ.get("GIFT_INDIA_PGHOST", "localhost"),
-        "port": os.environ.get("GIFT_INDIA_PGPORT", "5432"),
+        "port": os.environ.get("GIFT_INDIA_PGPORT", "5433"),
         "user": os.environ.get("GIFT_INDIA_PGUSER", "postgres"),
         "password": os.environ.get("GIFT_INDIA_PGPASSWORD", ""),
         "dbname": os.environ.get("GIFT_INDIA_PGDATABASE", "gift_india"),
     }
+
+
+def local_database_url() -> str | None:
+    """Build a local Postgres DSN from ``GIFT_INDIA_PG*`` when any part is set."""
+    sync_from_url()
+    host = os.environ.get("GIFT_INDIA_PGHOST")
+    port = os.environ.get("GIFT_INDIA_PGPORT")
+    user = os.environ.get("GIFT_INDIA_PGUSER")
+    password = os.environ.get("GIFT_INDIA_PGPASSWORD")
+    database = os.environ.get("GIFT_INDIA_PGDATABASE")
+    if not any((host, port, user, password, database)):
+        return None
+    h = host or "localhost"
+    p = port or "5433"
+    u = user or "postgres"
+    d = database or "gift_india"
+    auth = f"{u}:{password}@" if password else f"{u}@"
+    return f"postgresql://{auth}{h}:{p}/{d}"
+
+
+def sync_to_url() -> str | None:
+    """Set ``GIFT_INDIA_DB_URL`` from ``GIFT_INDIA_PG*`` when the URL is unset."""
+    if os.environ.get("GIFT_INDIA_DB_URL", "").strip():
+        return os.environ["GIFT_INDIA_DB_URL"]
+    if local := local_database_url():
+        os.environ["GIFT_INDIA_DB_URL"] = local
+        return local
+    return None
 
 
 def check_connection() -> None:
@@ -128,6 +156,7 @@ def check_connection() -> None:
 def main() -> int:
     load_env_files()
     sync_from_url()
+    sync_to_url()
     if "--export" in sys.argv:
         for key in _PG_KEYS:
             if val := os.environ.get(key, ""):

@@ -459,6 +459,55 @@ def fetch(
     raise last_exc  # type: ignore[misc]
 
 
+@dataclass
+class _PlaywrightFetch:
+    html: str
+    final_url: str
+    http_status: int
+    content_type: str = "text/html"
+
+
+def fetch_html_via_playwright(
+    url: str,
+    *,
+    user_agent: str | None = None,
+    timeout_ms: int = 30_000,
+) -> _PlaywrightFetch | None:
+    """Fetch page HTML through headless Chromium when ``requests`` is blocked.
+
+    Many large hospital chains (Fortis, Sterling, …) return HTTP 403 or SSL
+    errors to plain HTTP clients but serve a normal page to a real browser.
+    """
+    try:
+        from playwright.sync_api import Error as PlaywrightError
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        return None
+
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            try:
+                context = browser.new_context(
+                    user_agent=user_agent or USER_AGENT,
+                    viewport=THUMBNAIL_VIEWPORT,
+                )
+                page = context.new_page()
+                resp = page.goto(
+                    url, wait_until="domcontentloaded", timeout=timeout_ms
+                )
+                return _PlaywrightFetch(
+                    html=page.content(),
+                    final_url=page.url,
+                    http_status=resp.status if resp else 200,
+                )
+            finally:
+                browser.close()
+    except PlaywrightError as exc:
+        logger.debug("Playwright fetch failed for {}: {}", url, exc)
+        return None
+
+
 # --------------------------------------------------------------- extraction
 def _clean(value: str | None) -> str | None:
     if value is None:
@@ -763,40 +812,68 @@ def scrape_one(
         record.fetched_at = _now_iso()
         return record
 
+    resp: requests.Response | None = None
+    html: str | None = None
     try:
         resp = fetch(session, target.url, timeout=timeout, retries=retries)
     except requests.RequestException as exc:
-        logger.error("Fetch error for {}: {}", target.url, exc)
-        record.status = "fetch_error"
-        record.error = str(exc)
+        logger.warning("Fetch error for {} — trying Playwright: {}", target.url, exc)
+        pw = fetch_html_via_playwright(
+            target.url,
+            user_agent=user_agent,
+            timeout_ms=int(timeout * 1000),
+        )
+        if pw is None:
+            logger.error("Fetch error for {}: {}", target.url, exc)
+            record.status = "fetch_error"
+            record.error = str(exc)
+            record.fetched_at = _now_iso()
+            return record
+        html = pw.html
         record.fetched_at = _now_iso()
-        return record
+        record.http_status = pw.http_status
+        record.final_url = pw.final_url
+        record.content_type = pw.content_type
 
-    record.fetched_at = _now_iso()
-    record.http_status = resp.status_code
-    record.final_url = str(resp.url)
-    record.content_type = resp.headers.get("Content-Type")
+    if resp is not None:
+        record.fetched_at = _now_iso()
+        record.http_status = resp.status_code
+        record.final_url = str(resp.url)
+        record.content_type = resp.headers.get("Content-Type")
 
-    # requests falls back to ISO-8859-1 when the server sends no charset, which
-    # mangles UTF-8 pages (common for multilingual Indian sites). Sniff instead.
-    if "charset" not in (record.content_type or "").lower():
-        resp.encoding = resp.apparent_encoding or resp.encoding
+        # requests falls back to ISO-8859-1 when the server sends no charset, which
+        # mangles UTF-8 pages (common for multilingual Indian sites). Sniff instead.
+        if "charset" not in (record.content_type or "").lower():
+            resp.encoding = resp.apparent_encoding or resp.encoding
 
-    if resp.status_code >= 400:
-        logger.warning("HTTP {} for {}", resp.status_code, target.url)
-        record.status = "http_error"
-        record.error = f"HTTP {resp.status_code}"
-        return record
+        if resp.status_code >= 400:
+            logger.warning(
+                "HTTP {} for {} — trying Playwright", resp.status_code, target.url
+            )
+            pw = fetch_html_via_playwright(
+                target.url,
+                user_agent=user_agent,
+                timeout_ms=int(timeout * 1000),
+            )
+            if pw is None or pw.http_status >= 400:
+                record.status = "http_error"
+                record.error = f"HTTP {resp.status_code}"
+                return record
+            html = pw.html
+            record.http_status = pw.http_status
+            record.final_url = pw.final_url
+            record.content_type = pw.content_type
+        else:
+            html = resp.text
 
     facility_dir.mkdir(parents=True, exist_ok=True)
-    html = resp.text
     html_path.write_text(html, encoding="utf-8")
     record.html_path = str(html_path)
 
     extracted = extract(html, record.final_url or target.url)
     extracted["facility_id"] = target.facility_id
     extracted["facility_name"] = target.name
-    extracted["http_status"] = resp.status_code
+    extracted["http_status"] = record.http_status
     extracted_path.write_text(
         json.dumps(extracted, ensure_ascii=False, indent=2), encoding="utf-8"
     )

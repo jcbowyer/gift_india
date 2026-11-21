@@ -1,6 +1,6 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { Button } from '@databricks/appkit-ui/react';
+import { Button, Label, Switch } from '@databricks/appkit-ui/react';
 import {
   Sparkles,
   X,
@@ -16,11 +16,12 @@ import { GiftSeal } from './GiftSeal';
 import { cn } from '../lib/utils';
 
 /**
- * Interactive ~5:30 demo walkthrough — the in-app twin of DEMO.md.
+ * Interactive ~3:00 demo walkthrough — the in-app twin of DEMO.md.
  *
  * Drives the presenter through the killer-demo script: auto-navigates to the
- * right screen for each beat, narrates the talk track, spotlights the relevant
- * UI (when a `selector` is given and present), and paces against a 5:30 clock.
+ * right screen for each beat, spotlights the relevant UI (when a `selector` is
+ * given and present), and paces against a 3:00 clock. App-focus steps use the
+ * bottom chrome bar — toggle **Show script** (or press `s`) instead of back/forward buttons.
  *
  * Launch via the header "✨ Demo" button (window event `gift-demo:start`),
  * the floating pill, or the keyboard chord `g` then `d`. Advance with → / Space,
@@ -29,18 +30,21 @@ import { cn } from '../lib/utils';
 
 type Phase = 'Title' | 'Open' | 'Problem' | 'Solution' | 'Why it matters' | 'Tech' | 'Future' | 'Close';
 
-interface PunchlineReveal {
-  /** Setup — shown immediately. */
+interface ProcessImprovement {
+  /** Optional banner above the Before / After columns. */
+  header?: string;
   before: string;
-  /** The line that lands after the beat (e.g. “It’s grit.”). */
-  line: string;
-  /** Epilogue — fades in after the punchline. */
   after: string;
-  /** Silence before the punchline (default 2.8s). */
-  beatMs?: number;
-  /** Copy shown during the beat — frames the pause intentionally. */
-  beatHint?: string;
-  beatSubhint?: string;
+  footer?: string;
+}
+
+/** Databricks Agent Bricks beat — ai_parse_document, ai_query, why not ai_classify. */
+interface AgentBricksBeat {
+  header?: string;
+  parseDocument: { title: string; role: string; why: string };
+  aiQuery: { title: string; role: string; why: string };
+  notClassify: { title: string; role: string; why: string };
+  footer?: string;
 }
 
 interface Step {
@@ -56,8 +60,10 @@ interface Step {
   route: string;
   /** Talk track — what the presenter says. */
   say?: string;
-  /** Staged punchline reveal (overrides `say` when set). */
-  punchline?: PunchlineReveal;
+  /** Title slide — standard before / after process improvement layout. */
+  processImprovement?: ProcessImprovement;
+  /** Databricks Agent Bricks architecture slide (extract, narrate, not classify). */
+  agentBricks?: AgentBricksBeat;
   /** Presenter-only cues — kept for DEMO.md; not shown in the in-app guide. */
   do?: string[];
   /** Optional CSS selector to spotlight on this step (no-ops if absent). */
@@ -68,90 +74,70 @@ interface Step {
   appGoLabel?: string;
   /** Open on talk track before live UI; defaults true when `route` is not `/`. */
   scriptFirst?: boolean;
-  /** Tech-stack decision matrix (Decision Area / approach / why). */
-  decisionTable?: DecisionTableRow[];
 }
-
-interface DecisionTableRow {
-  area: string;
-  approach: string;
-  why: string;
-}
-
-const TECH_DECISION_TABLE: DecisionTableRow[] = [
-  {
-    area: 'AI_Classify vs. AI_Query',
-    approach: 'We treat AI as an extractor (structured data), not a conversationalist.',
-    why: 'Avoids hallucinated "answers" and conversational fluff; forces database-ready outputs.',
-  },
-  {
-    area: 'Batching & Model Selection',
-    approach: 'Cost-optimized routing: simple tasks to small models, complex to "heavy" models.',
-    why: 'Prevents model bloat and stops overspending on low-complexity routine tasks.',
-  },
-  {
-    area: 'Data Augmentation',
-    approach: 'Splink probabilistic linkage surfaces merge recommendations across bronze sources — humans approve before gold.',
-    why: 'Match scores, not LLM guesswork — duplicate pairs queue for planner review; nothing silently merges.',
-  },
-  {
-    area: 'Native Platform Leverage',
-    approach: 'We use Dabs, Genie, AI_Query, and Lakehouse FTS for everything possible.',
-    why: 'We minimize "franken-coding" by relying on platform-native infrastructure rather than custom scripts.',
-  },
-];
 
 const STEPS: Step[] = [
   {
     phase: 'Title',
-    clock: '0:00 – 0:20',
+    clock: '0:00 – 0:25',
     title: 'Beyond the Hospital Directory',
     subtitle: 'Grounding Improved Patient Care',
     route: '/',
-    say: '**John Bowyer** · **Mason Bushyeager** · **Billy Houston**\n\nDatabricks for Good hackathon in support of the Virtue Foundation — **GIFT Gauge** (Track 1)',
-    do: ['Hold the title. Let the room read the authors and subtitle before you advance.'],
-  },
-  {
-    phase: 'Open',
-    clock: '0:20 – 0:45',
-    title: 'The secret',
-    route: '/',
-    punchline: {
+    sayLead:
+      'Directories give you lists — **where** hospitals claim to be. Priya needs **whether** they can actually deliver.',
+    processImprovement: {
+      header: 'Where on a list — or whether on the record?',
       before:
-        'If you like this demo, here’s the secret — it’s not about technology or intelligence. After 30 years, we’ve found the number one predictor of success comes down to a single thing.',
-      line: 'It’s grit.',
+        'Hospital directories answer **where** — 847 ICUs on a spreadsheet, half duplicate entities, stale locations, or self-reported website copy nobody verified.',
       after:
-        'Yesterday our project was struggling. Every instinct said go to dinner, go to bed, call it quits. We didn’t quit. And today, this is what you see.',
-      beatMs: 3200,
-      beatHint: 'In the real world, the answer never lands on cue.',
-      beatSubhint: 'building suspense… · tap to reveal',
+        'GIFT Gauge answers **whether** — every claim scored against third-party registries (**NABH**, **ABDM/NHPR**), Splink dedupe with human approval, and overrides on the record. Citations you can defend in a hearing.',
+      footer:
+        '**John Bowyer · Mason Bushyeager · Billy Houston** — Databricks for Good, Virtue Foundation, **GIFT Gauge** Track 1.',
     },
-    do: ['Hold the beat — let the room sit with it, then “It’s grit.” lands.', 'Gesture at the app on the last line.'],
+    do: [
+      'Say the bridge line first — where = lists and pins; whether = defensible capability claims.',
+      'Read Before, then After. Do not advance until the contrast lands.',
+    ],
   },
   {
     phase: 'Open',
-    clock: '0:45 – 1:05',
+    clock: '0:20 – 0:32',
     title: 'Priya\'s User Story',
     route: '/',
-    say: 'We’re at the Databricks for Good hackathon in support of the Virtue Foundation — and we’re building for **Priya**. She runs allocation for a nonprofit health network across India. Her job isn’t to browse hospital websites; it’s to **place patients and steer referrals** toward facilities that are clinically capable, cost-effective, and defensible when a district officer or donor asks *why*.\n\nEvery morning, the same trap: her spreadsheet says 847 facilities in Uttar Pradesh claim an **ICU**. A patient needs one tonight. Half those rows are duplicate entities, stale locations, or self-reported website copy nobody has verified. She’s been burned by **hospital directories** before — staring at a list, unable to tell if a hospital is actually equipped for the procedure or just **gaming the search results**.\n\nRouting wrong isn’t a data-quality bug. **It’s a patient-safety failure.**',
-    do: ['Name Priya if you can — make the persona real.', 'Land the ICU / Uttar Pradesh numbers; pause before “patient-safety failure.”'],
+    say: 'We’re building for **Priya** — she places patients and steers referrals across India. A patient needs an **ICU** tonight. Her job isn’t to browse hospital websites; it’s to pick a facility she can **defend** when a district officer asks *why*. Routing wrong isn’t a data-quality bug. **It’s a patient-safety failure.**',
+    do: ['Name Priya if you can.', 'Pause before “patient-safety failure.”'],
   },
   {
     phase: 'Problem',
-    clock: '1:05 – 1:25',
+    clock: '0:32 – 0:40',
+    title: 'Geography & the Data Quality desk',
+    route: '/data-quality',
+    say: 'A wrong district plots the ICU in the wrong state — not a spreadsheet typo, a **routing error**. We link facilities to Survey of India districts via **`gold.facility_geography`** (tiered entity resolution + spatial fallback) and track gaps on the **Data Quality** desk before Priya trusts the Navigator map.',
+    do: [
+      'Land on Data Quality → Summary.',
+      'Point at the **Geography linked** card — district map rate and % facilities with a geography_id.',
+    ],
+    selector: '[data-demo="dq-summary"]',
+    appFocus: true,
+    scriptFirst: false,
+    appGoLabel: 'Back to Trust Gauge',
+  },
+  {
+    phase: 'Problem',
+    clock: '0:40 – 0:48',
     title: 'The burning question',
     route: '/',
-    say: 'We’re here to answer one burning question that usually takes weeks of phone calls to resolve: **Can this hospital actually do what it claims?** **GIFT Gauge** — Governance, Integrity and Facility Trust — scores each facility by the evidence behind its claims, with citations you can open, challenge, and override.',
+    say: '**Can this hospital actually do what it claims?** **GIFT Gauge** — Governance, Integrity and Facility Trust — scores each facility by the evidence behind its claims, with citations you can open, challenge, and override.',
     selector: '[data-demo="hero"]',
     appFocus: true,
     scriptFirst: false,
   },
   {
     phase: 'Solution',
-    clock: '1:25 – 1:45',
+    clock: '0:42 – 0:52',
     title: 'Capability + region',
     route: '/',
-    say: 'A planner starts the way they think: I need intensive care, in this region. No database queries, no spelunking through scraped hospital websites.',
+    say: 'A planner starts the way they think: I need intensive care, in this region. No SQL, no spelunking through scraped hospital websites.',
     do: ['Click the ICU capability tile.', 'Pick a state in the region filter below.'],
     selector: '[data-demo="capabilities"]',
     appFocus: true,
@@ -159,10 +145,10 @@ const STEPS: Step[] = [
   },
   {
     phase: 'Solution',
-    clock: '1:45 – 2:05',
+    clock: '1:10 – 1:25',
     title: 'Ranked by evidence',
     route: '/',
-    say: 'Instantly — every hospital claiming intensive care here, ranked by how strongly the claim is backed. Green strong, amber partial, red suspicious. The dial is a trust score computed in our gold tables, not a vibe.',
+    say: 'Every hospital claiming intensive care here — ranked by how strongly the claim is backed. Green strong, amber partial, red suspicious. The dial is **`evidence_strength_score`** in SQL, not a vibe.',
     do: ['Point at the trust dials and the colored signal badges.'],
     selector: '[data-demo="results"]',
     appFocus: true,
@@ -170,40 +156,40 @@ const STEPS: Step[] = [
   },
   {
     phase: 'Solution',
-    clock: '2:05 – 2:20',
-    title: 'Deep dive on citations',
+    clock: '1:04 – 1:22',
+    title: 'Third-party evidence — not website copy',
     route: '/',
-    say: 'Open any strong facility in **Maharashtra** or **Tamil Nadu** — the receipts are real governed columns: on-record **specialties**, **facility type & scale**, **entity-match confidence**. Where accreditation crosswalks finished, you’ll see **NABH** on **2,300+** facilities. Each quotes a source field with a reliability weight. Supporting in green, contradicting in red. Nothing fabricated.',
-    do: ['Expand a strong ICU in Maharashtra or Tamil Nadu.', 'Read a facility-record citation aloud.'],
+    say: 'This is what makes us different. We don’t trust self-reported marketing pages alone — we entity-resolve Virtue rows against **NABH** (**2,300+** facilities) and **ABDM/NHPR** national registration. Open a strong ICU in **Maharashtra** — governed columns, entity-match confidence, accreditation flags. Supporting in green, contradicting in red. **Nothing fabricated.**',
+    do: ['Expand a strong ICU in Maharashtra or Tamil Nadu.', 'Read a NABH or registry citation aloud.'],
     selector: '[data-demo="results"]',
     appFocus: true,
     scriptFirst: false,
   },
   {
     phase: 'Solution',
-    clock: '2:20 – 2:35',
+    clock: '1:22 – 1:32',
     title: 'Automated flagging',
     route: '/',
-    say: 'The system doesn’t wait for Priya to hunt. Switch to **Suspicious** — flagged rows get an amber **Human review** badge, a left border, and the **reason** on the row: contradicting evidence, low entity-match confidence, or a Layer 2 review signal. Automated surfacing; human judgment on what to do next.',
-    do: ['Switch trust filter to Suspicious.', 'Point at Human review badge + reason on a red row.', 'Expand one flagged facility.'],
+    say: 'The system surfaces conflicts — Priya doesn’t hunt. Switch to **Suspicious**: amber **Human review** badge, left border, and the **reason** on the row. Automated surfacing; human judgment on what to do next.',
+    do: ['Switch trust filter to Suspicious.', 'Point at Human review badge + reason on a red row.'],
     selector: '[data-demo="results"]',
     appFocus: true,
     scriptFirst: false,
   },
   {
     phase: 'Solution',
-    clock: '2:35 – 2:50',
+    clock: '1:32 – 1:42',
     title: 'Human-in-the-loop override',
     route: '/',
-    say: 'The flag fired automatically — Priya still has the last word. A planner with ground truth — a phone call, an inspection — **overrides** the assessment and leaves a note. It saves to Lakebase and layers on top of the computed signal. SQL supervises the model; humans supervise both.',
-    do: ['Expand a flagged facility if needed.', 'Click “Override assessment”.', 'Pick a trust signal; add a note; save to My Reviews.'],
+    say: 'The flag fired automatically — Priya still has the last word. Ground truth from a phone call or inspection **overrides** the assessment with a note. Saved to Lakebase, layered on the computed signal. **SQL supervises the model; humans supervise both.**',
+    do: ['Click “Override assessment”.', 'Pick a trust signal; add a note; save.'],
     selector: '[data-demo="override"]',
     appFocus: true,
     scriptFirst: false,
   },
   {
     phase: 'Solution',
-    clock: '2:50 – 3:00',
+    clock: '1:42 – 1:52',
     title: 'An auditable trail',
     route: '/reviews',
     say: 'Every override is logged here — an auditable trail of human judgment over the evidence. Governance you can actually defend.',
@@ -215,114 +201,89 @@ const STEPS: Step[] = [
   },
   {
     phase: 'Why it matters',
-    clock: '3:00 – 3:20',
-    title: 'Web address · missing & duplicate finder',
-    route: '/data-quality',
-    say: 'Track 4 starts here — **Data Quality**. The **missing finder** is live: web-address coverage from `gold.facilities`, drill any state to list facilities with **no website URL** — the crawl can’t corroborate what isn’t on record.\n\nThe **duplicate finder** runs on **Splink**: probabilistic linkage across bronze `facilities_virtue`, `facilities_jci`, `facilities_nabh`, `facilities_pmjay` — **merge recommendations** with match scores, not silent gold merges. Planners approve before MDM combines rows.',
-    do: ['Open Data Quality from the user menu if needed.', 'Scan URL coverage KPIs.', 'Click a state with missing URLs; expand the missing-finder drill-down.'],
-    selector: '[data-demo="data-quality"]',
+    clock: '1:52 – 2:07',
+    title: 'Splink dedupe, geography & registry crosswalk',
+    route: '/data-quality?tab=geography',
+    say: 'Directories silently merge duplicates and mis-plot locations. We don’t. **Geography & map** shows district linkage from **`facility_geography`** — click gaps to see unmapped districts. **Splink** surfaces **merge recommendations** across bronze sources; planners approve before gold. Registry crosswalks (NABH, NHPR) sit alongside — no duplicate ghosts on the map.',
+    do: [
+      'Scan Geography KPIs and the coverage map.',
+      'Expand a state with unmapped districts, or switch to Duplicate finder for Splink pairs.',
+    ],
+    selector: '[data-demo="geography-coverage"]',
     appFocus: true,
     scriptFirst: false,
     appGoLabel: 'Back to app',
   },
   {
     phase: 'Why it matters',
-    clock: '3:20 – 3:35',
-    title: 'Where trust lives — and where it’s missing',
-    route: '/navigator',
-    say: 'Four things are **live in this build**: SQL-first trust scores on **33,000+** claimed capabilities, **NABH** crosswalk on **2,300+** facilities, human overrides on the record, and **~10k** governed Virtue facilities on Lakebase. India on purpose — if it works here, it works anywhere. On the map, zoom nation → state → district to see where trustworthy capacity exists — and where the deserts are.',
-    do: ['Drill from a state into its districts.', 'Note the strong/partial/suspicious breakdown bar.', 'Maharashtra is a good strong-ICU demo state.'],
-    selector: '[data-demo="navigator-map"]',
-    appFocus: true,
-    scriptFirst: false,
-    appGoLabel: 'Back to app',
-  },
-  {
-    phase: 'Why it matters',
-    clock: '3:35 – 3:50',
-    title: 'Scorecard · flagged capabilities',
-    route: '/scorecard',
-    say: 'On the **Scorecard**, automated flags roll up — an amber banner when any capability needs review, **Human review** badges on flagged rows, and **Ask Genie** over the same governed SQL. Benchmark a district, expand a flagged capability, and start review from the callout — same human-in-the-loop pattern as Trust Gauge.',
-    do: ['Search a district or facility.', 'Note the human-review banner if present.', 'Expand a flagged capability; optional: open Ask Genie.'],
-    selector: '[data-demo="scorecard"]',
-    appFocus: true,
-    scriptFirst: false,
-    appGoLabel: 'Back to app',
-  },
-  {
-    phase: 'Why it matters',
-    clock: '3:50 – 4:08',
+    clock: '2:07 – 2:19',
     title: 'How the trust dial works',
     route: '/',
-    say: 'The number in the dial is not a vibe — it’s **evidence_strength_score**, computed entirely in SQL in `gold.capability_scored`. Priya can reproduce it in a hearing.\n\nWhen a facility **claims** a capability, we blend three auditable inputs: **45% supporting ratio** (supporting vs contradicting evidence), **25% evidence breadth** (independent items backing the claim, capped at five), and **30% facility match confidence** (how sure we are this row is the right hospital). Each contradicting item applies a **0.8× penalty**. Unclaimed capabilities score zero.\n\nThat rolls into four tiers: **Strong** (≥0.85), **Moderate** (0.65–0.84), **Weak** (0.45–0.64), **Insufficient** (<0.45). Green, amber, and red on the list map to those bands.',
-    do: ['Gesture at a trust dial if visible; land on “reproduce it in a hearing.”'],
-  },
-  {
-    phase: 'Why it matters',
-    clock: '4:08 – 4:20',
-    title: 'SQL scores, narration stub',
-    route: '/',
-    say: 'Layer 2 would translate frozen SQL into prose — but the dial never waits on it. We pass a frozen **evidence_context** block with one rule: **use the numbers exactly as provided.**\n\nThis build has **35** real **databricks-gpt-oss-20b** narrations; the rest of the pilot uses deterministic **stub** cards. We hit Databricks **429** — the workspace **output-tokens-per-minute** quota on the shared foundation-model endpoint — before the full **~3,900**-row pilot batch finished.\n\nRate limits or model swaps don’t move the dial. SQL supervises the LLM; Priya supervises both.',
-    do: ['Optional: expand a pilot-district facility; note the card tier matches the dial.'],
-  },
-  {
-    phase: 'Future',
-    clock: '4:20 – 4:30',
-    title: 'What’s scaling next',
-    route: '/',
-    say: 'Finished: SQL scores, Virtue citations, NABH crosswalk, human overrides. Scaling next:\n\n**JCI** — tiered resolution built, **11** matches today → portal verification + scope on citations.\n**Website crawl** — **34** pilot pages → national first-party corroboration.\n**LLM narration** — provisioned throughput or batched serving past **429**; stubs hold the demo until then.\n**Anomaly detection** — contradicting flags today → district outlier scoring tomorrow.',
-    do: ['Keep it honest — foundation is live, scale is the sprint.'],
+    say: 'The dial is **`evidence_strength_score`** — entirely in SQL. Priya can reproduce it in a hearing. Three auditable inputs: **45%** supporting ratio, **25%** evidence breadth, **30%** facility match confidence. Each contradicting item applies a **0.8×** penalty. Strong, Moderate, Weak, Insufficient — green, amber, red.',
+    do: ['Land on “reproduce it in a hearing.”'],
   },
   {
     phase: 'Tech',
-    clock: '4:30 – 4:42',
+    clock: '2:19 – 2:33',
+    title: 'Agent Bricks — extract & narrate',
+    subtitle: 'Classify in SQL · narrate with ai_query · parse PDFs with ai_parse_document',
+    route: '/',
+    sayLead:
+      'Everyone reaches for **ai_classify** to label rows strong or weak. We don\'t — Priya needs a score she can **reproduce in a hearing**.',
+    agentBricks: {
+      header: 'Right Agent Bricks function, right layer',
+      parseDocument: {
+        title: 'ai_parse_document + ai_extract',
+        role: 'NABH certificate PDFs on a UC volume → structured scope fields → bronze → dbt crosswalk',
+        why: 'Accreditation evidence is semi-structured PDF, not a clean table. Parse in SQL once; score deterministically.',
+      },
+      aiQuery: {
+        title: 'ai_query',
+        role: 'Layer 2 over frozen evidence_context → strict JSON schema + Markdown → gold tables → Lakebase',
+        why: 'Database-ready assessment objects for the citation panel. Prompts: use the numbers EXACTLY — do not recompute.',
+      },
+      notClassify: {
+        title: 'Not ai_classify',
+        role: 'We do not let an LLM label Strong / Weak ICU and load that to gold',
+        why: 'Fixed labels are opaque, drift run-to-run, and unsafe for routing. Trust tiers stay in auditable SQL.',
+      },
+      footer:
+        '**SQL supervises the model; humans supervise both.** Swap the narration model — the dial never moves.',
+    },
+    do: [
+      'Land on “reproduce in a hearing” — then walk the three cards left to right.',
+      'Point at ai_query landing JSON in gold.capability_evidence_json.',
+    ],
+  },
+  {
+    phase: 'Tech',
+    clock: '2:33 – 2:45',
     title: 'Built on Lakehouse',
     subtitle: 'Human-in-the-loop · why we defy the AI-default',
     subtitleLarge: true,
     route: '/',
     sayLead:
-      'Everyone defaults to chatbots. We treat AI as an extractor, Splink merge recommendations before identity guesswork, and platform-native tooling before franken-code.',
-    say: 'We’re not building on duct tape and prayers — the Databricks Lakehouse is our foundation. **MDM & Lakebase** — bronze `facilities_*` per source, Splink duplicate-finder scores, human-approved merges into gold. **Grounded verification** crawls live sites and cross-references CMS and accreditation boards. **Databricks Apps & Genie** deploy a secure clinical navigator. **AgentBricks** classify intent before we query; a **supervisor agent** forces the paper trail.',
-    do: ['Land the subtitle and lead line, then keep the Lakehouse stack tight.'],
-  },
-  {
-    phase: 'Tech',
-    clock: '4:42 – 4:55',
-    title: 'Tech stack: Decisions we made for ourselves',
-    route: '/',
-    decisionTable: TECH_DECISION_TABLE,
-    do: ['Scan the table — land on Splink merge recommendations and AI_Classify vs. AI_Query.'],
-  },
-  {
-    phase: 'Open',
-    clock: '4:55 – 5:05',
-    title: 'The “30 years” problem: Call to Action',
-    route: '/',
-    say: 'There’s a massive difference between 30 years of experience and one year repeated 30 times. Databricks isn’t just storage — it’s how we turn learning into an ontology of decisions. We capture the why behind the what, keep humans in the loop, and scale expertise planners can actually defend.',
-  },
-  {
-    phase: 'Future',
-    clock: '5:05 – 5:12',
-    title: 'Future opportunities',
-    route: '/',
-    say: 'GIFT Gauge is **Track 1** — can this facility do what it claims? The same governed trust layer feeds what’s next:\n\n**1. Navigator + beds & population** — augment the map with beds per 100k and population-weighted supply layered on trust scores, so gaps show **underserved people** with thin, unverified capacity — not just a low dial.\n\n**2. Medical Desert Planner (Track 2)** — composite gap scoring where weak trust and low beds or facilities per capita overlap in the same district.\n\n**3. Referral Copilot (Track 3)** — route the patient to the nearest defensible facility once you trust the capability.\n\n**4. Data Readiness Gauge (Track 4)** — contradiction flags and entity-confidence gaps as a fix-list for the Virtue dataset.\n\n**5. District anomaly radar** — outlier scoring on facilities gaming claims vs peers in the same region.\n\n**6. National crawl + accreditation scope** — JCI portal verification and first-party website corroboration at full national coverage.\n\n**7. Planner Genie** — natural-language queries over the same SQL scores Priya can audit (*"show ICU deserts in eastern Uttar Pradesh"*).\n\nTrust is the foundation everything else stands on.',
-    do: ['Land on #1 (beds + population on the map) and #2 (desert planner); compress if over 5:30.'],
+      'Everyone defaults to chatbots. We treat AI as an extractor, Splink merge recommendations before identity guesswork, and SQL trust scores before model vibes.',
+    say: '**MDM & Lakebase** — bronze per source, human-approved merges into gold. **Grounded verification** — third-party registries, not marketing pages. **Databricks Apps** — the desk Priya opens instead of the spreadsheet.',
+    do: ['Keep it tight — land on third-party evidence and human-in-the-loop.'],
   },
   {
     phase: 'Close',
-    clock: '5:12 – 5:30',
+    clock: '2:45 – 3:00',
     title: 'Closing the loop',
     route: '/',
-    say: 'Huge thanks to Databricks and the Virtue Foundation. We aren’t just talking about the future of care — we’re building the plumbing so planners stop guessing and start steering. The best way to change the world isn’t to look for a magic solution — **it’s to try.** **GIFT Gauge** — Governance, Integrity and Facility Trust.',
-    do: ['Pause. Ask: Lakebase foundation or AgentBricks decision-making — where would your team feel relief first?'],
+    say: 'Huge thanks to Databricks and the Virtue Foundation. We’re building the plumbing so planners stop guessing and start steering — third-party evidence, Splink dedupe, SQL scores, human overrides. The best way to change the world isn’t to look for a magic solution — **it’s to try.** **GIFT Gauge** — Governance, Integrity and Facility Trust.',
+    do: ['Pause. Ask: which would your team feel first — trustworthy facility data or auditable referral decisions?'],
     selector: '[data-demo="hero"]',
+    appFocus: true,
+    scriptFirst: false,
   },
 ];
 
-const TOTAL_BUDGET_SEC = 5 * 60 + 30;
-const DEMO_BUDGET_LABEL = '5:30';
+const TOTAL_BUDGET_SEC = 3 * 60;
+const DEMO_BUDGET_LABEL = '3:00';
 
-/** Parse demo clock windows like `0:45 – 1:05` into seconds on the 5:30 timeline. */
+/** Parse demo clock windows like `0:45 – 1:05` into seconds on the 3:00 timeline. */
 function parseClockRange(clock: string): { startSec: number; endSec: number } {
   const [startRaw, endRaw] = clock.split(/\s*[–—-]\s*/);
   const toSec = (t: string) => {
@@ -349,11 +310,6 @@ function fmt(sec: number): string {
   const m = Math.floor(sec / 60);
   const s = sec % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
-}
-
-function appGoLabelFor(step: Step): string {
-  if (step.appGoLabel) return step.appGoLabel;
-  return 'Back to app';
 }
 
 function scriptFirstFor(step: Step): boolean {
@@ -388,158 +344,6 @@ function scrollDemoTargetIntoView(el: HTMLElement, mode: 'docked' | 'fullscreen'
   }
 }
 
-type PunchlineStage = 'beat' | 'line' | 'complete';
-
-export type PunchlineSayHandle = {
-  /** Advance the staged reveal; returns true if navigation should wait. */
-  tryAdvance: () => boolean;
-};
-
-const PunchlineSay = forwardRef<
-  PunchlineSayHandle,
-  PunchlineReveal & { onStageChange?: (stage: PunchlineStage) => void }
->(function PunchlineSay(
-  {
-    before,
-    line,
-    after,
-    beatMs = 2800,
-    beatHint = 'In the real world, the answer takes a beat.',
-    beatSubhint = 'building suspense… · tap to reveal',
-    onStageChange,
-  },
-  ref,
-) {
-  const [stage, setStage] = useState<PunchlineStage>('beat');
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  const clearTimers = useCallback(() => {
-    timers.current.forEach(clearTimeout);
-    timers.current = [];
-  }, []);
-
-  const schedule = useCallback((fn: () => void, ms: number) => {
-    const t = setTimeout(fn, ms);
-    timers.current.push(t);
-  }, []);
-
-  const goToLine = useCallback(() => {
-    setStage('line');
-    schedule(() => setStage('complete'), 1100);
-  }, [schedule]);
-
-  const revealNow = useCallback(() => {
-    clearTimers();
-    goToLine();
-  }, [clearTimers, goToLine]);
-
-  const reset = useCallback(() => {
-    clearTimers();
-    setStage('beat');
-    schedule(goToLine, beatMs);
-  }, [beatMs, clearTimers, goToLine, schedule]);
-
-  useEffect(() => {
-    reset();
-    return clearTimers;
-  }, [before, line, after, beatMs, reset, clearTimers]);
-
-  useEffect(() => {
-    onStageChange?.(stage);
-  }, [stage, onStageChange]);
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      tryAdvance: () => {
-        if (stage === 'beat') {
-          clearTimers();
-          goToLine();
-          return true;
-        }
-        if (stage === 'line') {
-          clearTimers();
-          setStage('complete');
-          return true;
-        }
-        return false;
-      },
-    }),
-    [stage, clearTimers, goToLine],
-  );
-
-  const [lead, grit] = line.includes('grit') ? line.split(/(grit\.?)/i) : [line, ''];
-
-  return (
-    <div className="mx-auto mt-2 max-w-3xl sm:mt-3">
-      <p className="text-base leading-snug text-foreground/90 sm:text-lg sm:leading-relaxed">{before}</p>
-
-      {stage === 'beat' && (
-        <button
-          type="button"
-          onClick={revealNow}
-          className="gift-demo-beat mx-auto mt-4 flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-amber-200/80 bg-gradient-to-b from-amber-50/90 to-yellow-50/60 px-5 py-3 shadow-sm transition hover:border-amber-300 hover:shadow-md"
-          aria-label="Reveal punchline now"
-        >
-          <span className="flex items-center gap-2" aria-hidden>
-            <Sparkles className="gift-demo-beat-sparkle h-4 w-4 text-amber-500" />
-            <span className="flex gap-1.5">
-              <span className="gift-demo-beat-dot" />
-              <span className="gift-demo-beat-dot" style={{ animationDelay: '0.2s' }} />
-              <span className="gift-demo-beat-dot" style={{ animationDelay: '0.4s' }} />
-            </span>
-            <Sparkles className="gift-demo-beat-sparkle h-4 w-4 text-amber-500" style={{ animationDelay: '0.3s' }} />
-          </span>
-          <span className="max-w-xs text-sm font-medium leading-snug text-amber-900/90 sm:max-w-sm sm:text-base">
-            {beatHint}
-          </span>
-          <span className="text-[10px] tracking-wide text-amber-700/55 uppercase sm:text-xs">{beatSubhint}</span>
-        </button>
-      )}
-
-      {(stage === 'line' || stage === 'complete') && (
-        <div
-          className={`gift-demo-grit-stage relative my-4 flex justify-center sm:my-6 ${
-            stage === 'line' ? '' : 'gift-demo-grit-settled'
-          }`}
-        >
-          <div className="gift-demo-grit-sparkles pointer-events-none absolute inset-0" aria-hidden>
-            <Sparkles className="gift-demo-grit-sparkle gift-demo-grit-sparkle-a" />
-            <Sparkles className="gift-demo-grit-sparkle gift-demo-grit-sparkle-b" />
-            <Sparkles className="gift-demo-grit-sparkle gift-demo-grit-sparkle-c" />
-            <Sparkles className="gift-demo-grit-sparkle gift-demo-grit-sparkle-d" />
-            <span className="gift-demo-grit-particle gift-demo-grit-particle-1" />
-            <span className="gift-demo-grit-particle gift-demo-grit-particle-2" />
-            <span className="gift-demo-grit-particle gift-demo-grit-particle-3" />
-            <span className="gift-demo-grit-particle gift-demo-grit-particle-4" />
-            <span className="gift-demo-grit-particle gift-demo-grit-particle-5" />
-            <span className="gift-demo-grit-particle gift-demo-grit-particle-6" />
-          </div>
-          <p
-            className="gift-demo-grit-reveal relative z-10 text-center text-5xl font-black leading-none tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
-            aria-live="assertive"
-          >
-            {grit ? (
-              <>
-                <span className="text-foreground/90">{lead}</span>
-                <span className="gift-demo-grit-word">{grit}</span>
-              </>
-            ) : (
-              line
-            )}
-          </p>
-        </div>
-      )}
-
-      {stage === 'complete' && (
-        <p className="gift-demo-after-reveal text-base leading-snug text-foreground/90 sm:text-lg sm:leading-relaxed">
-          {after}
-        </p>
-      )}
-    </div>
-  );
-});
-
 function renderSayText(text: string) {
   return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
     part.startsWith('**') && part.endsWith('**') ? (
@@ -549,6 +353,99 @@ function renderSayText(text: string) {
     ) : (
       part
     ),
+  );
+}
+
+function ProcessImprovementSlide({ header, before, after, footer }: ProcessImprovement) {
+  return (
+    <div className="mx-auto mt-4 max-w-4xl text-left sm:mt-5">
+      {header ? (
+        <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-sm">
+          {header}
+        </p>
+      ) : null}
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
+        <section className="overflow-hidden rounded-xl border border-red-200/80 bg-gradient-to-b from-red-50/90 to-orange-50/40 shadow-sm">
+          <div className="border-b border-red-200/60 bg-red-50/80 px-3 py-2 sm:px-4 sm:py-2.5">
+            <h4 className="text-xs font-bold uppercase tracking-[0.12em] text-red-800/90 sm:text-sm">Before</h4>
+          </div>
+          <p className="px-3 py-3 text-base leading-snug text-foreground/85 sm:px-4 sm:py-3.5 sm:leading-relaxed">
+            {renderSayText(before)}
+          </p>
+        </section>
+        <section className="overflow-hidden rounded-xl border border-emerald-200/80 bg-gradient-to-b from-emerald-50/90 to-teal-50/40 shadow-sm">
+          <div className="border-b border-emerald-200/60 bg-emerald-50/80 px-3 py-2 sm:px-4 sm:py-2.5">
+            <h4 className="text-xs font-bold uppercase tracking-[0.12em] text-emerald-800/90 sm:text-sm">After</h4>
+          </div>
+          <p className="px-3 py-3 text-base leading-snug text-foreground sm:px-4 sm:py-3.5 sm:leading-relaxed">
+            {renderSayText(after)}
+          </p>
+        </section>
+      </div>
+      {footer ? (
+        <p className="mt-4 text-center text-sm leading-relaxed text-muted-foreground sm:text-base">
+          {renderSayText(footer)}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function AgentBricksCard({
+  tone,
+  title,
+  role,
+  why,
+}: {
+  tone: 'sky' | 'indigo' | 'slate';
+  title: string;
+  role: string;
+  why: string;
+}) {
+  const toneClass =
+    tone === 'sky'
+      ? 'border-sky-200/80 bg-gradient-to-b from-sky-50/90 to-slate-50/40'
+      : tone === 'indigo'
+        ? 'border-indigo-200/80 bg-gradient-to-b from-indigo-50/90 to-violet-50/40'
+        : 'border-slate-300/80 bg-gradient-to-b from-slate-100/90 to-slate-50/40';
+  const headerClass =
+    tone === 'sky'
+      ? 'border-sky-200/60 bg-sky-50/80 text-sky-900'
+      : tone === 'indigo'
+        ? 'border-indigo-200/60 bg-indigo-50/80 text-indigo-900'
+        : 'border-slate-300/60 bg-slate-100/80 text-slate-700';
+  return (
+    <section className={cn('overflow-hidden rounded-xl border shadow-sm', toneClass)}>
+      <div className={cn('border-b px-3 py-2 sm:px-4 sm:py-2.5', headerClass)}>
+        <h4 className="font-mono text-xs font-bold sm:text-sm">{title}</h4>
+      </div>
+      <div className="space-y-2 px-3 py-3 text-sm leading-snug sm:px-4 sm:py-3.5 sm:text-base sm:leading-relaxed">
+        <p className="text-foreground/90">{renderSayText(role)}</p>
+        <p className="text-muted-foreground">{renderSayText(why)}</p>
+      </div>
+    </section>
+  );
+}
+
+function AgentBricksSlide({ header, parseDocument, aiQuery, notClassify, footer }: AgentBricksBeat) {
+  return (
+    <div className="mx-auto mt-4 max-w-5xl text-left sm:mt-5">
+      {header ? (
+        <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-sm">
+          {header}
+        </p>
+      ) : null}
+      <div className="grid gap-3 lg:grid-cols-3 lg:gap-4">
+        <AgentBricksCard tone="sky" {...parseDocument} />
+        <AgentBricksCard tone="indigo" {...aiQuery} />
+        <AgentBricksCard tone="slate" {...notClassify} />
+      </div>
+      {footer ? (
+        <p className="mt-4 text-center text-sm leading-relaxed text-muted-foreground sm:text-base">
+          {renderSayText(footer)}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
@@ -575,43 +472,6 @@ function DemoTechIntro({ subtitle, sayLead }: { subtitle: string; sayLead: strin
       <p className="mt-2.5 text-base font-semibold leading-snug text-foreground sm:text-lg sm:leading-relaxed">
         {renderSayText(sayLead)}
       </p>
-    </div>
-  );
-}
-
-function DemoDecisionTable({ rows }: { rows: DecisionTableRow[] }) {
-  return (
-    <div className="mx-auto mt-4 max-w-6xl overflow-x-auto rounded-xl border border-border/70 bg-background/50 text-left shadow-sm sm:mt-5">
-      <table className="w-full min-w-[800px] border-collapse text-sm sm:text-base">
-        <thead>
-          <tr className="border-b border-border bg-muted/50">
-            <th className="px-3 py-3 text-left font-bold text-foreground sm:px-4 sm:py-3.5 sm:text-lg">
-              Decision Area
-            </th>
-            <th className="px-3 py-3 text-left font-bold text-foreground sm:px-4 sm:py-3.5 sm:text-lg">
-              Our Human-in-the-Loop Approach
-            </th>
-            <th className="px-3 py-3 text-left font-bold text-foreground sm:px-4 sm:py-3.5 sm:text-lg">
-              Why It Defies the AI-Default
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={row.area} className={cn('align-top', i < rows.length - 1 && 'border-b border-border/60')}>
-              <td className="px-3 py-3 font-semibold leading-snug text-foreground sm:px-4 sm:py-3.5 sm:text-base">
-                {row.area}
-              </td>
-              <td className="px-3 py-3 leading-snug text-foreground/90 sm:px-4 sm:py-3.5 sm:leading-relaxed">
-                {row.approach}
-              </td>
-              <td className="px-3 py-3 leading-snug text-foreground/75 sm:px-4 sm:py-3.5 sm:leading-relaxed">
-                {row.why}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 }
@@ -660,6 +520,42 @@ function DemoNextButton({
   );
 }
 
+function DemoScriptToggle({
+  scriptOpen,
+  onCheckedChange,
+  className,
+  compact = false,
+}: {
+  scriptOpen: boolean;
+  onCheckedChange: (open: boolean) => void;
+  className?: string;
+  compact?: boolean;
+}) {
+  const id = 'gift-demo-show-script';
+  return (
+    <div className={cn('inline-flex items-center gap-2 shrink-0', className)}>
+      <Switch
+        id={id}
+        checked={scriptOpen}
+        onCheckedChange={onCheckedChange}
+        aria-label="Show presenter script"
+      />
+      <Label
+        htmlFor={id}
+        className={cn(
+          'cursor-pointer font-medium text-foreground leading-none',
+          compact ? 'text-xs' : 'text-sm',
+        )}
+      >
+        <span className="inline-flex items-center gap-1.5">
+          <ScrollText className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
+          Show script
+        </span>
+      </Label>
+    </div>
+  );
+}
+
 export function DemoGuide() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -667,31 +563,40 @@ export function DemoGuide() {
   const [idx, setIdx] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [scriptOpen, setScriptOpen] = useState(true);
-  const [punchlineStage, setPunchlineStage] = useState<PunchlineStage>('beat');
   const startedAt = useRef<number | null>(null);
-  const punchlineRef = useRef<PunchlineSayHandle>(null);
 
   const step = STEPS[idx];
-  const hasSpotlight = Boolean(step.selector) && !step.punchline;
+  const hasSpotlight = Boolean(step.selector);
   const isAppFocus = hasSpotlight && Boolean(step.appFocus);
+  const presenterDocked = hasSpotlight && !isAppFocus;
   const isImmersive = !hasSpotlight;
   const showFullscreenApp = isAppFocus && !scriptOpen;
   const showScriptOverApp = isAppFocus && scriptOpen;
   const showScriptImmersive = showScriptOverApp && scriptFirstFor(step);
   const showScriptSheet = showScriptOverApp && !scriptFirstFor(step);
-  const showPresenter = isImmersive || showScriptOverApp;
-  const goLabel = appGoLabelFor(step);
+  const showPresenter = isImmersive || showScriptOverApp || presenterDocked;
 
   const goToApp = useCallback(() => {
-    if (location.pathname !== step.route) void navigate(step.route);
+    const [routePath, routeSearch] = step.route.split('?');
+    const wantSearch = routeSearch ? `?${routeSearch}` : '';
+    if (location.pathname !== routePath || location.search !== wantSearch) {
+      void navigate(step.route);
+    }
     setScriptOpen(false);
-  }, [location.pathname, navigate, step.route]);
+  }, [location.pathname, location.search, navigate, step.route]);
+
+  const handleScriptToggle = useCallback(
+    (open: boolean) => {
+      if (open) setScriptOpen(true);
+      else goToApp();
+    },
+    [goToApp],
+  );
 
   const start = useCallback(() => {
     setIdx(0);
     setElapsed(0);
     setScriptOpen(true);
-    setPunchlineStage('beat');
     startedAt.current = Date.now();
     setRunning(true);
     void navigate('/');
@@ -700,7 +605,6 @@ export function DemoGuide() {
   const stop = useCallback(() => {
     setRunning(false);
     setScriptOpen(true);
-    setPunchlineStage('beat');
     startedAt.current = null;
     teardownDemo();
     window.dispatchEvent(new Event('gift-demo:stop'));
@@ -710,7 +614,6 @@ export function DemoGuide() {
   const prev = useCallback(() => setIdx((i) => Math.max(i - 1, 0)), []);
 
   const advanceStep = useCallback(() => {
-    if (punchlineRef.current?.tryAdvance()) return;
     if (idx === STEPS.length - 1) stop();
     else next();
   }, [idx, next, stop]);
@@ -727,7 +630,9 @@ export function DemoGuide() {
   // ── navigate to the step's screen ───────────────────────────────────────
   useEffect(() => {
     if (!running) return;
-    if (location.pathname !== step.route) void navigate(step.route);
+    const [routePath, routeSearch] = step.route.split('?');
+    const wantSearch = routeSearch ? `?${routeSearch}` : '';
+    if (location.pathname !== routePath || location.search !== wantSearch) void navigate(step.route);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, idx]);
 
@@ -749,7 +654,7 @@ export function DemoGuide() {
 
   // ── spotlight the step's target element (best-effort) ───────────────────
   useEffect(() => {
-    if (!running || !step.selector || step.punchline) {
+    if (!running || !step.selector) {
       return;
     }
     document.body.classList.add('gift-demo-spotlight-active');
@@ -799,8 +704,7 @@ export function DemoGuide() {
           stop();
         } else if (e.key === 's' && !typing && STEPS[idx]?.appFocus) {
           e.preventDefault();
-          if (scriptOpen) goToApp();
-          else setScriptOpen(true);
+          handleScriptToggle(!scriptOpen);
         }
         return;
       }
@@ -819,7 +723,7 @@ export function DemoGuide() {
       window.removeEventListener('keydown', onKey);
       if (gTimer) clearTimeout(gTimer);
     };
-  }, [running, idx, advanceStep, prev, start, stop, goToApp, scriptOpen]);
+  }, [running, idx, advanceStep, prev, start, stop, handleScriptToggle, scriptOpen]);
 
   // ── header button hook ──────────────────────────────────────────────────
   useEffect(() => {
@@ -832,11 +736,11 @@ export function DemoGuide() {
   const overBudget = elapsed > TOTAL_BUDGET_SEC;
   const progressPct = Math.min(100, (elapsed / TOTAL_BUDGET_SEC) * 100);
   const stepEndSec = STEP_TIMINGS[idx]?.endSec ?? TOTAL_BUDGET_SEC;
-  const punchlineReady = !step.punchline || punchlineStage === 'complete';
-  const showAdvanceCue = !isLast && elapsed >= stepEndSec && punchlineReady;
-  const presenterDocked = hasSpotlight && !isAppFocus;
+  const showAdvanceCue = !isLast && elapsed >= stepEndSec;
   const isTechHeroBeat = Boolean(step.subtitleLarge && step.sayLead);
-  const isDecisionTableBeat = Boolean(step.decisionTable);
+  const isProcessImprovementBeat = Boolean(step.processImprovement);
+  const isAgentBricksBeat = Boolean(step.agentBricks);
+  const isWideImmersiveBeat = isProcessImprovementBeat || isAgentBricksBeat;
 
   const presenterControls = (
     <>
@@ -872,8 +776,9 @@ export function DemoGuide() {
       </div>
 
       <p className="mt-2 hidden text-[10px] text-muted-foreground/70 sm:block sm:text-xs">
-        <kbd className="rounded border bg-muted px-1 py-0.5">→</kbd>/<kbd className="rounded border bg-muted px-1 py-0.5">Space</kbd> next ·{' '}
-        <kbd className="rounded border bg-muted px-1 py-0.5">←</kbd> back ·{' '}
+        <kbd className="rounded border bg-muted px-1 py-0.5">→</kbd>/<kbd className="rounded border bg-muted px-1 py-0.5">Space</kbd>{' '}
+        {isLast ? 'finish' : 'next'} · <kbd className="rounded border bg-muted px-1 py-0.5">←</kbd> back ·{' '}
+        <kbd className="rounded border bg-muted px-1 py-0.5">s</kbd> script ·{' '}
         <kbd className="rounded border bg-muted px-1 py-0.5">Esc</kbd> exit
       </p>
     </>
@@ -885,7 +790,7 @@ export function DemoGuide() {
         <button
           type="button"
           onClick={start}
-          aria-label="Start the demo walkthrough (~5:30)"
+          aria-label="Start the demo walkthrough (~3:00)"
           className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-2.5 text-sm font-semibold text-amber-900 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl"
         >
           <Sparkles className="h-4 w-4 text-amber-600" />
@@ -908,20 +813,7 @@ export function DemoGuide() {
         aria-hidden
       />
 
-      {showFullscreenApp && (
-        <div className="pointer-events-none fixed inset-x-0 top-3 z-50 flex justify-center px-3 sm:top-4">
-          <Button
-            size="default"
-            className="gift-demo-back-to-script pointer-events-auto gap-2 shadow-lg"
-            onClick={() => setScriptOpen(true)}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to script
-          </Button>
-        </div>
-      )}
-
-      {showFullscreenApp && (
+      {isAppFocus && (
         <div className="gift-demo-chrome pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-3 sm:px-4 sm:pb-4">
           <div className="gift-demo-chrome-bar pointer-events-auto mx-auto max-w-4xl rounded-2xl border border-border/70 bg-card/95 shadow-2xl backdrop-blur-md">
             <div className="h-1 w-full shrink-0 overflow-hidden rounded-t-2xl bg-muted/80">
@@ -937,19 +829,18 @@ export function DemoGuide() {
                   Step {idx + 1} / {STEPS.length} · {fmt(elapsed)} / {DEMO_BUDGET_LABEL}
                 </p>
               </div>
-              <Button
-                size="sm"
-                className="gift-demo-back-to-script gap-1.5 shrink-0 font-semibold"
-                onClick={() => setScriptOpen(true)}
-              >
-                <ScrollText className="h-4 w-4" /> Back to script
-              </Button>
+              <DemoScriptToggle
+                scriptOpen={scriptOpen}
+                onCheckedChange={handleScriptToggle}
+                compact
+              />
               <Button variant="ghost" size="sm" onClick={prev} disabled={idx === 0} aria-label="Previous step">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               {isLast ? (
-                <Button size="sm" onClick={stop}>
+                <Button size="sm" onClick={stop} className="gap-1.5 font-semibold">
                   <CheckCircle2 className="h-4 w-4" />
+                  Finish
                 </Button>
               ) : (
                 <DemoNextButton showCue={showAdvanceCue} onClick={advanceStep} iconOnly />
@@ -969,20 +860,21 @@ export function DemoGuide() {
             (isImmersive || showScriptImmersive) && 'items-center justify-center',
             presenterDocked && 'items-start justify-center pt-14 sm:pt-16',
             showScriptSheet && 'items-end justify-center p-0 sm:p-0',
+            showScriptSheet && isAppFocus && 'pb-[5.75rem]',
           )}
         >
           <aside
             className={cn(
               'gift-demo-presenter gift-fade-in pointer-events-auto flex flex-col overflow-hidden rounded-2xl shadow-2xl sm:rounded-3xl',
-              isDecisionTableBeat && (isImmersive || showScriptImmersive)
+              isWideImmersiveBeat && (isImmersive || showScriptImmersive)
                 ? 'w-[min(64rem,calc(100vw-1.5rem))]'
                 : 'w-[min(52rem,calc(100vw-1.5rem))]',
               (isImmersive || showScriptImmersive) &&
-                'gift-demo-presenter-immersive border border-border/60 bg-card max-h-[calc(100dvh-1.5rem)]',
+                'gift-demo-presenter-immersive border border-slate-200 bg-white max-h-[calc(100dvh-1.5rem)]',
               showScriptSheet && 'border border-white/60 bg-card/95 backdrop-blur-md',
               presenterDocked && 'gift-demo-presenter-spotlight max-h-[min(42vh,22rem)] border border-white/60 bg-card/95 backdrop-blur-md',
               showScriptSheet && 'gift-demo-presenter-sheet max-h-[min(52vh,28rem)] w-full max-w-none rounded-b-none rounded-t-2xl sm:rounded-t-3xl',
-              (step.punchline || step.phase === 'Title') && 'gift-demo-presenter-open',
+              (step.processImprovement || step.agentBricks || step.phase === 'Title') && 'gift-demo-presenter-open',
             )}
             role="dialog"
             aria-label="Demo walkthrough"
@@ -999,9 +891,6 @@ export function DemoGuide() {
                 <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${PHASE_TONE[step.phase]}`}>
                   {step.phase}
                 </span>
-                <Button variant="outline" size="sm" className="gift-demo-go-app gap-1.5 border-0" onClick={goToApp}>
-                  <ArrowLeft className="h-4 w-4" /> {goLabel}
-                </Button>
               </div>
             )}
 
@@ -1046,8 +935,10 @@ export function DemoGuide() {
                 'font-bold leading-tight tracking-tight text-foreground',
                 isTechHeroBeat && !presenterDocked && !showScriptSheet
                   ? 'mt-3 text-2xl sm:mt-4 sm:text-3xl'
-                  : isDecisionTableBeat && !presenterDocked && !showScriptSheet
+                  : isProcessImprovementBeat && !presenterDocked && !showScriptSheet
                     ? 'mt-3 text-2xl sm:mt-4 sm:text-3xl'
+                    : isAgentBricksBeat && !presenterDocked && !showScriptSheet
+                      ? 'mt-3 text-2xl sm:mt-4 sm:text-3xl'
                     : presenterDocked
                     ? 'mt-2 text-lg sm:mt-3 sm:text-xl'
                     : 'mt-3 text-xl sm:mt-4 sm:text-2xl',
@@ -1061,19 +952,30 @@ export function DemoGuide() {
                 {step.subtitle}
               </p>
             )}
-              {step.punchline ? (
-                <PunchlineSay
-                  ref={punchlineRef}
-                  {...step.punchline}
-                  onStageChange={setPunchlineStage}
-                />
+              {step.processImprovement ? (
+                <>
+                  {step.sayLead ? (
+                    <p className="mx-auto mt-3 max-w-3xl text-base font-semibold leading-snug text-foreground sm:mt-4 sm:text-lg sm:leading-relaxed">
+                      {renderSayText(step.sayLead)}
+                    </p>
+                  ) : null}
+                  <ProcessImprovementSlide {...step.processImprovement} />
+                </>
+              ) : step.agentBricks ? (
+                <>
+                  {step.sayLead ? (
+                    <p className="mx-auto mt-3 max-w-3xl text-base font-semibold leading-snug text-foreground sm:mt-4 sm:text-lg sm:leading-relaxed">
+                      {renderSayText(step.sayLead)}
+                    </p>
+                  ) : null}
+                  <AgentBricksSlide {...step.agentBricks} />
+                </>
               ) : (
                 <>
                   {isTechHeroBeat && step.subtitle && step.sayLead ? (
                     <DemoTechIntro subtitle={step.subtitle} sayLead={step.sayLead} />
                   ) : null}
                   {step.say ? <DemoSay text={step.say} /> : null}
-                  {step.decisionTable ? <DemoDecisionTable rows={step.decisionTable} /> : null}
                 </>
               )}
               {showAdvanceCue && (
@@ -1083,23 +985,16 @@ export function DemoGuide() {
               )}
             </div>
 
-            {showScriptOverApp && (
-              <div className="shrink-0 border-t border-border/50 bg-card px-4 py-3 sm:px-6">
-                <Button className="gift-demo-go-app w-full gap-2 font-semibold" size="lg" onClick={goToApp}>
-                  <ArrowLeft className="h-5 w-5" />
-                  {goLabel}
-                </Button>
+            {!isAppFocus && (
+              <div
+                className={cn(
+                  'shrink-0 border-t border-border/50 px-4 py-3 text-center sm:px-6',
+                  (isImmersive || showScriptImmersive) ? 'bg-white' : 'bg-card/95',
+                )}
+              >
+                {presenterControls}
               </div>
             )}
-
-            <div
-              className={cn(
-                'shrink-0 border-t border-border/50 px-4 py-3 text-center sm:px-6',
-                (isImmersive || showScriptImmersive) ? 'bg-card' : 'bg-card/95',
-              )}
-            >
-              {presenterControls}
-            </div>
           </aside>
         </div>
       )}

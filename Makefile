@@ -12,7 +12,7 @@
 #   make test           run the gift_india_api Python unit tests (pytest)
 #   make publish        publish the dataset to Lakebase (set ENDPOINT, PROFILE)
 
-.PHONY: db-up db-down db-reset load load-real data pipeline web scrape load-crawl crawl jci-scrape load-jci load-jci-crawl jci nabh-scrape load-nabh nabh nhpr-scrape load-nhpr nhpr pmjay-scrape load-pmjay pmjay med-travel shapefiles test publish dbt dbt-test dbt-docs dbt-databricks comments comments-lakebase sync-genie narrate-evidence narrate-pilot narrate-pilot-stub pg-check splink-duplicates refresh-data-quality-flags data-readiness
+.PHONY: db-up db-down db-reset load load-real data pipeline web scrape load-crawl crawl jci-scrape load-jci load-jci-crawl jci nabh-scrape load-nabh nabh-download-pdfs nabh verify-nabh nhpr-scrape load-nhpr nhpr pmjay-scrape load-pmjay pmjay abdm-scrape load-abdm abdm shapefiles test publish dbt dbt-test dbt-docs dbt-databricks comments comments-lakebase sync-genie narrate-evidence narrate-pilot narrate-pilot-stub pg-check splink-duplicates apply-merge-clusters auto-approve-splink refresh-data-quality-flags backfill-website-urls data-readiness narrate-pilot narrate-pilot-stub
 
 # Load repo .env (+ optional .env.local) and sync GIFT_INDIA_PG* from GIFT_INDIA_DB_URL.
 define LOAD_GIFT_ENV
@@ -61,7 +61,7 @@ endif
 # Data loaders live in gift_india_api/src and use package-relative imports.
 # Lands the raw dataset in the `bronze` schema (db/schema.sql); dbt promotes it.
 load:
-	cd gift_india_api && $(PYTHON) -m src.load_db $(if $(FORCE),--force,)
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.load_db $(if $(FORCE),--force,)
 
 # Full local data loop: land raw in bronze, then build silver + gold via dbt so
 # the app (which reads gold) has serving tables. Needs the dbt toolchain
@@ -81,14 +81,14 @@ export-virtue:
 # when you want real data through the medallion.
 #   make load-real && make dbt
 load-real:
-	cd gift_india_api && $(PYTHON) -m src.load_bronze_real \
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.load_bronze_real \
 		$(if $(filter lakebase,$(TARGET)),--target lakebase --endpoint $(ENDPOINT) $(if $(PROFILE),--profile $(PROFILE),),)
 
 # Load data/virtue/*.csv into the gold.* schema the app reads.
 #   local:    make load-virtue
 #   lakebase: make load-virtue TARGET=lakebase ENDPOINT=projects/.../endpoints/primary PROFILE=<profile>
 load-virtue:
-	cd gift_india_api && $(PYTHON) -m src.load_virtue \
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.load_virtue \
 		$(if $(filter lakebase,$(TARGET)),--target lakebase --endpoint $(ENDPOINT) $(if $(PROFILE),--profile $(PROFILE),),)
 
 # Run the web app (React client + Express server) in dev mode.
@@ -105,7 +105,7 @@ scrape:
 # Land the scraped snapshots into bronze.facility_web_crawl (append, idempotent).
 # Usage: make load-crawl [SOURCE=data/scraped]
 load-crawl:
-	cd gift_india_api && $(PYTHON) -m src.load_crawl $(if $(SOURCE),--source $(SOURCE),)
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.load_crawl $(if $(SOURCE),--source $(SOURCE),)
 
 # Scrape the official websites AND land them in bronze in one step.
 # Scoped to the pilot districts by default; pass ALL=1 to crawl everywhere.
@@ -120,16 +120,17 @@ jci-scrape:
 	cd gift_india_api && $(PYTHON) -m src.jci_scraper \
 		$(if $(NO_PAGES),,--scrape-pages) \
 		$(if $(FETCH_OFFICIAL),--fetch-official,) \
-		$(if $(LIMIT),--limit $(LIMIT),)
+		$(if $(LIMIT),--limit $(LIMIT),) \
+		$(if $(FORCE),--force,)
 
 # Land the JCI seed into bronze.facilities_jci (upsert, idempotent).
 load-jci:
-	cd gift_india_api && $(PYTHON) -m src.load_jci $(if $(SOURCE),--source $(SOURCE),)
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.load_jci $(if $(SOURCE),--source $(SOURCE),)
 
 # Land the scraped JCI homepage snapshots into bronze.facility_web_crawl (the same
 # raw-crawl table the facility crawler uses; append, idempotent).
 load-jci-crawl:
-	cd gift_india_api && $(PYTHON) -m src.load_crawl --source ../data/jci/scraped
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.load_crawl --source ../data/jci/scraped
 
 # Compile the JCI seed + snapshot homepages, then land BOTH the accreditation rows
 # (bronze.facilities_jci) and the page snapshots (bronze.facility_web_crawl).
@@ -143,15 +144,37 @@ jci: jci-scrape load-jci load-jci-crawl
 nabh-scrape:
 	cd gift_india_api && $(PYTHON) -m src.nabh_scraper \
 		$(if $(MAX_PAGES),--max-pages $(MAX_PAGES),) \
-		$(if $(RESUME),--resume,)
+		$(if $(RESUME),--resume,) \
+		$(if $(DOWNLOAD_PDFS),--download-pdfs,)
+
+# Download NABH certificate PDFs from data/nabh/nabh_accredited.json into
+# data/nabh/certificates/. Pass PDF_LIMIT=N to cap a test run.
+nabh-download-pdfs:
+	cd gift_india_api && $(PYTHON) -m src.nabh_scraper --download-pdfs-only \
+		$(if $(PDF_LIMIT),--pdf-limit $(PDF_LIMIT),) \
+		$(if $(FORCE_PDF),--force-pdf,)
 
 # Land the NABH directory into bronze.facilities_nabh (upsert, idempotent).
 load-nabh:
-	cd gift_india_api && $(PYTHON) -m src.load_nabh $(if $(SOURCE),--source $(SOURCE),)
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.load_nabh $(if $(SOURCE),--source $(SOURCE),)
 
 # Scrape the NABH directory, then land the accreditation rows. dbt then resolves
 # orgs to facility_ids (gold.facility_nabh) and flags gold.facilities.nabh_accredited.
 nabh: nabh-scrape load-nabh
+
+# Parse NABH certificate PDFs via Agent Bricks Document Parsing (ai_parse_document),
+# cross-reference Virtue capabilities, score with Splink + NABH entity resolution.
+#   make verify-nabh PROFILE=gift-india-mb LIMIT=20
+#   make verify-nabh MODE=local
+#   make verify-nabh MODE=databricks PROFILE=gift-india-mb NO_UPLOAD=1
+verify-nabh: pg-check
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.verify_nabh_certificates \
+		$(if $(LIMIT),--limit $(LIMIT),) \
+		$(if $(MODE),--mode $(MODE),) \
+		$(if $(PROFILE),--profile $(PROFILE),) \
+		$(if $(WAREHOUSE),--warehouse $(WAREHOUSE),) \
+		$(if $(VOLUME),--volume-path $(VOLUME),) \
+		$(if $(NO_UPLOAD),--no-upload,)
 
 # Scrape registered hospitals from NHPR/HFR (public web scrape, no API token) into
 # data/nhpr/nhpr_hospitals.json. Pass MAX_STATES=N or SEARCH_TOKENS="hospital"
@@ -166,7 +189,7 @@ nhpr-scrape:
 
 # Land NHPR hospital rows into bronze.locations_nhpr (upsert, idempotent).
 load-nhpr:
-	cd gift_india_api && $(PYTHON) -m src.load_nhpr $(if $(SOURCE),--source $(SOURCE),)
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.load_nhpr $(if $(SOURCE),--source $(SOURCE),)
 
 # Scrape NHPR hospitals (search + facilityDetail for beds), then land in bronze.
 nhpr: nhpr-scrape load-nhpr
@@ -192,32 +215,37 @@ pmjay-scrape:
 
 # Land PMJAY hospital rows into bronze.facilities_pmjay (upsert, idempotent).
 load-pmjay:
-	cd gift_india_api && $(PYTHON) -m src.load_pmjay $(if $(SOURCE),--source $(SOURCE),)
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.load_pmjay $(if $(SOURCE),--source $(SOURCE),)
 
 # Scrape the PMJAY directory, then land the empanelment rows in bronze.
 pmjay: pmjay-scrape load-pmjay
+
+# Scrape Model ABDM pilot facilities from dashboardbeta.abdm.gov.in into
+# data/abdm/facilities_abdm.json. Pass ENRICH_NHPR=1 to fetch NHPR detail.
+#   Test offline: make abdm-scrape FIXTURE=1
+abdm-scrape:
+	cd gift_india_api && $(PYTHON) -m src.abdm_scraper \
+		$(if $(FIXTURE),--fixture-dir tests/fixtures/abdm,) \
+		$(if $(ENRICH_NHPR),--enrich-nhpr,)
+
+# Land ABDM model-facility rows into bronze.facilities_abdm (upsert, idempotent).
+load-abdm:
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.load_abdm $(if $(SOURCE),--source $(SOURCE),)
+
+# Scrape model ABDM facilities, then land in bronze.
+abdm: abdm-scrape load-abdm
 
 # Run the gift_india_api Python unit tests (scraper + crawl loader).
 # Needs pytest: pip install pytest (or add it to your dev environment).
 test:
 	cd gift_india_api && $(PYTHON) -m pytest
 
-# Fetch the Medical Value Travel (MVT) hospital seed from Hugging Face into the
-# data/medical_travel cache, then upsert it into bronze.locations_medical_travel
-# (idempotent on the source hospital id). Pass REFRESH=1 to re-download.
-#   local:    make med-travel
-#   lakebase: make med-travel TARGET=lakebase ENDPOINT=projects/.../endpoints/primary PROFILE=<profile>
-med-travel:
-	cd gift_india_api && $(PYTHON) -m src.load_med_travel \
-		$(if $(REFRESH),--refresh,) \
-		$(if $(filter lakebase,$(TARGET)),--target lakebase --endpoint $(ENDPOINT) $(if $(PROFILE),--profile $(PROFILE),),)
-
 # Land the SimplyGIS SOI shapefiles' flat attributes into
 # bronze.soi_shapefile_features (states, districts, boundary, world countries).
 # Files live in data/simplygis/; pass DOWNLOAD=1 to (re)fetch them first.
 # Usage: make shapefiles [DOWNLOAD=1]
 shapefiles:
-	cd gift_india_api && $(PYTHON) -m src.load_shapefiles $(if $(DOWNLOAD),--download,)
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.load_shapefiles $(if $(DOWNLOAD),--download,)
 
 # Usage: make publish ENDPOINT=projects/<id>/branches/production/endpoints/<ep> PROFILE=<profile>
 # Lands raw data in Lakebase `bronze`. Build silver/gold against Lakebase after
@@ -245,10 +273,24 @@ dbt: pg-check
 splink-duplicates: pg-check
 	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.splink_duplicates $(if $(SKIP_IF_POPULATED),--skip-if-populated,)
 
+# Apply human merge reviews → bronze.facility_clusters (singletons + approved unions).
+apply-merge-clusters: pg-check
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.apply_merge_reviews
+
+# Auto-approve Splink merge/link recommendations, rebuild clusters, refresh flags.
+# Pass ALL=1 to also approve the review tier. Then run `make dbt` for gold.facility_master.
+auto-approve-splink: pg-check
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.auto_approve_splink $(if $(ALL),--all,)
+
 refresh-data-quality-flags: pg-check
 	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.refresh_data_quality_flags
 
-data-readiness: splink-duplicates refresh-data-quality-flags
+# Copy website URLs from JCI/NABH/MDM/NHPR into bronze.facilities_virtue when Virtue is blank.
+# Run `make dbt` afterward to rebuild gold.facilities.
+backfill-website-urls: pg-check
+	@$(LOAD_GIFT_ENV) && cd gift_india_api && $(PYTHON) -m src.backfill_website_urls
+
+data-readiness: splink-duplicates refresh-data-quality-flags apply-merge-clusters backfill-website-urls
 
 # Apply bronze/app/non-dbt gold COMMENT ON metadata (dbt persist_docs handles models/seeds).
 comments: pg-check

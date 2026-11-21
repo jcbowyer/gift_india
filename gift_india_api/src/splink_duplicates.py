@@ -1,6 +1,6 @@
 """Probabilistic duplicate detection with Splink — merge recommendations for HITL review.
 
-Reads bronze facility reference tables (virtue, jci, nabh, pmjay), blocks on
+Reads bronze facility reference tables (virtue, jci, nabh, pmjay, nhpr, abdm), blocks on
 state + brand_key (same keys as dbt entity resolution), scores candidate pairs
 with Splink, and lands recommendations in bronze.merge_candidates.
 
@@ -91,19 +91,21 @@ def _load_records(conn: psycopg.Connection) -> pd.DataFrame:
             virtue["source"] = "virtue"
             frames.append(virtue)
 
-        for table, source, id_col, name_col, district_expr, lat_col, lon_col in [
-            ("bronze.facilities_jci", "jci", "jci_org_id", "jci_name", "COALESCE(city, '')", "NULL", "NULL"),
-            ("bronze.facilities_nabh", "nabh", "nabh_org_id", "nabh_name", "COALESCE(city, '')", "lat", "lng"),
-            ("bronze.facilities_pmjay", "pmjay", "pmjay_org_id", "pmjay_name", "COALESCE(district, '')", "lat", "lng"),
+        for table, source, id_col, name_col, state_expr, district_expr, lat_col, lon_col in [
+            ("bronze.facilities_jci", "jci", "jci_org_id", "jci_name", "state", "COALESCE(city, '')", "NULL", "NULL"),
+            ("bronze.facilities_nabh", "nabh", "nabh_org_id", "nabh_name", "state", "COALESCE(city, '')", "lat", "lng"),
+            ("bronze.facilities_pmjay", "pmjay", "pmjay_org_id", "pmjay_name", "state", "COALESCE(district, '')", "lat", "lng"),
+            ("bronze.locations_nhpr", "nhpr", "nhpr_facility_id", "facility_name", "state_name", "COALESCE(district_name, '')", "latitude", "longitude"),
+            ("bronze.facilities_abdm", "abdm", "abdm_facility_id", "facility_name", "state", "COALESCE(district, '')", "NULL", "NULL"),
         ]:
             cur.execute(
                 f"""
-                SELECT {id_col} AS record_id, {name_col} AS name, state,
+                SELECT {id_col} AS record_id, {name_col} AS name, {state_expr} AS state,
                        {district_expr} AS district,
                        {lat_col} AS lat, {lon_col} AS lon,
                        NULL::double precision AS match_confidence
                 FROM {table}
-                WHERE state IS NOT NULL AND TRIM(state) != ''
+                WHERE {state_expr} IS NOT NULL AND TRIM({state_expr}) != ''
                 """
             )
             df = pd.DataFrame(

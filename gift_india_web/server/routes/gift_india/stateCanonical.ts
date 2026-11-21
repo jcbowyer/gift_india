@@ -125,13 +125,19 @@ export function mapStateCtes(facilityAlias = 'f', geoAlias = 'g'): string {
     ${aliasRows}
   ),
   facility_map_state AS (
-    SELECT ${facilityAlias}.*,
+    SELECT DISTINCT ON (${facilityAlias}.facility_id)
+           ${facilityAlias}.*,
            COALESCE(sc_geo.state, sc.state, sa.state, ${facilityAlias}.state) AS map_state,
            COALESCE(sc_geo.state_code, sc.state_code, ${facilityAlias}.state_code) AS map_state_code
     FROM gold.facilities ${facilityAlias}
-    LEFT JOIN gold.geography ${geoAlias}
-      ON lower(trim(${geoAlias}.district)) = lower(trim(${facilityAlias}.district))
-     AND lower(trim(${geoAlias}.state)) = lower(trim(${facilityAlias}.state))
+    LEFT JOIN LATERAL (
+      SELECT g.state, g.district
+      FROM gold.geography g
+      WHERE lower(trim(g.district)) = lower(trim(${facilityAlias}.district))
+        AND lower(trim(g.state)) = lower(trim(${facilityAlias}.state))
+      ORDER BY g.population DESC NULLS LAST, g.geography_id
+      LIMIT 1
+    ) ${geoAlias} ON true
     LEFT JOIN state_codes sc_geo
       ON ${geoAlias}.district IS NOT NULL
      AND sc_geo.state = ${geoAlias}.state
@@ -139,6 +145,7 @@ export function mapStateCtes(facilityAlias = 'f', geoAlias = 'g'): string {
       ON sc.state_code = ${facilityAlias}.state_code
     LEFT JOIN state_aliases sa
       ON sa.raw_norm = regexp_replace(replace(lower(${facilityAlias}.state), '&', 'and'), '[^a-z0-9]', '', 'g')
+    ORDER BY ${facilityAlias}.facility_id
   )`;
 }
 

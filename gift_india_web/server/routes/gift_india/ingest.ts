@@ -20,7 +20,6 @@ const REPO_ROOT = path.resolve(
   '../../../..',
 );
 const NHPR_DATA_DIR = path.join(REPO_ROOT, 'data', 'nhpr');
-const MEDICAL_TRAVEL_DATA_DIR = path.join(REPO_ROOT, 'data', 'medical_travel');
 const API_DIR = path.join(REPO_ROOT, 'gift_india_api');
 
 async function fileExists(p: string): Promise<boolean> {
@@ -177,114 +176,6 @@ export async function setupIngestRoutes(appkit: IngestAppKit): Promise<void> {
       res.json({
         status: 'ok',
         message: result.stdout.trim() || 'Loaded NHPR hospitals into bronze.locations_nhpr',
-      });
-    });
-
-    app.get('/api/ingest/medical-travel/status', async (_req: Request, res: Response) => {
-      try {
-        const rawPath = path.join(MEDICAL_TRAVEL_DATA_DIR, 'mvt_dataset.json');
-        const recordsPath = path.join(MEDICAL_TRAVEL_DATA_DIR, 'locations_medical_travel.json');
-        const hasRaw = await fileExists(rawPath);
-        const hasRecords = await fileExists(recordsPath);
-
-        let bronzeCount: number | null = null;
-        try {
-          const { rows } = await appkit.lakebase.query(
-            `SELECT COUNT(*)::int AS count
-             FROM bronze.locations_medical_travel`,
-          );
-          bronzeCount = Number(rows[0]?.count ?? 0);
-        } catch {
-          bronzeCount = null;
-        }
-
-        res.json({
-          dataDir: MEDICAL_TRAVEL_DATA_DIR,
-          sourceUrl:
-            'https://huggingface.co/datasets/Dhanush008/india-medical-value-travel-mvp/resolve/main/mvt_dataset.json',
-          hasRawDataset: hasRaw,
-          hasNormalizedRecords: hasRecords,
-          bronzeCount,
-          mode: 'huggingface_fetch',
-          credentialsOptional: true,
-        });
-      } catch (err) {
-        console.error('medical-travel status failed:', err);
-        res.status(500).json({ error: 'Failed to read medical travel ingest status' });
-      }
-    });
-
-    app.get('/api/ingest/medical-travel/locations', async (req: Request, res: Response) => {
-      try {
-        const limit = Math.min(Math.max(Number(req.query.limit ?? 50), 1), 500);
-        const offset = Math.max(Number(req.query.offset ?? 0), 0);
-        const state = typeof req.query.state === 'string' ? req.query.state : null;
-
-        const clauses: string[] = [];
-        const params: unknown[] = [];
-        if (state) {
-          params.push(state);
-          clauses.push(`state ILIKE $${params.length}`);
-        }
-        const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
-
-        params.push(limit, offset);
-        const { rows } = await appkit.lakebase.query(
-          `SELECT
-             mvt_id,
-             name,
-             hospital_chain,
-             city,
-             state,
-             tier,
-             international_patient_program,
-             specialties,
-             countries_served,
-             has_ipc,
-             accreditation,
-             avg_cost_index,
-             beds,
-             established_year,
-             international_patients_annually,
-             phone,
-             email,
-             website_url,
-             collected_at
-           FROM bronze.locations_medical_travel
-           ${where}
-           ORDER BY state, name
-           LIMIT $${params.length - 1} OFFSET $${params.length}`,
-          params,
-        );
-        res.json({ locations: rows, limit, offset });
-      } catch (err) {
-        console.error('medical-travel locations query failed:', err);
-        res.status(500).json({
-          error:
-            'bronze.locations_medical_travel is unavailable — run `make med-travel` first.',
-        });
-      }
-    });
-
-    app.post('/api/ingest/medical-travel/load', async (req: Request, res: Response) => {
-      const body = (req.body ?? {}) as Record<string, unknown>;
-      const args: string[] = [];
-      if (body.refresh === true) args.push('--refresh');
-
-      const result = await runPythonModule('src.load_med_travel', args);
-      if (result.code !== 0) {
-        res.status(500).json({
-          error: 'Medical travel load failed',
-          stderr: result.stderr,
-          stdout: result.stdout,
-        });
-        return;
-      }
-      res.json({
-        status: 'ok',
-        message:
-          result.stdout.trim() ||
-          'Loaded MVT hospitals into bronze.locations_medical_travel',
       });
     });
   });

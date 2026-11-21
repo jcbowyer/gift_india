@@ -30,6 +30,7 @@ jci as (
     select
         facility_id,
         jci_organization_name,
+        jci_website_url,
         match_method,
         match_confidence,
         jci_source,
@@ -42,6 +43,7 @@ nabh as (
     select
         facility_id,
         nabh_organization_name,
+        nabh_website_url,
         accreditation_status,
         accreditation_program,
         match_method,
@@ -66,7 +68,11 @@ select
     cast(f.annual_surgeries as integer)                    as annual_surgeries,
     cast(f.offers_surgery as boolean)                      as offers_surgery,
     cast(f.specialties as text)                            as specialties,
-    cast(f.website_url as text)                            as website_url,
+    cast(coalesce(
+        nullif(trim(f.website_url), ''),
+        nullif(trim(j.jci_website_url), ''),
+        nullif(trim(nb.nabh_website_url), '')
+    ) as text)                                             as website_url,
     cast(f.match_confidence as double precision)           as match_confidence,
     round(coalesce(fg.distance_km, 0)::numeric, 3)           as distance_from_centroid_km,
     cast(j.facility_id is not null as boolean)             as jci_accredited,

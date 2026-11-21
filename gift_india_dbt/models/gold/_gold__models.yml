@@ -67,6 +67,30 @@ models:
         description: Sum of annual surgeries across all facilities in this geography.
         data_type: integer
 
+  - name: facility_master_bridge
+    description: >-
+      Source-system ↔ master_facility_id crosswalk from Splink MDM clusters
+      (`bronze.facility_clusters`). One row per bronze source record.
+
+  - name: facility_master
+    description: >-
+      MDM golden record — one survivorship row per master_facility_id across
+      virtue, jci, nabh, and pmjay. Built after human merge reviews are applied
+      (`make apply-merge-clusters`). Materialized as a view so cluster rebuilds
+      are visible immediately without re-running dbt.
+    columns:
+      - name: master_facility_id
+        description: Golden-record id (Virtue facility_id when cluster includes Virtue).
+        tests: [not_null, unique]
+      - name: name
+        description: Survivorship-picked display name.
+      - name: name_source
+        description: Source system that supplied the chosen name.
+      - name: cluster_method
+        description: singleton or splink_approved.
+      - name: member_count
+        description: Bronze source records in this master cluster.
+
   - name: facilities
     description: >-
       GIFT Gauge gold serving table of geotagged Indian healthcare facilities.

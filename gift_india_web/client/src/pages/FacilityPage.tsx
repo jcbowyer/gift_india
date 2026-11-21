@@ -12,7 +12,7 @@ import {
 } from '@databricks/appkit-ui/react';
 import { ArrowLeft, MapPin, Building2, Globe, ChevronDown, ChevronRight, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { api, type FacilityDetail, type TrustSignal, humanReviewStatusForCapability } from '../lib/api';
-import { SignalBadge, CapabilityEvidence, HumanReviewBadge } from '../components/trust';
+import { SignalBadge, CapabilityEvidence, HumanReviewBadge, NabhAccreditationBadge, NabhValidatedBadge } from '../components/trust';
 
 export function FacilityPage() {
   const { id } = useParams<{ id: string }>();
@@ -107,6 +107,7 @@ export function FacilityPage() {
             {f.matchConfidence !== null && (
               <Badge variant="outline">entity-match {Math.round(f.matchConfidence * 100)}%</Badge>
             )}
+            <NabhAccreditationBadge nabh={f.nabh} />
           </div>
 
           {/* Trust at a glance */}
@@ -135,6 +136,30 @@ export function FacilityPage() {
         </CardContent>
       </Card>
 
+      {detail.mdm && detail.mdm.memberCount > 1 ? (
+        <Card className="gift-elevate" data-demo="facility-mdm">
+          <CardContent className="space-y-3 p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <CardTitle className="text-base">MDM golden record</CardTitle>
+              <Badge variant="outline">
+                {detail.mdm.memberCount} linked sources · {detail.mdm.clusterMethod}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Master id <code className="font-mono text-xs">{detail.mdm.masterFacilityId}</code>
+              {detail.mdm.nameSource ? ` — name from ${detail.mdm.nameSource}` : ''}
+            </p>
+            <ul className="text-sm space-y-1">
+              {detail.mdm.links.map((link) => (
+                <li key={`${link.sourceSystem}-${link.sourceId}`} className="text-muted-foreground">
+                  <span className="font-medium text-foreground">{link.sourceSystem}</span> · {link.sourceId}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      ) : null}
+
       <div>
         <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Capability assessments
@@ -144,18 +169,19 @@ export function FacilityPage() {
             const open = openCap === cap.key;
             const effective = overrides[cap.key] ?? cap.overrideSignal ?? cap.trustSignal;
             const humanReview = humanReviewStatusForCapability(cap);
+            const nabhValidated = cap.nabh?.validated ?? false;
             return (
               <Card
                 key={cap.key}
                 className={`overflow-hidden ${open ? '' : 'gift-lift'} ${
-                  humanReview.recommended ? 'border-amber-300/70' : ''
+                  humanReview.recommended ? 'border-amber-300/70' : nabhValidated ? 'border-teal-300/80 ring-1 ring-teal-200/50' : ''
                 }`}
               >
                 <button
                   type="button"
                   onClick={() => setOpenCap(open ? null : cap.key)}
                   className={`flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-muted/40 ${
-                    humanReview.recommended ? 'border-l-4 border-l-amber-400' : ''
+                    humanReview.recommended ? 'border-l-4 border-l-amber-400' : nabhValidated ? 'border-l-4 border-l-teal-500' : ''
                   }`}
                 >
                   {open ? (
@@ -168,6 +194,7 @@ export function FacilityPage() {
                     {cap.evidenceCount} citation{cap.evidenceCount === 1 ? '' : 's'}
                   </span>
                   {humanReview.recommended ? <HumanReviewBadge compact /> : null}
+                  <NabhValidatedBadge verification={cap.nabh} compact />
                   <SignalBadge signal={effective} size="lg" />
                 </button>
                 {open && (

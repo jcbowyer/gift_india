@@ -317,16 +317,13 @@ def load_bundle() -> DataBundle:
 
     Order of preference:
 
-    1. **Lakebase** — when running as a Databricks App with a Lakebase resource
+    1. **Local / generic Postgres** — when ``GIFT_INDIA_DB_URL`` or ``GIFT_INDIA_PG*``
+       is set (system Postgres on ``localhost:5433`` for this project).
+    2. **Lakebase** — when running as a Databricks App with a Lakebase resource
        (``LAKEBASE_ENDPOINT`` + ``PGHOST`` injected), read the live synced data.
-    2. **Local / generic Postgres** — when ``GIFT_INDIA_DB_URL`` (or ``PG*``) is set
-       (e.g. the docker-compose dev database).
     3. **Synthetic CSV** — deterministic fallback so the demo always runs with
        zero external dependencies.
     """
-    if os.environ.get("LAKEBASE_ENDPOINT") and os.environ.get("PGHOST"):
-        return load_from_lakebase()
-
     from . import db
 
     dsn = db.database_url()
@@ -338,6 +335,16 @@ def load_bundle() -> DataBundle:
                 f"[data] Could not load from the configured database ({exc}); "
                 "falling back to the synthetic dataset."
             )
+
+    if os.environ.get("LAKEBASE_ENDPOINT") and os.environ.get("PGHOST"):
+        try:
+            return load_from_lakebase()
+        except Exception as exc:  # noqa: BLE001
+            print(
+                f"[data] Could not load from Lakebase ({exc}); "
+                "falling back to the synthetic dataset."
+            )
+
     return build_dataset(force=False)
 
 

@@ -64,7 +64,7 @@ import {
   formatNumber,
   humanReviewStatusForRanking,
 } from '../lib/api';
-import { SignalBadge, TrustScoreDial, EvidenceTally, CapabilityEvidence, BestSourceBadge, HumanReviewBadge } from '../components/trust';
+import { SignalBadge, TrustScoreDial, EvidenceTally, CapabilityEvidence, BestSourceBadge, HumanReviewBadge, NabhAccreditationBadge, NabhValidatedBadge } from '../components/trust';
 import { GiftSeal } from '../components/GiftSeal';
 import {
   INDIA_STATES,
@@ -357,6 +357,7 @@ function FacilityRow({
   const cap = detail?.capabilities.find((c) => c.key === capabilityKey);
   const effectiveSignal = override ?? rec.trustSignal;
   const effectiveScore = overrideScore ?? rec.overrideScore ?? rec.trustScore;
+  const nabhValidated = rec.nabhCapability?.validated ?? cap?.nabh?.validated ?? false;
   const humanReview = humanReviewStatusForRanking({
     ...rec,
     overrideSignal: override,
@@ -401,7 +402,11 @@ function FacilityRow({
     <>
       <Card
         className={`overflow-hidden gift-lift ${
-          humanReview.recommended ? 'border-amber-300/80 ring-1 ring-amber-200/60' : ''
+          humanReview.recommended
+            ? 'border-amber-300/80 ring-1 ring-amber-200/60'
+            : nabhValidated
+              ? 'border-teal-300/80 ring-1 ring-teal-200/50'
+              : ''
         } ${open && !isMobile ? 'ring-1 ring-primary/25' : ''}`}
         data-demo={open && isMobile ? 'facility-expanded' : undefined}
       >
@@ -410,7 +415,11 @@ function FacilityRow({
             type="button"
             onClick={() => void toggle()}
             className={`flex min-w-0 flex-1 items-stretch gap-3 text-left transition-colors hover:bg-muted/40 ${
-              humanReview.recommended ? 'border-l-4 border-l-amber-400' : ''
+              humanReview.recommended
+                ? 'border-l-4 border-l-amber-400'
+                : nabhValidated
+                  ? 'border-l-4 border-l-teal-500'
+                  : ''
             }`}
           >
             <div className="flex items-center pl-3 text-muted-foreground">
@@ -429,6 +438,8 @@ function FacilityRow({
                 <h3 className="truncate font-semibold text-foreground">{rec.name}</h3>
                 <SignalBadge signal={effectiveSignal} />
                 {humanReview.recommended ? <HumanReviewBadge /> : null}
+                <NabhAccreditationBadge nabh={rec.nabh} />
+                <NabhValidatedBadge verification={rec.nabhCapability ?? cap?.nabh} compact />
               </div>
               {humanReview.recommended && humanReview.reason ? (
                 <p className="text-xs font-medium text-amber-900/90">{humanReview.reason}</p>
@@ -496,6 +507,8 @@ function FacilityRow({
                       <div className="flex flex-wrap items-center gap-2">
                         <SignalBadge signal={effectiveSignal} size="lg" />
                         {humanReview.recommended ? <HumanReviewBadge /> : null}
+                        <NabhAccreditationBadge nabh={rec.nabh} />
+                        <NabhValidatedBadge verification={rec.nabhCapability ?? cap?.nabh} />
                         <span className="inline-flex items-center gap-1 text-sm">
                           <MapPin className="h-3.5 w-3.5" /> {rec.district}, {rec.state}
                         </span>

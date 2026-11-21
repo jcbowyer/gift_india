@@ -3,7 +3,9 @@ import { Application, Request } from 'express';
 import { CAPABILITIES, type CapabilityGuide, type TrustSignal } from './capabilities';
 import { regionOf, statesInRegion, REGION_VALUES, type Region } from './regions';
 import { mapStateCtes } from './stateCanonical';
+import { createTtlCache, DATA_QUALITY_GEO_TTL_MS } from './ttlCache';
 import { setupIngestRoutes } from './ingest';
+import { runApplyMergeClusters } from './mdmClusters';
 
 interface LakebaseQuery {
   query(text: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>;
@@ -164,9 +166,138 @@ function num(v: unknown): number | null {
   return v === null || v === undefined ? null : Number(v);
 }
 
+/** Facility-level NABH directory match from gold.facilities. */
+function mapNabhAccreditation(f: Record<string, unknown>) {
+  return {
+    accredited: Boolean(f.nabh_accredited),
+    organizationName: txt(f.nabh_organization_name),
+    status: txt(f.nabh_accreditation_status),
+    program: txt(f.nabh_accreditation_program),
+    matchMethod: f.nabh_match_method ? txt(f.nabh_match_method) : null,
+    matchConfidence: f.nabh_match_confidence == null ? null : Number(f.nabh_match_confidence),
+  };
+}
+
+/** Per-capability NABH certificate scope verification (bronze.nabh_capability_verifications). */
+function mapNabhVerification(r: Record<string, unknown> | undefined | null) {
+  if (!r) return null;
+  const ref = txt(r.reference_no ?? r.nabh_reference_no);
+  if (!ref) return null;
+  const signal = txt(r.verification_signal);
+  const supports = Boolean(r.certificate_supports);
+  return {
+    verified: supports,
+    validated: supports && signal === 'corroborated',
+    signal,
+    referenceNo: ref,
+    scopeSnippet: r.certificate_scope_snippet ? txt(r.certificate_scope_snippet) : null,
+    certificateUrl: `https://portal.nabh.co/Documents/AccreditedList/${ref}`,
+  };
+}
+
+function nabhVerificationFromRow(r: Record<string, unknown>) {
+  if (!r.nabh_verification_signal && r.nabh_cert_supports == null) return null;
+  return mapNabhVerification({
+    certificate_supports: r.nabh_cert_supports,
+    verification_signal: r.nabh_verification_signal,
+    reference_no: r.nabh_reference_no,
+    certificate_scope_snippet: r.nabh_scope_snippet,
+  });
+}
+
+async function loadNabhCapabilityVerifications(
+  lakebase: LakebaseQuery,
+  facilityId: string,
+): Promise<Map<string, Record<string, unknown>>> {
+  try {
+    const { rows } = await lakebase.query(
+      `SELECT DISTINCT ON (capability)
+              capability, certificate_supports, verification_signal, reference_no,
+              certificate_scope_snippet, verification_score
+       FROM bronze.nabh_capability_verifications
+       WHERE facility_id = $1
+       ORDER BY capability, verification_score DESC, certificate_supports DESC`,
+      [facilityId],
+    );
+    return new Map(rows.map((r) => [txt(r.capability), r]));
+  } catch (err) {
+    if (isMissingRelation(err)) return new Map();
+    throw err;
+  }
+}
+
 function isMissingRelation(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err);
   return /does not exist|relation .* not found/i.test(msg);
+}
+
+async function resolveMasterFacilityId(lakebase: LakebaseQuery, id: string): Promise<string> {
+  if (id.includes('|')) {
+    const [sourceSystem, sourceId] = id.split('|', 2);
+    try {
+      const { rows } = await lakebase.query(
+        `SELECT master_facility_id
+         FROM gold.facility_master_bridge
+         WHERE source_system = $1 AND source_id = $2
+         LIMIT 1`,
+        [sourceSystem, sourceId],
+      );
+      if (rows.length) return txt(rows[0].master_facility_id);
+    } catch {
+      return id;
+    }
+  }
+  try {
+    const { rows } = await lakebase.query(
+      `SELECT master_facility_id
+       FROM gold.facility_master_bridge
+       WHERE master_facility_id = $1
+          OR (source_system = 'virtue' AND source_id = $1)
+       ORDER BY CASE WHEN master_facility_id = $1 THEN 0 ELSE 1 END
+       LIMIT 1`,
+      [id],
+    );
+    if (rows.length) return txt(rows[0].master_facility_id);
+  } catch {
+    return id;
+  }
+  return id;
+}
+
+async function loadMdmContext(lakebase: LakebaseQuery, masterId: string) {
+  try {
+    const [{ rows: fm }, { rows: links }] = await Promise.all([
+      lakebase.query(
+        `SELECT master_facility_id, name, name_source, cluster_method, member_count
+         FROM gold.facility_master
+         WHERE master_facility_id = $1`,
+        [masterId],
+      ),
+      lakebase.query(
+        `SELECT source_system, source_id, cluster_method
+         FROM gold.facility_master_bridge
+         WHERE master_facility_id = $1
+         ORDER BY source_system, source_id`,
+        [masterId],
+      ),
+    ]);
+    if (!fm.length && !links.length) return null;
+    const row = fm[0];
+    return {
+      masterFacilityId: masterId,
+      name: row ? txt(row.name) : null,
+      nameSource: row ? txt(row.name_source) : null,
+      clusterMethod: row ? txt(row.cluster_method) : txt(links[0]?.cluster_method),
+      memberCount: row ? Number(row.member_count) : links.length,
+      links: links.map((l) => ({
+        sourceSystem: txt(l.source_system),
+        sourceId: txt(l.source_id),
+        clusterMethod: txt(l.cluster_method),
+      })),
+    };
+  } catch {
+    return null;
+  }
 }
 
 // ── scorecard: per-area metrics rolled up from the district grain ─────────────
@@ -782,6 +913,8 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           ? await appkit.lakebase.query(
               `SELECT f.facility_id, f.name, f.type, f.district, f.state, f.state_code, f.beds,
                       f.lat, f.lon, f.website_url, f.match_confidence,
+                      f.nabh_accredited, f.nabh_organization_name, f.nabh_accreditation_status,
+                      f.nabh_accreditation_program, f.nabh_match_method, f.nabh_match_confidence,
                       a.claimed, a.trust_signal, a.trust_score, a.evidence_count,
                       a.supporting_count, a.contradicting_count, a.best_source, a.summary,
                       NULL::text AS override_signal, NULL::text AS override_note
@@ -802,6 +935,12 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           : await appkit.lakebase.query(
               `SELECT f.facility_id, f.name, f.type, f.district, f.state, f.state_code, f.beds,
                       f.lat, f.lon, f.website_url, f.match_confidence,
+                      f.nabh_accredited, f.nabh_organization_name, f.nabh_accreditation_status,
+                      f.nabh_accreditation_program, f.nabh_match_method, f.nabh_match_confidence,
+                      nabh_v.certificate_supports AS nabh_cert_supports,
+                      nabh_v.verification_signal AS nabh_verification_signal,
+                      nabh_v.reference_no AS nabh_reference_no,
+                      nabh_v.certificate_scope_snippet AS nabh_scope_snippet,
                       a.claimed,
                       COALESCE(
                         CASE s.evidence_tier
@@ -819,6 +958,13 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
                       ov.override_signal, ov.override_score, ov.note AS override_note
                FROM gold.facility_capability_assessments a
                JOIN gold.facilities f USING (facility_id)
+               LEFT JOIN LATERAL (
+                 SELECT certificate_supports, verification_signal, reference_no, certificate_scope_snippet
+                 FROM bronze.nabh_capability_verifications nv
+                 WHERE nv.facility_id = f.facility_id AND nv.capability = a.capability
+                 ORDER BY verification_score DESC, certificate_supports DESC
+                 LIMIT 1
+               ) nabh_v ON TRUE
                LEFT JOIN gold.capability_scored s
                  ON s.facility_id = a.facility_id AND s.capability = a.capability
                LEFT JOIN LATERAL (
@@ -901,6 +1047,8 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             overrideNote: r.override_note ? txt(r.override_note) : null,
             reviewRecommended,
             reviewReason: reviewRecommended ? reviewReason : null,
+            nabh: mapNabhAccreditation(r),
+            nabhCapability: isAll ? null : nabhVerificationFromRow(r),
           };
         });
         res.json({ capability, region: parsed.data.region ?? null, state: state ?? null, district: district ?? null, results });
@@ -917,10 +1065,13 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
       const q = txt(req.query.q).trim();
       try {
         const { rows } = await appkit.lakebase.query(
-          `SELECT facility_id, name, type, district, state, state_code, beds
-           FROM gold.facilities
-           WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%' OR district ILIKE '%' || $1 || '%')
-           ORDER BY name
+          `SELECT f.facility_id,
+                  coalesce(fm.name, f.name) AS name,
+                  f.type, f.district, f.state, f.state_code, f.beds
+           FROM gold.facilities f
+           LEFT JOIN gold.facility_master fm ON fm.master_facility_id = f.facility_id
+           WHERE ($1::text IS NULL OR coalesce(fm.name, f.name) ILIKE '%' || $1 || '%' OR f.district ILIKE '%' || $1 || '%')
+           ORDER BY coalesce(fm.name, f.name)
            LIMIT 25`,
           [q || null],
         );
@@ -944,38 +1095,94 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
     app.get('/api/facilities/:id', async (req, res) => {
       const id = req.params.id;
       try {
-        const [{ rows: fac }, { rows: caps }, { rows: ev }, { rows: ovr }, { rows: scored }, { rows: narrJson }, { rows: narrMd }] =
+        const masterId = await resolveMasterFacilityId(appkit.lakebase, id);
+        const trustId = masterId;
+
+        let fac: Record<string, unknown>[] = [];
+        try {
+          ({ rows: fac } = await appkit.lakebase.query(
+            `SELECT f.*, fm.name AS mdm_name, fm.name_source, fm.cluster_method, fm.member_count
+             FROM gold.facilities f
+             LEFT JOIN gold.facility_master fm ON fm.master_facility_id = f.facility_id
+             WHERE f.facility_id = $1`,
+            [trustId],
+          ));
+        } catch {
+          fac = [];
+        }
+        if (!fac.length) {
+          try {
+            ({ rows: fac } = await appkit.lakebase.query(
+              `SELECT
+                 master_facility_id AS facility_id,
+                 name,
+                 type,
+                 district,
+                 state,
+                 null::text AS state_code,
+                 lat,
+                 lon,
+                 beds,
+                 website_url,
+                 match_confidence,
+                 name AS mdm_name,
+                 name_source,
+                 cluster_method,
+                 member_count
+               FROM gold.facility_master
+               WHERE master_facility_id = $1`,
+              [masterId],
+            ));
+          } catch {
+            fac = [];
+          }
+        }
+
+        const [{ rows: caps }, { rows: ev }, { rows: ovr }, { rows: scored }, { rows: narrJson }, { rows: narrMd }, mdm, nabhByCap] =
           await Promise.all([
-          appkit.lakebase.query('SELECT * FROM gold.facilities WHERE facility_id = $1', [id]),
-          appkit.lakebase.query('SELECT * FROM gold.facility_capability_assessments WHERE facility_id = $1', [id]),
+          appkit.lakebase.query('SELECT * FROM gold.facility_capability_assessments WHERE facility_id = $1', [trustId]),
           appkit.lakebase.query(
             'SELECT * FROM gold.capability_evidence WHERE facility_id = $1 ORDER BY weight DESC, observed_at DESC',
-            [id],
+            [trustId],
           ),
           appkit.lakebase.query(
             `SELECT DISTINCT ON (capability) capability, override_signal, override_score, note, created_at
              FROM app.capability_overrides WHERE facility_id = $1 AND created_by = $2
              ORDER BY capability, created_at DESC`,
-            [id, currentUser(req)],
+            [trustId, currentUser(req)],
           ),
           appkit.lakebase.query(
             'SELECT capability, evidence_strength_score, evidence_tier FROM gold.capability_scored WHERE facility_id = $1',
-            [id],
+            [trustId],
           ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
           appkit.lakebase.query(
             'SELECT capability, assessment_json, model_endpoint, narrated_at FROM gold.capability_evidence_json WHERE facility_id = $1',
-            [id],
+            [trustId],
           ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
           appkit.lakebase.query(
             'SELECT capability, assessment_md, model_endpoint, narrated_at FROM gold.capability_evidence_md WHERE facility_id = $1',
-            [id],
+            [trustId],
           ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
+          loadMdmContext(appkit.lakebase, masterId),
+          loadNabhCapabilityVerifications(appkit.lakebase, trustId),
         ]);
-        if (fac.length === 0) {
+        if (fac.length === 0 && !mdm) {
           res.status(404).json({ error: 'Facility not found' });
           return;
         }
-        const f = fac[0];
+        const f = fac[0] ?? {
+          facility_id: masterId,
+          name: mdm?.name ?? id,
+          type: 'Hospital',
+          district: '',
+          state: '',
+          state_code: '',
+          lat: null,
+          lon: null,
+          beds: null,
+          website_url: '',
+          match_confidence: null,
+        };
         const overrideByCap = new Map(ovr.map((o) => [txt(o.capability), o]));
         const scoredByCap = new Map(scored.map((s) => [txt(s.capability), s]));
         const jsonByCap = new Map(narrJson.map((j) => [txt(j.capability), j]));
@@ -991,16 +1198,22 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           const assessmentJson = nj?.assessment_json ?? null;
           const evidence = ev
             .filter((e) => txt(e.capability) === key)
-            .map((e) => ({
-              evidenceId: txt(e.evidence_id),
-              sourceType: txt(e.source_type),
-              sourceLabel: txt(e.source_label),
-              sourceUrl: txt(e.source_url),
-              stance: txt(e.stance) as 'supports' | 'contradicts',
-              weight: Number(e.weight),
-              snippet: txt(e.snippet),
-              observedAt: e.observed_at ? txt(e.observed_at).slice(0, 10) : '',
-            }));
+            .map((e) => {
+              const stance = txt(e.stance);
+              return {
+                evidenceId: txt(e.evidence_id),
+                sourceType: txt(e.source_type),
+                sourceLabel: txt(e.source_label),
+                sourceUrl: txt(e.source_url),
+                stance: (stance === 'supports' || stance === 'contradicts' ? stance : 'contextual') as
+                  | 'supports'
+                  | 'contradicts'
+                  | 'contextual',
+                weight: Number(e.weight),
+                snippet: txt(e.snippet),
+                observedAt: e.observed_at ? txt(e.observed_at).slice(0, 10) : '',
+              };
+            });
           return {
             key,
             label: meta.label,
@@ -1047,12 +1260,13 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
               o?.override_score === null || o?.override_score === undefined ? null : Number(o.override_score),
             overrideNote: o?.note ? txt(o.note) : null,
             evidence,
+            nabh: mapNabhVerification(nabhByCap.get(key)),
           };
         });
         res.json({
           facility: {
             facilityId: txt(f.facility_id),
-            name: txt(f.name),
+            name: txt(f.mdm_name ?? f.name),
             type: txt(f.type),
             district: txt(f.district),
             state: txt(f.state),
@@ -1062,7 +1276,9 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             beds: f.beds === null ? null : Number(f.beds),
             websiteUrl: txt(f.website_url),
             matchConfidence: f.match_confidence === null ? null : Number(f.match_confidence),
+            nabh: mapNabhAccreditation(f),
           },
+          mdm,
           capabilities,
         });
       } catch (err) {
@@ -1208,12 +1424,11 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
       fac_by_state AS (
         SELECT map_state,
                MAX(map_state_code) AS map_state_code,
-               COUNT(*)::int AS facilities,
-               COUNT(*) FILTER (
+               COUNT(DISTINCT facility_id)::int AS facilities,
+               COUNT(DISTINCT facility_id) FILTER (
                  WHERE EXISTS (
-                   SELECT 1 FROM gold.geography g
-                   WHERE lower(trim(g.district)) = lower(trim(facility_map_state.district))
-                     AND (g.state = facility_map_state.map_state OR g.state = facility_map_state.state)
+                   SELECT 1 FROM gold.facility_geography fg
+                   WHERE fg.facility_id = facility_map_state.facility_id
                  )
                )::int AS with_geography
         FROM facility_map_state
@@ -1221,16 +1436,21 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
       ),
       fac_by_district AS (
         SELECT f.map_state,
-               COALESCE(g.district, f.district) AS district,
-               COUNT(*)::int AS facilities,
-               COUNT(*) FILTER (WHERE g.district IS NOT NULL)::int AS with_geography
+               COALESCE(link.district, f.district) AS district,
+               COUNT(DISTINCT f.facility_id)::int AS facilities,
+               COUNT(DISTINCT f.facility_id) FILTER (WHERE link.facility_id IS NOT NULL)::int AS with_geography
         FROM facility_map_state f
-        LEFT JOIN gold.geography g
-          ON lower(trim(g.district)) = lower(trim(f.district))
-         AND (g.state = f.map_state OR g.state = f.state)
-        WHERE COALESCE(g.district, f.district) IS NOT NULL
-          AND TRIM(COALESCE(g.district, f.district)) != ''
-        GROUP BY f.map_state, COALESCE(g.district, f.district)
+        LEFT JOIN LATERAL (
+          SELECT fg.facility_id, g.district
+          FROM gold.facility_geography fg
+          JOIN gold.geography g ON g.geography_id = fg.geography_id
+          WHERE fg.facility_id = f.facility_id
+          ORDER BY g.population DESC NULLS LAST, g.geography_id
+          LIMIT 1
+        ) link ON true
+        WHERE COALESCE(link.district, f.district) IS NOT NULL
+          AND TRIM(COALESCE(link.district, f.district)) != ''
+        GROUP BY f.map_state, COALESCE(link.district, f.district)
       ),
       district_coverage AS (
         SELECT rd.map_state,
@@ -1251,37 +1471,35 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
                COUNT(*) FILTER (WHERE dc.mapped)::int AS mapped_districts,
                COALESCE(SUM(dc.facilities), 0)::int AS facilities,
                COALESCE(SUM(dc.with_geography), 0)::int AS with_geography,
-               (COUNT(*) FILTER (WHERE dc.mapped) > 0) AS mapped
+               (
+                 COUNT(*) FILTER (WHERE dc.mapped) > 0
+                 OR (
+                   COALESCE(fbs.with_geography, 0) > 0
+                   AND COALESCE(fbs.facilities, 0) > 0
+                 )
+                 OR (
+                   COUNT(dc.district) > 0
+                   AND COALESCE(fbs.facilities, 0) = 0
+                 )
+               ) AS mapped
         FROM state_codes sc
         LEFT JOIN fac_by_state fbs ON fbs.map_state = sc.state
         LEFT JOIN district_coverage dc ON dc.map_state = sc.state
-        GROUP BY sc.state, sc.state_code, fbs.facilities
+        GROUP BY sc.state, sc.state_code, fbs.facilities, fbs.with_geography
       )
       SELECT
         (SELECT COUNT(*)::int FROM state_codes) AS ref_states,
         (SELECT COUNT(*)::int FROM state_coverage WHERE mapped) AS mapped_states,
         (SELECT COUNT(*)::int FROM ref_districts) AS ref_districts,
         (SELECT COUNT(*)::int FROM district_coverage WHERE mapped) AS mapped_districts,
-        (SELECT COUNT(*)::int FROM facility_map_state) AS facilities,
-        (SELECT COUNT(*)::int
-           FROM facility_map_state f
-          WHERE EXISTS (
-            SELECT 1 FROM gold.geography g
-            WHERE lower(trim(g.district)) = lower(trim(f.district))
-              AND (g.state = f.map_state OR g.state = f.state)
-          )) AS with_geography,
-        (SELECT COUNT(*)::int FROM facility_map_state) AS total_facilities,
-        (SELECT COUNT(*)::int FROM facility_map_state) AS nation_mapped_facilities,
+        (SELECT COUNT(*)::int FROM gold.facilities) AS facilities,
+        (SELECT COUNT(DISTINCT fg.facility_id)::int FROM gold.facility_geography fg) AS with_geography,
+        (SELECT COUNT(*)::int FROM gold.facilities) AS total_facilities,
+        (SELECT COUNT(DISTINCT fg.facility_id)::int FROM gold.facility_geography fg) AS nation_mapped_facilities,
         (SELECT COUNT(*)::int
            FROM facility_map_state f
           WHERE EXISTS (SELECT 1 FROM state_codes sc WHERE sc.state = f.map_state)) AS state_mapped_facilities,
-        (SELECT COUNT(*)::int
-           FROM facility_map_state f
-          WHERE EXISTS (
-            SELECT 1 FROM gold.geography g
-            WHERE lower(trim(g.district)) = lower(trim(f.district))
-              AND (g.state = f.map_state OR g.state = f.state)
-          )) AS district_mapped_facilities
+        (SELECT COUNT(DISTINCT fg.facility_id)::int FROM gold.facility_geography fg) AS district_mapped_facilities
     `;
 
     const GEO_STATE_COVERAGE_SQL = `
@@ -1297,12 +1515,11 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
       fac_by_state AS (
         SELECT map_state,
                MAX(map_state_code) AS map_state_code,
-               COUNT(*)::int AS facilities,
-               COUNT(*) FILTER (
+               COUNT(DISTINCT facility_id)::int AS facilities,
+               COUNT(DISTINCT facility_id) FILTER (
                  WHERE EXISTS (
-                   SELECT 1 FROM gold.geography g
-                   WHERE lower(trim(g.district)) = lower(trim(facility_map_state.district))
-                     AND (g.state = facility_map_state.map_state OR g.state = facility_map_state.state)
+                   SELECT 1 FROM gold.facility_geography fg
+                   WHERE fg.facility_id = facility_map_state.facility_id
                  )
                )::int AS with_geography
         FROM facility_map_state
@@ -1310,16 +1527,21 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
       ),
       fac_by_district AS (
         SELECT f.map_state,
-               COALESCE(g.district, f.district) AS district,
-               COUNT(*)::int AS facilities,
-               COUNT(*) FILTER (WHERE g.district IS NOT NULL)::int AS with_geography
+               COALESCE(link.district, f.district) AS district,
+               COUNT(DISTINCT f.facility_id)::int AS facilities,
+               COUNT(DISTINCT f.facility_id) FILTER (WHERE link.facility_id IS NOT NULL)::int AS with_geography
         FROM facility_map_state f
-        LEFT JOIN gold.geography g
-          ON lower(trim(g.district)) = lower(trim(f.district))
-         AND (g.state = f.map_state OR g.state = f.state)
-        WHERE COALESCE(g.district, f.district) IS NOT NULL
-          AND TRIM(COALESCE(g.district, f.district)) != ''
-        GROUP BY f.map_state, COALESCE(g.district, f.district)
+        LEFT JOIN LATERAL (
+          SELECT fg.facility_id, g.district
+          FROM gold.facility_geography fg
+          JOIN gold.geography g ON g.geography_id = fg.geography_id
+          WHERE fg.facility_id = f.facility_id
+          ORDER BY g.population DESC NULLS LAST, g.geography_id
+          LIMIT 1
+        ) link ON true
+        WHERE COALESCE(link.district, f.district) IS NOT NULL
+          AND TRIM(COALESCE(link.district, f.district)) != ''
+        GROUP BY f.map_state, COALESCE(link.district, f.district)
       ),
       district_coverage AS (
         SELECT rd.map_state,
@@ -1339,15 +1561,69 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
              COUNT(*) FILTER (WHERE dc.mapped)::int AS mapped_districts,
              COALESCE(SUM(dc.facilities), 0)::int AS facilities,
              COALESCE(SUM(dc.with_geography), 0)::int AS with_geography,
-             (COUNT(*) FILTER (WHERE dc.mapped) > 0) AS state_mapped
+             (
+               COUNT(*) FILTER (WHERE dc.mapped) > 0
+               OR (
+                 COALESCE(fbs.with_geography, 0) > 0
+                 AND COALESCE(fbs.facilities, 0) > 0
+               )
+               OR (
+                 COUNT(dc.district) > 0
+                 AND COALESCE(fbs.facilities, 0) = 0
+               )
+             ) AS state_mapped
       FROM state_codes sc
       LEFT JOIN fac_by_state fbs ON fbs.map_state = sc.state
       LEFT JOIN district_coverage dc ON dc.map_state = sc.state
-      GROUP BY sc.state, sc.state_code, fbs.facilities
+      GROUP BY sc.state, sc.state_code, fbs.facilities, fbs.with_geography
       ORDER BY sc.state
     `;
 
-    const pctRate = (num: number, den: number) => (den > 0 ? Math.round((num / den) * 1000) / 10 : 0);
+    const pctRate = (num: number, den: number) => {
+      if (den <= 0) return 0;
+      const safe = Math.min(num, den);
+      return Math.min(100, Math.round((safe / den) * 1000) / 10);
+    };
+
+    const SOURCE_LABELS: Record<string, string> = {
+      virtue: 'Virtue',
+      nabh: 'NABH',
+      jci: 'JCI',
+      pmjay: 'PMJAY',
+      nhpr: 'NHPR / ABDM',
+    };
+    const SOURCE_ORDER = ['virtue', 'nabh', 'nhpr', 'jci', 'pmjay'];
+
+    const buildLinksBySource = (rows: Record<string, unknown>[]) =>
+      rows
+        .map((r) => {
+          const source = txt(r.source_system);
+          const totalRows = Number(r.total_rows ?? 0);
+          const matchedRows = Number(r.matched_rows ?? 0);
+          return {
+            source,
+            label: SOURCE_LABELS[source] ?? source.toUpperCase(),
+            totalRows,
+            matchedRows,
+            matchPct: pctRate(matchedRows, totalRows),
+          };
+        })
+        .sort((a, b) => {
+          const ai = SOURCE_ORDER.indexOf(a.source);
+          const bi = SOURCE_ORDER.indexOf(b.source);
+          if (ai >= 0 && bi >= 0) return ai - bi;
+          if (ai >= 0) return -1;
+          if (bi >= 0) return 1;
+          return b.totalRows - a.totalRows;
+        });
+
+    type LakebaseRows = { rows: Record<string, unknown>[] };
+    const geoMapCoverageCache = createTtlCache<LakebaseRows>(DATA_QUALITY_GEO_TTL_MS);
+    const geoStateCoverageCache = createTtlCache<LakebaseRows>(DATA_QUALITY_GEO_TTL_MS);
+    const queryGeoMapCoverage = () =>
+      geoMapCoverageCache.get(() => appkit.lakebase.query(GEO_MAP_COVERAGE_SQL));
+    const queryGeoStateCoverage = () =>
+      geoStateCoverageCache.get(() => appkit.lakebase.query(GEO_STATE_COVERAGE_SQL));
 
     app.get('/api/data-quality', async (_req, res) => {
       try {
@@ -1358,7 +1634,14 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           FROM bronze.facility_web_crawl
           GROUP BY facility_id`;
 
-        const { rows: sumRows } = await appkit.lakebase.query(`
+        const [
+          { rows: sumRows },
+          { rows: stateRows },
+          { rows: typeRows },
+          { rows: geoSumRows },
+          { rows: geoStateRows },
+        ] = await Promise.all([
+          appkit.lakebase.query(`
           SELECT
             COUNT(*)::int                                                                    AS total,
             COUNT(*) FILTER (WHERE f.website_url IS NOT NULL AND f.website_url != '')::int  AS with_url,
@@ -1367,9 +1650,8 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             COALESCE(SUM(c.scrape_ok),   0)::int                                            AS scrape_ok
           FROM gold.facilities f
           LEFT JOIN (${crawlSubquery}) c ON c.facility_id = f.facility_id
-        `);
-
-        const { rows: stateRows } = await appkit.lakebase.query(`
+        `),
+          appkit.lakebase.query(`
           SELECT
             f.state,
             f.state_code,
@@ -1382,9 +1664,8 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           LEFT JOIN (${crawlSubquery}) c ON c.facility_id = f.facility_id
           GROUP BY f.state, f.state_code
           ORDER BY COUNT(*) DESC
-        `);
-
-        const { rows: typeRows } = await appkit.lakebase.query(`
+        `),
+          appkit.lakebase.query(`
           SELECT
             COALESCE(NULLIF(TRIM(f.type), ''), 'Unknown')                                   AS type,
             COUNT(*)::int                                                                    AS total,
@@ -1393,11 +1674,9 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           FROM gold.facilities f
           GROUP BY COALESCE(NULLIF(TRIM(f.type), ''), 'Unknown')
           ORDER BY COUNT(*) DESC
-        `);
-
-        const [{ rows: geoSumRows }, { rows: geoStateRows }] = await Promise.all([
-          appkit.lakebase.query(GEO_MAP_COVERAGE_SQL),
-          appkit.lakebase.query(GEO_STATE_COVERAGE_SQL),
+        `),
+          queryGeoMapCoverage(),
+          queryGeoStateCoverage(),
         ]);
 
         const s = sumRows[0] ?? {};
@@ -1662,6 +1941,272 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
       }
     });
 
+    app.get('/api/data-quality/improvements-summary', async (_req, res) => {
+      try {
+        const [
+          { rows: flagRows },
+          { rows: mergeDecisionRows },
+          { rows: pendingMergeRows },
+          { rows: clusterRows },
+          { rows: urlUpdateRows },
+          { rows: urlCoverageRows },
+          { rows: geoSumRows },
+          { rows: linkBySourceRows },
+          { rows: topPairRows },
+          { rows: recentMerges },
+          { rows: recentFlags },
+          { rows: recentUrls },
+        ] = await Promise.all([
+          appkit.lakebase.query(`
+            SELECT status, flag_type, COUNT(*)::int AS count
+            FROM app.data_quality_flags
+            GROUP BY status, flag_type
+          `),
+          appkit.lakebase.query(`
+            SELECT decision, COUNT(*)::int AS count
+            FROM (
+              SELECT DISTINCT ON (candidate_id) candidate_id, decision
+              FROM app.merge_reviews
+              ORDER BY candidate_id, created_at DESC
+            ) latest
+            GROUP BY decision
+          `),
+          appkit.lakebase.query(`
+            SELECT COUNT(*)::int AS pending
+            FROM bronze.merge_candidates mc
+            WHERE mc.match_probability >= 0.55
+              AND NOT EXISTS (
+                SELECT 1 FROM app.merge_reviews mr
+                WHERE mr.candidate_id = mc.candidate_id
+                  AND mr.decision IN ('merge', 'reject')
+              )
+          `),
+          appkit.lakebase.query(`
+            SELECT
+              COUNT(*)::int AS total_clusters,
+              COUNT(*) FILTER (WHERE member_count > 1)::int AS multi_member_clusters,
+              COALESCE(SUM(GREATEST(member_count - 1, 0)), 0)::int AS records_unified
+            FROM gold.facility_master
+          `),
+          appkit.lakebase.query(`
+            SELECT
+              COUNT(*)::int AS total,
+              COUNT(*) FILTER (WHERE reviewed_by = 'backfill_website_urls')::int AS backfill,
+              COUNT(*) FILTER (WHERE reviewed_by != 'backfill_website_urls')::int AS manual,
+              COUNT(*) FILTER (WHERE old_url IS NULL OR TRIM(old_url) = '')::int AS added_new
+            FROM app.website_url_updates
+          `),
+          appkit.lakebase.query(`
+            SELECT
+              COUNT(*)::int AS total,
+              COUNT(*) FILTER (WHERE website_url IS NOT NULL AND TRIM(website_url) != '')::int AS with_url
+            FROM gold.facilities
+          `),
+          queryGeoMapCoverage(),
+          appkit.lakebase.query(`
+            SELECT
+              source_system,
+              COUNT(*)::int AS total_rows,
+              COUNT(*) FILTER (WHERE member_count > 1)::int AS matched_rows
+            FROM bronze.facility_clusters
+            GROUP BY source_system
+          `),
+          appkit.lakebase.query(`
+            SELECT
+              CASE
+                WHEN mc.left_source <= mc.right_source
+                  THEN mc.left_source || ' ↔ ' || mc.right_source
+                ELSE mc.right_source || ' ↔ ' || mc.left_source
+              END AS pair,
+              COUNT(*)::int AS count
+            FROM bronze.merge_candidates mc
+            JOIN app.merge_reviews mr
+              ON mr.candidate_id = mc.candidate_id
+             AND mr.decision = 'merge'
+            GROUP BY 1
+            ORDER BY count DESC
+            LIMIT 6
+          `),
+          appkit.lakebase.query(`
+            SELECT mr.id, mr.candidate_id, mr.decision, mr.reviewed_by, mr.note, mr.created_at,
+                   mc.left_name, mc.right_name, mc.match_probability
+            FROM app.merge_reviews mr
+            JOIN bronze.merge_candidates mc ON mc.candidate_id = mr.candidate_id
+            WHERE mr.decision = 'merge'
+            ORDER BY mr.created_at DESC
+            LIMIT 8
+          `),
+          appkit.lakebase.query(`
+            SELECT dq.id, dq.facility_id, dq.flag_type, dq.detail, dq.resolved_at, dq.resolved_by,
+                   f.name AS facility_name
+            FROM app.data_quality_flags dq
+            LEFT JOIN gold.facilities f ON f.facility_id = dq.facility_id
+            WHERE dq.status = 'resolved'
+            ORDER BY dq.resolved_at DESC NULLS LAST
+            LIMIT 8
+          `),
+          appkit.lakebase.query(`
+            SELECT id, facility_id, facility_name, old_url, new_url, reviewed_by, note, created_at
+            FROM app.website_url_updates
+            ORDER BY created_at DESC
+            LIMIT 8
+          `),
+        ]);
+
+        const openByType: Record<string, number> = {};
+        const resolvedByType: Record<string, number> = {};
+        let totalOpen = 0;
+        let totalResolved = 0;
+        for (const r of flagRows) {
+          const flagType = txt(r.flag_type);
+          const count = Number(r.count ?? 0);
+          if (txt(r.status) === 'open') {
+            openByType[flagType] = count;
+            totalOpen += count;
+          } else if (txt(r.status) === 'resolved') {
+            resolvedByType[flagType] = count;
+            totalResolved += count;
+          }
+        }
+
+        const mergeByDecision: Record<string, number> = {};
+        for (const r of mergeDecisionRows) mergeByDecision[txt(r.decision)] = Number(r.count ?? 0);
+
+        const c = clusterRows[0] ?? {};
+        const u = urlUpdateRows[0] ?? {};
+        const cov = urlCoverageRows[0] ?? {};
+        const g = geoSumRows[0] ?? {};
+        const totalFacilities = Number(cov.total ?? 0);
+        const withUrl = Number(cov.with_url ?? 0);
+        const refDistricts = Number(g.ref_districts ?? 0);
+        const mappedDistricts = Number(g.mapped_districts ?? 0);
+        const spineFacilities = totalFacilities;
+        const linkedFacilities = Number(g.district_mapped_facilities ?? 0);
+
+        res.json({
+          flags: {
+            totalOpen,
+            totalResolved,
+            openByType,
+            resolvedByType,
+          },
+          merges: {
+            approved: mergeByDecision.merge ?? 0,
+            rejected: mergeByDecision.reject ?? 0,
+            deferred: mergeByDecision.defer ?? 0,
+            pending: Number(pendingMergeRows[0]?.pending ?? 0),
+            masterClusters: Number(c.total_clusters ?? 0),
+            multiMemberClusters: Number(c.multi_member_clusters ?? 0),
+            recordsUnified: Number(c.records_unified ?? 0),
+          },
+          links: {
+            approvedPairs: mergeByDecision.merge ?? 0,
+            rejectedPairs: mergeByDecision.reject ?? 0,
+            deferredPairs: mergeByDecision.defer ?? 0,
+            pendingPairs: Number(pendingMergeRows[0]?.pending ?? 0),
+            bySource: buildLinksBySource(linkBySourceRows),
+            topPairs: topPairRows.map((r) => ({
+              pair: txt(r.pair),
+              count: Number(r.count ?? 0),
+            })),
+          },
+          websiteUrls: {
+            totalUpdates: Number(u.total ?? 0),
+            manualUpdates: Number(u.manual ?? 0),
+            backfillUpdates: Number(u.backfill ?? 0),
+            urlsAdded: Number(u.added_new ?? 0),
+            currentCoveragePct: totalFacilities > 0 ? Math.round((withUrl / totalFacilities) * 1000) / 10 : 0,
+            withUrl,
+            missingUrls: totalFacilities - withUrl,
+          },
+          geography: {
+            districtMapPct: pctRate(mappedDistricts, refDistricts),
+            facilityLinkPct: pctRate(linkedFacilities, spineFacilities),
+            mappedDistricts,
+            refDistricts,
+            facilitiesLinked: Math.min(linkedFacilities, spineFacilities),
+            totalFacilities: spineFacilities,
+          },
+          recentMerges: recentMerges.map((r) => ({
+            id: Number(r.id),
+            candidateId: txt(r.candidate_id),
+            decision: txt(r.decision),
+            reviewedBy: txt(r.reviewed_by),
+            note: r.note ? txt(r.note) : null,
+            createdAt: r.created_at,
+            leftName: txt(r.left_name),
+            rightName: txt(r.right_name),
+            matchProbability: Number(r.match_probability),
+          })),
+          recentResolvedFlags: recentFlags.map((r) => ({
+            id: Number(r.id),
+            facilityId: txt(r.facility_id),
+            facilityName: txt(r.facility_name),
+            flagType: txt(r.flag_type),
+            detail: txt(r.detail),
+            resolvedAt: r.resolved_at,
+            resolvedBy: r.resolved_by ? txt(r.resolved_by) : null,
+          })),
+          recentUrlUpdates: recentUrls.map((r) => ({
+            id: Number(r.id),
+            facilityId: txt(r.facility_id),
+            facilityName: txt(r.facility_name),
+            oldUrl: r.old_url ? txt(r.old_url) : null,
+            newUrl: txt(r.new_url),
+            reviewedBy: txt(r.reviewed_by),
+            note: r.note ? txt(r.note) : null,
+            createdAt: r.created_at,
+          })),
+        });
+      } catch (err) {
+        if (isMissingRelation(err)) {
+          res.json({
+            flags: { totalOpen: 0, totalResolved: 0, openByType: {}, resolvedByType: {} },
+            merges: {
+              approved: 0,
+              rejected: 0,
+              deferred: 0,
+              pending: 0,
+              masterClusters: 0,
+              multiMemberClusters: 0,
+              recordsUnified: 0,
+            },
+            links: {
+              approvedPairs: 0,
+              rejectedPairs: 0,
+              deferredPairs: 0,
+              pendingPairs: 0,
+              bySource: [],
+              topPairs: [],
+            },
+            websiteUrls: {
+              totalUpdates: 0,
+              manualUpdates: 0,
+              backfillUpdates: 0,
+              urlsAdded: 0,
+              currentCoveragePct: 0,
+              withUrl: 0,
+              missingUrls: 0,
+            },
+            geography: {
+              districtMapPct: 0,
+              facilityLinkPct: 0,
+              mappedDistricts: 0,
+              refDistricts: 0,
+              facilitiesLinked: 0,
+              totalFacilities: 0,
+            },
+            recentMerges: [],
+            recentResolvedFlags: [],
+            recentUrlUpdates: [],
+          });
+          return;
+        }
+        console.error('data-quality/improvements-summary failed:', err);
+        res.status(500).json({ error: 'Failed to load improvements summary' });
+      }
+    });
+
     app.get('/api/data-quality/flag-summary', async (_req, res) => {
       try {
         const { rows } = await appkit.lakebase.query(`
@@ -1704,11 +2249,17 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
       try {
         const { rows } = await appkit.lakebase.query(
           `SELECT mc.*,
+                  bl.master_facility_id AS left_master_id,
+                  br.master_facility_id AS right_master_id,
                   lr.decision AS review_decision,
                   lr.note AS review_note,
                   lr.created_at AS reviewed_at,
                   lr.reviewed_by
            FROM bronze.merge_candidates mc
+           LEFT JOIN gold.facility_master_bridge bl
+             ON bl.source_system = mc.left_source AND bl.source_id = mc.left_id
+           LEFT JOIN gold.facility_master_bridge br
+             ON br.source_system = mc.right_source AND br.source_id = mc.right_id
            LEFT JOIN LATERAL (
              SELECT decision, note, created_at, reviewed_by
              FROM app.merge_reviews
@@ -1728,9 +2279,11 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
             leftSource: txt(r.left_source),
             leftId: txt(r.left_id),
             leftName: txt(r.left_name),
+            leftMasterId: r.left_master_id ? txt(r.left_master_id) : null,
             rightSource: txt(r.right_source),
             rightId: txt(r.right_id),
             rightName: txt(r.right_name),
+            rightMasterId: r.right_master_id ? txt(r.right_master_id) : null,
             matchProbability: Number(r.match_probability),
             matchWeight: r.match_weight == null ? null : Number(r.match_weight),
             state: txt(r.state),
@@ -1762,6 +2315,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
       }
       const user = currentUser(req);
       const { candidateId, decision, note } = parsed.data;
+      let clustersRebuilt = false;
       try {
         const { rows } = await appkit.lakebase.query(
           `INSERT INTO app.merge_reviews (candidate_id, decision, reviewed_by, note)
@@ -1776,6 +2330,14 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
              WHERE related_id = $1 AND flag_type = 'duplicate_pair' AND status = 'open'`,
             [candidateId, user],
           );
+          const clusterResult = await runApplyMergeClusters();
+          clustersRebuilt = clusterResult.code === 0;
+          if (!clustersRebuilt) {
+            console.warn(
+              'apply_merge_reviews failed after merge review:',
+              clusterResult.stderr || clusterResult.stdout,
+            );
+          }
         }
         const r = rows[0];
         res.status(201).json({
@@ -1785,6 +2347,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
           reviewedBy: txt(r.reviewed_by),
           note: r.note ? txt(r.note) : null,
           createdAt: r.created_at,
+          clustersRebuilt,
         });
       } catch (err) {
         console.error('data-quality/merge-reviews failed:', err);
@@ -1802,6 +2365,7 @@ export async function setupgift_indiaRoutes(appkit: AppKitWithLakebase) {
            FROM app.merge_reviews mr
            JOIN bronze.merge_candidates mc ON mc.candidate_id = mr.candidate_id
            WHERE mr.reviewed_by = $1
+              OR mr.reviewed_by = 'auto_approve_splink'
            ORDER BY mr.created_at DESC
            LIMIT 200`,
           [currentUser(req)],

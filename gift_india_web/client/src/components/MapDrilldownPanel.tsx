@@ -37,6 +37,8 @@ import {
   EvidenceTally,
   HumanReviewBadge,
   HumanReviewCallout,
+  NabhAccreditationBadge,
+  NabhValidatedBadge,
   SignalBadge,
   TrustScoreDial,
 } from './trust';
@@ -190,6 +192,7 @@ function FacilityDrilldownCard({
   }, [facility.facilityId, capability]);
 
   const cap = detail?.capabilities.find((c) => c.key === capability);
+  const nabhValidated = facility.nabhCapability?.validated ?? cap?.nabh?.validated ?? false;
 
   const applyOverride = (signal: TrustSignal | null, note: string, overrideScore: number | null) => {
     const updated: FacilityRanking = {
@@ -218,7 +221,11 @@ function FacilityDrilldownCard({
 
   return (
     <Card className={`gift-fade-in ${pinned ? 'border-primary/40 gift-lift' : 'border-border/80'} ${
-      humanReview.recommended ? 'border-amber-300/80 ring-1 ring-amber-200/50' : ''
+      humanReview.recommended
+        ? 'border-amber-300/80 ring-1 ring-amber-200/50'
+        : nabhValidated
+          ? 'border-teal-300/80 ring-1 ring-teal-200/50'
+          : ''
     }`}>
       <CardContent className="space-y-4 p-4">
         <div className="flex items-start justify-between gap-2">
@@ -244,6 +251,8 @@ function FacilityDrilldownCard({
             <div className="flex flex-wrap items-center gap-2">
               <SignalBadge signal={sig} />
               {humanReview.recommended ? <HumanReviewBadge /> : null}
+              <NabhAccreditationBadge nabh={facility.nabh} />
+              <NabhValidatedBadge verification={facility.nabhCapability ?? cap?.nabh} compact />
               <span className="text-[11px] text-muted-foreground">rank #{facility.rank}</span>
             </div>
           </div>

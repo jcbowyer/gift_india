@@ -126,31 +126,27 @@ allocation and referral follow.
 
 ---
 
-## The ~5:30 demo story (presenter script)
+## The ~3:00 demo story (presenter script)
 
 The app ships an **interactive version of this script** — click **✨ Demo** in the top
 bar (or press `g` then `d`). Full presenter notes with timings live in
-[`DEMO.md`](DEMO.md). The walkthrough opens on the title slide, then walks through the
-talk track and live product beats.
+[`DEMO.md`](DEMO.md). The walkthrough opens on the title slide with side-by-side **Before / After**
+panels, then focuses on what makes GIFT Gauge unique.
 
 | When | Beat | What Priya does | What she says |
 |------|------|-----------------|---------------|
-| **0:00** | **Title** | Title slide | *"Beyond the Hospital Directory"* · *Grounding Improved Patient Care* |
-| **0:20** | **Grit** | Immersive opener | *[beat]* ***"It's grit."*** |
-| **0:45** | **Priya's User Story** | Stands on Trust Gauge landing | *"847 ICUs on a hospital directory — patient needs one tonight. Routing wrong is a **patient-safety failure**."* |
-| **1:05** | **Burning question** | Hero stats | *"Can this hospital **actually** do what it claims?"* |
-| **1:25** | **Intent** | Clicks **ICU**, picks a **state** | *"Capability + region. No SQL."* |
-| **1:45** | **Ranked trust** | Scans the list — green / amber / red dials | *"Every claim ranked by **evidence strength**, not vibes."* |
-| **2:05** | **Receipts** | Expands **strong** ICU in **Maharashtra** | *"Facility-record citations + **NABH** — real source fields, not invented."* |
-| **2:20** | **Automated flags** | Switches to **Suspicious** — Human review badge + reason | *"System surfaces conflicts — human decides."* |
-| **2:35** | **Human wins** | **Override assessment** → note → **My Reviews** | *"Flag fired automatically; my judgment is on the record."* |
-| **3:00** | **Data Quality** | **Data Quality** — missing web-address finder | *"Splink merge recommendations across bronze sources — nothing silent."* |
-| **3:20** | **Steer care** | **Navigator** → **Scorecard** (flagged capabilities) | *"SQL scores + NABH crosswalk — live today."* |
-| **3:30** | **How we score** | Immersive script | *"45% supporting ratio, 25% breadth, 30% match confidence — SQL, not vibes."* |
-| **3:50** | **Narration stub** | Immersive script | *"**35** real LLM cards; **~3,900** stubs after **429** quota — dial unchanged."* |
-| **4:05** | **Scaling next** | Immersive script | *"JCI (**11**), crawl (**34**), LLM batch — foundation done, scale in flight."* |
-| **4:20** | **Lakehouse** | Immersive tech beats | *"MDM, grounded verification, Genie — defy the AI-default."* |
-| **5:08** | **Close** | Back to Trust Gauge | *"Stop guessing. Start steering. **GIFT Gauge.**"* |
+| **0:00** | **Title · Before/After** | Process improvement slide — Before / After | *"Lists tell you **where** hospitals claim to be. Priya needs **whether** they can deliver."* Then read Before / After panels. |
+| **0:20** | **Priya's User Story** | Stands on Trust Gauge landing | *"ICU tonight. Routing wrong is a **patient-safety failure**."* |
+| **0:32** | **Burning question** | Hero stats | *"Can this hospital **actually** do what it claims?"* |
+| **0:42** | **Intent** | Clicks **ICU**, picks a **state** | *"Capability + region. No SQL."* |
+| **0:52** | **Ranked trust** | Scans green / amber / red dials | *"Ranked by SQL evidence strength, not vibes."* |
+| **1:04** | **Third-party evidence** | Expands **strong** ICU in **Maharashtra** | *"**NABH** + **ABDM/NHPR** — not self-reported website copy."* |
+| **1:22** | **Automated flags** | **Suspicious** filter — Human review badge | *"System surfaces conflicts — human decides."* |
+| **1:32** | **Human wins** | **Override assessment** → **My Reviews** | *"My judgment is on the record."* |
+| **1:52** | **Splink dedupe** | **Data Quality** | *"Merge recommendations — nothing silent."* |
+| **2:07** | **How we score** | Immersive script | *"45/25/30 blend — SQL Priya can reproduce."* |
+| **2:19** | **Lakehouse** | Immersive tech beat | *"Third-party registries, not chatbot vibes."* |
+| **2:31** | **Close** | Back to Trust Gauge | *"Stop guessing. Start steering. **GIFT Gauge.**"* |
 
 ```bash
 databricks auth login --profile gift-india --host https://dbc-0951416d-6d0e.cloud.databricks.com
@@ -451,7 +447,7 @@ gift_india/
 ├── gift_india_dbt/       # Postgres medallion (Lakebase serving — what the app reads)
 ├── dbt_project/          # Databricks medallion (upstream VF Delta Share)
 ├── gift_india_api/       # Loaders, scrapers, narrate_evidence.py
-├── DEMO.md               # Full ~5:30 presenter script
+├── DEMO.md               # Full ~3:00 presenter script
 ├── docs/architecture/    # Medallion + metric-store design
 └── Makefile              # db-up / data / dbt / crawl / jci / narrate-pilot / web
 ```

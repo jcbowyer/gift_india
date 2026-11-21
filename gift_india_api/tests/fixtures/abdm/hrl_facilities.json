@@ -1,0 +1,14 @@
+[
+  {
+    "hospitalName": "Alpha Hospital",
+    "linkedCount": "500",
+    "state": "Delhi",
+    "districtName": "Central Delhi"
+  },
+  {
+    "hospitalName": "Beta Clinic",
+    "linkedCount": "42",
+    "state": "Karnataka",
+    "districtName": "Bengaluru Urban"
+  }
+]

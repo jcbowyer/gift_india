@@ -1,0 +1,14 @@
+[
+  {
+    "hospitalId": "IN0710000001",
+    "hospitalName": "Alpha Hospital",
+    "origin": "District Hospital",
+    "status": "Ongoing",
+    "value": "5",
+    "value2": "10",
+    "value3": "15",
+    "hprTotal": "4",
+    "linkedCount": "8",
+    "hidCount": "12"
+  }
+]

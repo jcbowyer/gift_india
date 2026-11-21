@@ -1,5 +1,27 @@
 export type TrustSignal = 'strong' | 'partial' | 'weak_suspicious' | 'no_claim';
 
+/** Facility-level NABH directory match (gold.facilities / gold.facility_nabh). */
+export interface FacilityNabhAccreditation {
+  accredited: boolean;
+  organizationName: string;
+  status: string;
+  program: string;
+  matchMethod: string | null;
+  matchConfidence: number | null;
+}
+
+/** Per-capability NABH certificate scope verification. */
+export interface NabhCapabilityVerification {
+  /** Certificate scope lists this capability. */
+  verified: boolean;
+  /** Certificate scope corroborates the Virtue claim (third-party validated). */
+  validated: boolean;
+  signal: string;
+  referenceNo: string;
+  scopeSnippet: string | null;
+  certificateUrl: string | null;
+}
+
 export interface Stats {
   facilities: number;
   states: number;
@@ -67,6 +89,9 @@ export interface FacilityRanking {
   /** Layer-2 narration or pipeline heuristic — planner should confirm locally. */
   reviewRecommended: boolean;
   reviewReason: string | null;
+  nabh: FacilityNabhAccreditation;
+  /** NABH certificate scope check for the ranked capability (null when capability=all). */
+  nabhCapability: NabhCapabilityVerification | null;
 }
 
 export interface FacilitySearchResult {
@@ -184,7 +209,7 @@ export interface EvidenceItem {
   sourceType: string;
   sourceLabel: string;
   sourceUrl: string;
-  stance: 'supports' | 'contradicts';
+  stance: 'supports' | 'contradicts' | 'contextual';
   weight: number;
   snippet: string;
   observedAt: string;
@@ -231,6 +256,22 @@ export interface CapabilityDetail {
   overrideScore: number | null;
   overrideNote: string | null;
   evidence: EvidenceItem[];
+  nabh: NabhCapabilityVerification | null;
+}
+
+export interface FacilityMdmLink {
+  sourceSystem: string;
+  sourceId: string;
+  clusterMethod: string;
+}
+
+export interface FacilityMdmContext {
+  masterFacilityId: string;
+  name: string | null;
+  nameSource: string | null;
+  clusterMethod: string;
+  memberCount: number;
+  links: FacilityMdmLink[];
 }
 
 export interface FacilityDetail {
@@ -246,7 +287,9 @@ export interface FacilityDetail {
     beds: number | null;
     websiteUrl: string;
     matchConfidence: number | null;
+    nabh: FacilityNabhAccreditation;
   };
+  mdm: FacilityMdmContext | null;
   capabilities: CapabilityDetail[];
 }
 
@@ -353,6 +396,77 @@ export interface DataQualityFlagSummary {
   totalOpen: number;
 }
 
+export interface DataQualityImprovementsSummary {
+  flags: {
+    totalOpen: number;
+    totalResolved: number;
+    openByType: Record<string, number>;
+    resolvedByType: Record<string, number>;
+  };
+  merges: {
+    approved: number;
+    rejected: number;
+    deferred: number;
+    pending: number;
+    masterClusters: number;
+    multiMemberClusters: number;
+    recordsUnified: number;
+  };
+  /** Cross-source Splink linkage — match rate per bronze registry. */
+  links: {
+    approvedPairs: number;
+    rejectedPairs: number;
+    deferredPairs: number;
+    pendingPairs: number;
+    bySource: Array<{
+      source: string;
+      label: string;
+      totalRows: number;
+      matchedRows: number;
+      matchPct: number;
+    }>;
+    topPairs: Array<{ pair: string; count: number }>;
+  };
+  websiteUrls: {
+    totalUpdates: number;
+    manualUpdates: number;
+    backfillUpdates: number;
+    urlsAdded: number;
+    currentCoveragePct: number;
+    withUrl: number;
+    missingUrls: number;
+  };
+  geography: {
+    districtMapPct: number;
+    facilityLinkPct: number;
+    mappedDistricts: number;
+    refDistricts: number;
+    facilitiesLinked: number;
+    totalFacilities: number;
+  };
+  recentMerges: Array<{
+    id: number;
+    candidateId: string;
+    decision: string;
+    reviewedBy: string;
+    note: string | null;
+    createdAt: string;
+    leftName: string;
+    rightName: string;
+    matchProbability: number;
+  }>;
+  recentResolvedFlags: Array<{
+    id: number;
+    facilityId: string;
+    facilityName: string;
+    flagType: string;
+    detail: string;
+    resolvedAt: string | null;
+    resolvedBy: string | null;
+  }>;
+  recentUrlUpdates: WebsiteUrlUpdateRecord[];
+}
+
 export interface DataQualityFlag {
   id: number;
   facilityId: string;
@@ -373,9 +487,11 @@ export interface MergeCandidate {
   leftSource: string;
   leftId: string;
   leftName: string;
+  leftMasterId: string | null;
   rightSource: string;
   rightId: string;
   rightName: string;
+  rightMasterId: string | null;
   matchProbability: number;
   matchWeight: number | null;
   state: string;
@@ -396,6 +512,7 @@ export interface MergeReviewRecord {
   reviewedBy: string;
   note: string | null;
   createdAt: string;
+  clustersRebuilt?: boolean;
   leftSource: string;
   leftId: string;
   leftName: string;
@@ -496,6 +613,8 @@ export const api = {
       `/api/data-quality/unmapped-districts?state=${encodeURIComponent(state)}`,
     ),
   dataQualityFlagSummary: () => getJSON<DataQualityFlagSummary>('/api/data-quality/flag-summary'),
+  dataQualityImprovementsSummary: () =>
+    getJSON<DataQualityImprovementsSummary>('/api/data-quality/improvements-summary'),
   dataQualityFlags: (params?: { state?: string; type?: string }) => {
     const qs = new URLSearchParams();
     if (params?.state) qs.set('state', params.state);
